@@ -1,5 +1,6 @@
 import { type Language, LOCALE_BY_LANGUAGE } from 'kinomat-core/lib/language'
 import { parseDay } from 'kinomat-core/lib/time'
+import { notFound } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
 import { readToday } from '@/lib/readToday'
@@ -14,6 +15,10 @@ function countScreenings(programme: ProgrammeListing) {
 
 // The day the Reel and its cover show, its films most screened first, and the header's words.
 export async function readReelDay(den: string | string[] | undefined, language: Language) {
+  // The Reel is filmed off the dev server; on kinomat.sk it is nobody's page.
+  if (process.env.NODE_ENV === 'production') {
+    notFound()
+  }
   const copy = programCopyByLanguage[language]
   const today = await readToday()
   const days = await readScheduledDays(today)
