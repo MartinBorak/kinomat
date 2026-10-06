@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Two jobs rather than one so the build does not wait for the tests, nor the tests for Postgres.
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Three single-threaded tools on two cores, so together they take little longer than the slowest.
+      - name: Lint, check formatting and typecheck
+        run: pnpm run --parallel "/^(lint|format:check|typecheck)$/"
+
+      # Without DATABASE_URL the suite skips its database tests: running them in parallel would let
+      # them wipe each other, and the build job below is what proves the schema against Postgres.
+      - name: Test
+        run: pnpm test
+
+  build:
+    runs-on: ubuntu-latest
+
+    # The build prerenders the landing page, so it queries Postgres and needs one to query.
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: kinomat
+          POSTGRES_DB: kinomat
+          # Taken from the run rather than written down: this database is reachable from this job alone.
+          POSTGRES_PASSWORD: ${{ github.run_id }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kinomat -d kinomat"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://kinomat:${{ github.run_id }}@localhost:5432/kinomat
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up the database
+        run: pnpm db:setup
+
+      - name: Build
+        run: pnpm build

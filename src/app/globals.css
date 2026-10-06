@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+@plugin '@iconify/tailwind4';
+
+/*
+ * The Kinomat palette, taken from the design canvas. One theme only: the design is dark, and a
+ * light variant nobody drew would be invented here rather than implemented.
+ */
+/* The platform scrollbar is the one thing on the page that ignores the palette, so it gets told. */
+@utility scrollbar-accent {
+  scrollbar-width: thin;
+  scrollbar-color: --alpha(var(--color-accent) / 26%) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: --alpha(var(--color-accent) / 26%);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: --alpha(var(--color-accent) / 45%);
+  }
+}
+
+/* The design is dark, so the widgets the platform draws itself - a menu, a caret - are told too. */
+:root {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: var(--font-outfit), sans-serif;
+
+  --color-surface: oklch(0.145 0.022 255);
+  --color-surface-raised: oklch(0.178 0.02 255);
+  --color-surface-hover: oklch(0.22 0.024 255);
+  --color-field: oklch(0.175 0.02 255);
+  --color-line: oklch(0.24 0.02 255);
+  --color-ink: oklch(0.95 0.008 250);
+  --color-ink-soft: oklch(0.82 0.014 250);
+  --color-ink-muted: oklch(0.72 0.014 250);
+  --color-ink-faint: oklch(0.62 0.014 250);
+  --color-accent: #a0d6ff;
+  --color-accent-ink: oklch(0.18 0.03 250);
+
+  --animate-hum: hum 5s ease-in-out infinite;
+  --animate-breathe: breathe 6s ease-in-out infinite;
+
+  /* The headline sits behind neon, and neon is never quite steady. */
+  @keyframes hum {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  /* Slower than a pulse and never fully out: the field is lit rather than blinking. */
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scale(0.996);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.007);
+    }
+  }
+}
+
+/* A reader who asked for less motion gets a page that holds still. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-hum,
+  .animate-breathe {
+    animation: none;
+  }
+}
+
+/* Day switch: the old day leaves completely before the new one arrives, so identical days still blink. */
+::view-transition-old(.day-switch) {
+  animation: 130ms ease-in both day-leave;
+}
+::view-transition-new(.day-switch) {
+  animation: 180ms ease-out 130ms both day-arrive;
+}
+
+@keyframes day-leave {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes day-arrive {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.day-switch),
+  ::view-transition-new(.day-switch) {
+    animation-duration: 0s;
+    animation-delay: 0s;
+  }
+}

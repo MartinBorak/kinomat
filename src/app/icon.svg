@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-26.5 -21 146 146">
+  <style>
+    .echo-back { fill: #CDD6EC } .echo-mid { fill: #6E86C4 } .echo-front { fill: #1F3A7A } .front { fill: #0F1E45 }
+    @media (prefers-color-scheme: dark) {
+      .echo-back { fill: #2B4485 } .echo-front { fill: #C9D3EC } .front { fill: #F5F3EE }
+    }
+  </style>
+  <defs>
+    <path id="body" d="M16.6 30.8A16.7 16.7 0 1 1 50 30.8A16.7 16.7 0 1 1 16.6 30.8ZM47.9 28.1A23.1 23.1 0 1 1 94.1 28.1A23.1 23.1 0 1 1 47.9 28.1ZM33.3 30.8L71 28.1L71 47L33.3 47ZM17 45H86A7 7 0 0 1 93 52V92A7 7 0 0 1 86 99H17A7 7 0 0 1 10 92V52A7 7 0 0 1 17 45Z"/>
+  </defs>
+  <use href="#body" class="echo-back" transform="translate(-32.8147 10.5635) scale(0.681472)"/>
+  <use href="#body" class="echo-mid" transform="translate(-21.744 7.7312) scale(0.7744)"/>
+  <use href="#body" class="echo-front" transform="translate(-10.8 4.24) scale(0.88)"/>
+  <use href="#body" class="front"/>
+  <path class="front" d="M88 63.4L113 52.7Q119 50.2 119 56.7L119 87.3Q119 93.8 113 91.3L88 80.6Z"/>
+</svg>

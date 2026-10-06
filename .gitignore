@@ -1,0 +1,31 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# misc
+.DS_Store
+*.pem
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# daily Instagram Reels, one folder per day rendered
+/reels/
+
+# private agent notes and settings
+CLAUDE.local.md
+.aidiff.jsonl
+.claude/settings.local.json
