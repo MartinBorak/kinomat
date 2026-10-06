@@ -12,8 +12,6 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    // Under `pnpm link ../kinomat-core` the package has its own copies; tests must see one of each.
-    dedupe: ['vitest', 'drizzle-orm', 'postgres', 'temporal-polyfill'],
   },
   test: {
     projects: [

@@ -28,6 +28,18 @@ Open [http://localhost:3000](http://localhost:3000). An empty database runs fine
 
 Compose reads `.env` (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`) and fails loudly if one is missing; the app reads `DATABASE_URL` from `.env.local`, of the form `postgres://<user>:<password>@localhost:5432/<database>`. Neither file is committed. `pnpm db:setup` applies the migrations and mirrors the cinema registry, both idempotent.
 
+## Working on kinomat-core
+
+With the three repositories as siblings, point this one at the checkout next door by adding to the `overrides` in `pnpm-workspace.yaml`:
+
+```yaml
+kinomat-core: file:../kinomat-core
+```
+
+then `pnpm install`. pnpm hard-links core's files into this project's store and resolves core's peer dependencies from here, so `typecheck`, `test` and `dev` all run against the local source, and an edit to an existing file in core reaches the dev server at once. A new file in core needs another `pnpm install`. Do not commit the two files this changes; `git checkout pnpm-workspace.yaml pnpm-lock.yaml && pnpm install --frozen-lockfile` returns to the published package.
+
+`pnpm link ../kinomat-core` is not a substitute: pnpm 11 writes a `link:` override instead, core's own `node_modules` then supplies a second `drizzle-orm` whose types do not match this project's, and Turbopack refuses files outside the project unless `turbopack.root` is widened to the parent folder.
+
 ## Scripts
 
 | Script              | Purpose                                          |
