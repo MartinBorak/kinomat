@@ -67,6 +67,23 @@ export async function findPlayingFilms(
   return selectPlaying(database, now, undefined)
 }
 
+/*
+ * The film an alias names, playing or not: the page it redirects to is the one to say that. The
+ * alias column is unique, so this is one row or none.
+ */
+export async function findFilmPublicIdByAlias(
+  database: Database,
+  alias: string,
+): Promise<string | null> {
+  const [film] = await database
+    .select({ publicId: films.publicId })
+    .from(films)
+    .where(eq(films.alias, alias))
+    .limit(1)
+
+  return film?.publicId ?? null
+}
+
 // One film, as long as it is still playing: a film nothing is billing has no page to stand on.
 export async function findPlayingFilm(
   database: Database,
