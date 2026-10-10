@@ -2,7 +2,12 @@ import { getDatabase } from 'kinomat-core/db/appDatabase'
 import { cacheLife } from 'next/cache'
 
 import { tagSchedule } from '@/lib/tagSchedule'
-import { findPlayingFilm, findPlayingFilms, type FilmRow } from '@/site/films/findFilms'
+import {
+  findFilmPublicIdByAlias,
+  findPlayingFilm,
+  findPlayingFilms,
+  type FilmRow,
+} from '@/site/films/findFilms'
 
 /*
  * What the pages read, as opposed to what the queries in findFilms take: a connection cannot be a
@@ -24,4 +29,12 @@ export async function readPlayingFilm(publicId: string): Promise<FilmRow | null>
   tagSchedule()
 
   return findPlayingFilm(getDatabase(), publicId)
+}
+
+export async function readFilmPublicIdByAlias(alias: string): Promise<string | null> {
+  'use cache'
+  cacheLife('minutes')
+  tagSchedule()
+
+  return findFilmPublicIdByAlias(getDatabase(), alias)
 }
