@@ -14,6 +14,7 @@ import {
   deriveFilterOptions,
   parseFilters,
   type ProgramFilters,
+  type ScheduleSection,
   toProgramHref,
 } from '@/site/program/filters'
 import { type ProgrammeListing } from '@/site/program/groupScreenings'
@@ -35,9 +36,11 @@ type ProgramPageProps = {
   today: string
   days: readonly string[]
   programmes: readonly ProgrammeListing[]
+  section?: ScheduleSection
 }
 
 export function ProgramPage({
+  section = 'program',
   language,
   date: isoDate,
   today: isoToday,
@@ -66,7 +69,7 @@ export function ProgramPage({
 
   // Nothing here is stored, so a filter rewrites the URL it was read from rather than asking again.
   function changeFilters(next: ProgramFilters) {
-    window.history.replaceState(null, '', toProgramHref(requestedDate, language, next))
+    window.history.replaceState(null, '', toProgramHref(requestedDate, language, next, section))
   }
 
   // What is missing: the day itself, the horizon it lies past, or only what the filters cut away.
@@ -81,10 +84,12 @@ export function ProgramPage({
     <SitePage>
       {/* The language is in the URL rather than in state, so the page a tab points at is read in it. */}
       <SiteHeader
-        current="program"
+        current={section}
         language={language}
         languageChange={{
-          hrefByLanguage: toHrefByLanguage((next) => toProgramHref(requestedDate, next, filters)),
+          hrefByLanguage: toHrefByLanguage((next) =>
+            toProgramHref(requestedDate, next, filters, section),
+          ),
         }}
         hasSearch
       />
@@ -95,7 +100,7 @@ export function ProgramPage({
         today={today}
         copy={copy}
         language={language}
-        toHref={(day) => toProgramHref(day, language, filters)}
+        toHref={(day) => toProgramHref(day, language, filters, section)}
       />
 
       <FilterBar
