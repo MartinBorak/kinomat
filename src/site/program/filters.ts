@@ -104,6 +104,9 @@ export function toFilterEntries(filters: ProgramFilters): string[][] {
   ]
 }
 
+// The pages a schedule is listed on: the whole of it, and a festival's part while one runs.
+export type ScheduleSection = 'program' | 'be2can'
+
 /*
  * Everything the Program view reads out of its URL: the day, the language and the filters. A day is
  * a link rather than a click, and it carries the filters so that changing day does not drop them.
@@ -113,8 +116,9 @@ export function toProgramHref(
   date: Temporal.PlainDate | undefined,
   language: Language,
   filters: ProgramFilters = NO_FILTERS,
+  section: ScheduleSection = 'program',
 ): string {
-  return `${toLanguagePrefix(language)}/program${toQueryString([
+  return `${toLanguagePrefix(language)}/${section}${toQueryString([
     ...(date === undefined ? [] : [['den', date.toString()]]),
     ...toFilterEntries(filters),
   ])}`

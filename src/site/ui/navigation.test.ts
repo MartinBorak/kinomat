@@ -8,6 +8,7 @@ describe('the site navigation', () => {
       { label: 'Kiná', href: '/kina', isCurrent: false },
       { label: 'Filmy', href: '/filmy', isCurrent: true },
       { label: 'Program', href: '/program', isCurrent: false },
+      { label: 'BE2CAN', href: '/be2can', isCurrent: false },
       { label: 'O Kinomate', href: '/o-kinomate', isCurrent: false },
     ])
   })
@@ -18,6 +19,7 @@ describe('the site navigation', () => {
       '/en/kina',
       '/en/filmy',
       '/en/program',
+      '/en/be2can',
       '/en/o-kinomate',
     ])
   })
