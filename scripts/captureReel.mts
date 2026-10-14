@@ -7,18 +7,41 @@ import { Temporal } from 'temporal-polyfill'
  * Films the /reel view frame by frame in headless Chrome and encodes out/reel.mp4. Frames are
  * placed, not recorded: each one sets the list's offset for its instant and is then captured, so
  * the motion is exact however long a capture takes.
- * Usage: capture.mts [--day=YYYY-MM-DD] [--base=http://[::1]:3000] [--cover-only].
- * The day defaults to tomorrow in Bratislava. [::1] reaches next dev, which listens on every
- * address, rather than another app that may hold 127.0.0.1:3000.
+ * Usage: capture.mts [--view=reel|be2can] [--day=YYYY-MM-DD] [--base=http://[::1]:3000] [--cover-only].
+ * The Reel is tomorrow's programme and has a cover; the be2can Story is today's festival day, read
+ * slower since every card lists cinemas and times, and has no cover. [::1] reaches next dev, which
+ * listens on every address, rather than another app that may hold 127.0.0.1:3000.
  */
 const args = process.argv.slice(2)
 function readArg(name: string) {
   return args.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3)
 }
+// dir is where under reels/ the day's folder goes; the cover, where there is one, is <path>/cover.
+const VIEWS = {
+  // Two cards (about 175 px each) a second; a viewer pauses to read.
+  reel: { path: '/reel', dir: '', daysAhead: 1, hasCover: true, speed: 350, output: 'reel.mp4' },
+  be2can: {
+    path: '/reel/be2can',
+    dir: 'be2can/',
+    daysAhead: 0,
+    hasCover: true,
+    speed: 160,
+    output: 'story.mp4',
+  },
+}
+const VIEW_NAME = readArg('view') ?? 'reel'
+if (!(VIEW_NAME in VIEWS)) {
+  throw new Error(`no view named ${VIEW_NAME}; one of ${Object.keys(VIEWS).join(', ')}`)
+}
+const VIEW = VIEWS[VIEW_NAME as keyof typeof VIEWS]
 const DAY =
-  readArg('day') ?? Temporal.Now.plainDateISO('Europe/Bratislava').add({ days: 1 }).toString()
-const VIEW_URL = `${readArg('base') ?? 'http://[::1]:3000'}/reel?den=${DAY}`
+  readArg('day') ??
+  Temporal.Now.plainDateISO('Europe/Bratislava').add({ days: VIEW.daysAhead }).toString()
+const VIEW_URL = `${readArg('base') ?? 'http://[::1]:3000'}${VIEW.path}?den=${DAY}`
 const COVER_ONLY = args.includes('--cover-only')
+if (COVER_ONLY && !VIEW.hasCover) {
+  throw new Error(`the ${VIEW_NAME} view has no cover`)
+}
 function toCoverUrl(viewUrl: string) {
   const url = new URL(viewUrl)
   url.pathname = `${url.pathname.replace(/\/$/, '')}/cover`
@@ -33,8 +56,7 @@ const FRAMES_DIR = new URL(`file://${tmpdir()}/kinomat-reel-frames/`)
 const FPS = 30
 const INTRO_HOLD = 0.6
 const OUTRO_HOLD = 2.5
-// Two cards (about 175 px each) a second; a viewer pauses to read.
-const SPEED = 350
+const SPEED = VIEW.speed
 const RAMP = 0.8
 const VIEWPORT_HEIGHT = 768
 
@@ -168,7 +190,8 @@ async function main() {
       })
     }
 
-    await open(toCoverUrl(VIEW_URL))
+    // The cover and the view show the same day, so whichever opens first is the one checked.
+    await open(VIEW.hasCover ? toCoverUrl(VIEW_URL) : VIEW_URL)
     const day = await cdp.send<Evaluated<string>>('Runtime.evaluate', {
       returnByValue: true,
       expression: `document.querySelector('[data-reel-day]').dataset.reelDay`,
@@ -176,20 +199,21 @@ async function main() {
     if (day.result.value !== DAY) {
       throw new Error(`asked for ${DAY}, the view shows ${day.result.value}`)
     }
-    outDir.url = new URL(`${day.result.value}/`, REELS_DIR)
+    outDir.url = new URL(`${VIEW.dir}${day.result.value}/`, REELS_DIR)
     await mkdir(outDir.url, { recursive: true })
-    const cover = await cdp.send<Screenshot>('Page.captureScreenshot', {
-      format: 'jpeg',
-      quality: 95,
-    })
-    await writeFile(new URL('cover.jpg', outDir.url), Buffer.from(cover.data, 'base64'))
-    console.log(`reels/${day.result.value}/cover.jpg written`)
-    if (COVER_ONLY) {
-      cdp.close()
-      return
+    if (VIEW.hasCover) {
+      const cover = await cdp.send<Screenshot>('Page.captureScreenshot', {
+        format: 'jpeg',
+        quality: 95,
+      })
+      await writeFile(new URL('cover.jpg', outDir.url), Buffer.from(cover.data, 'base64'))
+      console.log(`${new URL('cover.jpg', outDir.url).pathname} written`)
+      if (COVER_ONLY) {
+        cdp.close()
+        return
+      }
+      await open(VIEW_URL)
     }
-
-    await open(VIEW_URL)
     const { result } = await cdp.send<Evaluated<{ top: number; height: number }[]>>(
       'Runtime.evaluate',
       {
@@ -256,7 +280,7 @@ async function main() {
       '18',
       '-movflags',
       '+faststart',
-      new URL('reel.mp4', outDir.url).pathname,
+      new URL(VIEW.output, outDir.url).pathname,
     ],
     { stdio: 'inherit' },
   )
@@ -264,7 +288,7 @@ async function main() {
     throw new Error('ffmpeg failed')
   }
   await rm(FRAMES_DIR, { recursive: true, force: true })
-  console.log(`${new URL('reel.mp4', outDir.url).pathname} written`)
+  console.log(`${new URL(VIEW.output, outDir.url).pathname} written`)
 }
 
 main().catch((error) => {
