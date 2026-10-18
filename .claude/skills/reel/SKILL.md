@@ -45,7 +45,31 @@ If frames slow to a crawl while nothing uses the CPU, Chrome is being throttled 
 page; the script already passes the flags against it, so check they are still there before
 anything else.
 
+## Caption
+
+Every daily Reel gets `reels/<day>/caption.txt` next to the video, always in this shape; only the
+day, the count and the films change. Take N from the script's output and the top seven films in
+the Reel's order from `http://[::1]:3000/reel?den=<day>` (the `<h2>` titles). Put the original
+title in brackets where the Slovak one differs and you know it, as in "Pád veľryby (Whalefall)";
+if you do not know it, leave the brackets out rather than looking it up. Never name a cinema. The
+festival Story has no caption from this skill.
+
+```
+Čo hrajú zajtra v Bratislave? Všetkých <N> filmov v jednom krátkom videu 🎬
+
+<Weekday> <D>. <M>. v kinách: <film 1>, <film 2>, … <film 7> a ďalšie – zoradené podľa toho, koľko premietaní majú.
+
+Celý program, každé kino, každý čas a vstupenky: kinomat.sk
+
+Ulož si to na večer a pošli tomu, s kým ideš do kina 🍿
+
+#kinomatsk #kino #bratislava #kinobratislava #filmy
+```
+
+The weekday is Slovak and capitalised (Pondelok, Utorok, Streda, Štvrtok, Piatok, Sobota,
+Nedeľa). Print the caption in the report so it can be copied without opening the file.
+
 ## Report
 
-In a few lines: the folder, the film count and video length from the script's output, and
-`open reels/<day>/reel.mp4` so the user can watch it. Nothing is posted anywhere.
+In a few lines: the folder, the film count and video length from the script's output, the
+caption, and `open reels/<day>/reel.mp4` so the user can watch it. Nothing is posted anywhere.
