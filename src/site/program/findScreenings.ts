@@ -126,18 +126,43 @@ function isMarkedFor(festival: string): SQL {
 }
 
 /*
- * Every bill carrying a film some cinema marked as the festival's, so the lineup is read off the
- * marked titles and a cinema that printed the bare title still lists its showing.
+ * The festival's films by public id, kept because a film's marked showings can all be in the past
+ * and past screenings leave the table, which would drop it from the lineup while its unmarked
+ * showings still play. Marked titles still add any film missing here.
+ */
+const FESTIVAL_LINEUPS: Record<string, readonly string[]> = {
+  be2can: [
+    'bc00f69b5b35', // Jej súkromné peklo
+    'de23b9670fcb', // Minotaur
+    'e36f05683f99', // Pina
+    'b1b2a5ce3e68', // Spasenie
+    '254bc7b25de0', // Spomienka na princeznú Mumbi
+    '5a9f0d31103b', // Zlatý vek
+    'b90d2e25fb09', // Červené skaly
+    '31562723de02', // Žiadni dobrí muži
+  ],
+}
+
+/*
+ * Every bill carrying a film of the festival's lineup: the stored one, plus any film some cinema
+ * marked as the festival's, so a cinema that printed the bare title still lists its showing.
  */
 function selectFestivalProgrammes(database: Database, festival: string) {
   const marked = database
     .select({ id: screenings.programmeId })
     .from(screenings)
     .where(isMarkedFor(festival))
+  const stored = FESTIVAL_LINEUPS[festival] ?? []
   const lineup = database
     .select({ id: programmeFilms.filmId })
     .from(programmeFilms)
     .where(inArray(programmeFilms.programmeId, marked))
+    .union(
+      database
+        .select({ id: films.id })
+        .from(films)
+        .where(inArray(films.publicId, [...stored])),
+    )
 
   return database
     .select({ id: programmeFilms.programmeId })
