@@ -4,7 +4,7 @@ import { aboutCopyByLanguage } from '@/site/about/copy'
 import { toAboutHref } from '@/site/about/hrefs'
 import { toCinemasHref } from '@/site/cinemas/hrefs'
 import { toFilmsHref } from '@/site/films/hrefs'
-import { NO_FILTERS, toProgramHref, toScheduleHref } from '@/site/program/filters'
+import { toScheduleHref } from '@/site/program/filters'
 
 const LABELS_BY_LANGUAGE: Record<Language, { cinemas: string; films: string; schedule: string }> = {
   sk: { cinemas: 'Kiná', films: 'Filmy', schedule: 'Program' },
@@ -13,7 +13,7 @@ const LABELS_BY_LANGUAGE: Record<Language, { cinemas: string; films: string; sch
 
 type NavItem = { label: string; href: string; isCurrent: boolean }
 
-export type SiteSection = 'kina' | 'filmy' | 'program' | 'be2can' | 'o-kinomate'
+export type SiteSection = 'kina' | 'filmy' | 'program' | 'o-kinomate'
 
 /*
  * The header's links, built in one place so that every page carries the reader's language across:
@@ -33,12 +33,6 @@ export function toSiteNavigation(language: Language, current: SiteSection | null
       label: labels.schedule,
       href: toScheduleHref(language),
       isCurrent: current === 'program',
-    },
-    // Only while the festival runs, 14 to 21 October 2026; remove it, and its page, afterwards.
-    {
-      label: 'BE2CAN',
-      href: toProgramHref(undefined, language, NO_FILTERS, 'be2can'),
-      isCurrent: current === 'be2can',
     },
     {
       label: aboutCopyByLanguage[language].title,

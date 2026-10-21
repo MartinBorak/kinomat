@@ -32,11 +32,6 @@ node --import tsx scripts/captureReel.mts                 # tomorrow
 node --import tsx scripts/captureReel.mts --day=2026-10-05 # a named day
 ```
 
-While BE2CAN runs (14 to 21 October 2026), `--view=be2can` films the festival Story instead: the
-view is `src/app/[lang]/reel/be2can/` (page and `cover/`, in the festival's red and haze), today's
-lineup by the clock with every cinema and its times, scrolled at 160 px/s, written to
-`reels/be2can/<day>/` as `story.mp4` and `cover.jpg`.
-
 Run it in the background and post a one-line status when it starts and when it ends. It takes
 about two minutes for 45 films; frames are rendered into a temp folder and deleted afterwards.
 An existing folder for the same day is overwritten.
@@ -51,8 +46,7 @@ Every daily Reel gets `reels/<day>/caption.txt` next to the video, always in thi
 day, the count and the films change. Take N from the script's output and the top seven films in
 the Reel's order from `http://[::1]:3000/reel?den=<day>` (the `<h2>` titles). Put the original
 title in brackets where the Slovak one differs and you know it, as in "Pád veľryby (Whalefall)";
-if you do not know it, leave the brackets out rather than looking it up. Never name a cinema. The
-festival Story has no caption from this skill.
+if you do not know it, leave the brackets out rather than looking it up. Never name a cinema.
 
 ```
 Čo hrajú zajtra v Bratislave? Všetkých <N> filmov v jednom krátkom videu 🎬

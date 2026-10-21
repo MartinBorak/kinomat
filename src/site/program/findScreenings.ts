@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, ilike, inArray, lt, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, inArray, lt, type SQL, sql } from 'drizzle-orm'
 import { IS_BOOKABLE } from 'kinomat-core/db/bookableScreenings'
 import { type Database } from 'kinomat-core/db/client'
 import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
@@ -120,56 +120,6 @@ async function selectScreenings(
   }))
 }
 
-// The showings whose printed title names the festival, which some cinemas mark and others do not.
-function isMarkedFor(festival: string): SQL {
-  return ilike(screenings.rawTitle, `%${festival}%`)
-}
-
-/*
- * The festival's films by public id, kept because a film's marked showings can all be in the past
- * and past screenings leave the table, which would drop it from the lineup while its unmarked
- * showings still play. Marked titles still add any film missing here.
- */
-const FESTIVAL_LINEUPS: Record<string, readonly string[]> = {
-  be2can: [
-    'bc00f69b5b35', // Jej súkromné peklo
-    'de23b9670fcb', // Minotaur
-    'e36f05683f99', // Pina
-    'b1b2a5ce3e68', // Spasenie
-    '254bc7b25de0', // Spomienka na princeznú Mumbi
-    '5a9f0d31103b', // Zlatý vek
-    'b90d2e25fb09', // Červené skaly
-    '31562723de02', // Žiadni dobrí muži
-  ],
-}
-
-/*
- * Every bill carrying a film of the festival's lineup: the stored one, plus any film some cinema
- * marked as the festival's, so a cinema that printed the bare title still lists its showing.
- */
-function selectFestivalProgrammes(database: Database, festival: string) {
-  const marked = database
-    .select({ id: screenings.programmeId })
-    .from(screenings)
-    .where(isMarkedFor(festival))
-  const stored = FESTIVAL_LINEUPS[festival] ?? []
-  const lineup = database
-    .select({ id: programmeFilms.filmId })
-    .from(programmeFilms)
-    .where(inArray(programmeFilms.programmeId, marked))
-    .union(
-      database
-        .select({ id: films.id })
-        .from(films)
-        .where(inArray(films.publicId, [...stored])),
-    )
-
-  return database
-    .select({ id: programmeFilms.programmeId })
-    .from(programmeFilms)
-    .where(inArray(programmeFilms.filmId, lineup))
-}
-
 // The whole of one Bratislava calendar day, still to come.
 export async function findScreeningsOnDay(
   database: Database,
@@ -192,22 +142,6 @@ export async function findFilmScreeningsOnDay(
   return selectScreenings(
     database,
     and(isOnDay(date, now), inArray(screenings.programmeId, selectProgrammesOf(database, filmId))),
-  )
-}
-
-// A festival's day: every showing of its lineup, marked or not.
-export async function findFestivalScreeningsOnDay(
-  database: Database,
-  festival: string,
-  date: Temporal.PlainDate,
-  now: Date = new Date(),
-): Promise<ScreeningRow[]> {
-  return selectScreenings(
-    database,
-    and(
-      isOnDay(date, now),
-      inArray(screenings.programmeId, selectFestivalProgrammes(database, festival)),
-    ),
   )
 }
 
@@ -265,19 +199,6 @@ export async function findFilmDays(
       inArray(screenings.programmeId, selectProgrammesOf(database, filmId)),
     ),
   )
-}
-
-/*
- * Only the days a marked showing is on: the same films playing before or after are the ordinary
- * run, not the festival.
- */
-export async function findFestivalDays(
-  database: Database,
-  festival: string,
-  from: Temporal.PlainDate,
-  now: Date = new Date(),
-): Promise<Temporal.PlainDate[]> {
-  return selectDays(database, and(isStillToCome(from, now), isMarkedFor(festival)))
 }
 
 // The days this one cinema is open with something on, which its own strip offers and no others.
