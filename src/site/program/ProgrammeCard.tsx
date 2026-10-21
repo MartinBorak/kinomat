@@ -167,7 +167,7 @@ function PosterLink({
       href={href}
       aria-hidden
       tabIndex={-1}
-      className="flex rounded-[10px] transition-shadow hover:shadow-[0_0_26px_oklch(0.85_0.09_245/0.28)]"
+      className="hover:outline-accent/70 flex rounded-[10px] outline-1 outline-offset-[3px] outline-transparent transition-[outline-color]"
     >
       {poster}
     </Link>

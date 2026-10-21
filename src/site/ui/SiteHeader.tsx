@@ -29,7 +29,7 @@ const MENU_LABEL_BY_LANGUAGE: Record<Language, string> = {
   en: 'Menu',
 }
 
-const LIT = 'text-accent [text-shadow:0_0_14px_oklch(0.85_0.09_245/0.6)]'
+const LIT = 'text-accent'
 
 function LanguageTab({
   language,
@@ -66,9 +66,7 @@ export function SiteHeader({
       <header className="border-line relative flex items-center justify-between gap-5 border-b px-[22px] py-4 md:px-[6vw] md:py-[18px]">
         <Link href={toHomeHref(language)} className="flex flex-none items-center gap-3 md:gap-3.5">
           <BrandMark />
-          <span className="text-[19px] tracking-[0.16em] uppercase [text-shadow:0_0_18px_oklch(0.85_0.09_245/0.55)] md:text-[22px]">
-            Kinomat
-          </span>
+          <span className="text-[19px] tracking-[0.16em] uppercase md:text-[22px]">Kinomat</span>
         </Link>
 
         {/* The rest takes the width the brand leaves, so the search grows into whatever is spare, and

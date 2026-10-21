@@ -22,8 +22,7 @@ type HeaderSearchProps = {
 }
 
 /*
- * The hero's search, shrunk to fit a header: the same field and the same panel, lit rather than
- * breathing - a glow that pulses on every page is one nobody can look away from. Enter goes where
+ * The hero's search, shrunk to fit a header: the same field and the same panel. Enter goes where
  * the hero's button goes: the Films view, narrowed by what nobody picked a suggestion for.
  */
 export function HeaderSearch({ language, className = '', panelClassName = '' }: HeaderSearchProps) {
@@ -93,7 +92,7 @@ export function HeaderSearch({ language, className = '', panelClassName = '' }: 
       ref={field}
       className={`relative ${className}`}
     >
-      <div className="bg-field border-accent/45 focus-within:border-accent/75 flex h-10 items-center gap-2 rounded-full border px-4 shadow-[0_0_14px_oklch(0.85_0.09_245/0.1)] transition-[border-color,box-shadow] duration-[240ms] focus-within:shadow-[0_0_24px_oklch(0.85_0.09_245/0.22)]">
+      <div className="bg-field border-accent/45 focus-within:border-accent/75 focus-within:bg-surface-hover flex h-10 items-center gap-2 rounded-full border px-4 transition-colors duration-[240ms]">
         <input
           ref={input}
           name="q"

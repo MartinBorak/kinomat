@@ -116,7 +116,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
             {copy.kicker}
           </p>
           <h1
-            className={`animate-hum m-0 text-[38px] leading-[1.08] font-light tracking-[0.01em] text-pretty transition-[font-size] duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] [text-shadow:0_0_24px_oklch(0.85_0.09_245/0.4),0_0_70px_oklch(0.78_0.11_260/0.2)] md:text-center md:text-[clamp(34px,6vw,64px)] md:leading-[1.05] ${
+            className={`m-0 text-[38px] leading-[1.08] font-light tracking-[0.01em] text-pretty transition-[font-size] duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] md:text-center md:text-[clamp(34px,6vw,64px)] md:leading-[1.05] ${
               isOpen ? COMPACT_HEADLINE : ''
             }`}
           >
@@ -133,12 +133,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
           {/* The panel stands under the field rather than off the form, so it needs no room measured
               for the button beside it. */}
           <div className="relative min-w-0 md:flex-[3_1_280px]">
-            <div className="bg-field border-accent/45 focus-within:border-accent/75 relative flex h-[60px] items-center gap-3.5 rounded-full border px-6 shadow-[0_0_20px_oklch(0.85_0.09_245/0.14)] transition-[border-color,box-shadow] duration-[240ms] focus-within:shadow-[0_0_34px_oklch(0.85_0.09_245/0.26)]">
-              {/* A second glow rather than the field's own, so what breathes is an opacity. */}
-              <div
-                aria-hidden
-                className="animate-breathe pointer-events-none absolute inset-0 rounded-full shadow-[0_0_36px_3px_oklch(0.85_0.09_245/0.34)]"
-              />
+            <div className="bg-field border-accent/45 focus-within:border-accent/75 focus-within:bg-surface-hover relative flex h-[60px] items-center gap-3.5 rounded-full border px-6 transition-colors duration-[240ms]">
               <input
                 ref={searchInput}
                 name="q"
@@ -171,7 +166,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
 
           <button
             type="submit"
-            className="bg-accent text-accent-ink h-[60px] flex-none cursor-pointer rounded-full border-none text-xs font-semibold tracking-[0.16em] uppercase shadow-[0_0_26px_oklch(0.85_0.09_245/0.4)] transition-shadow hover:shadow-[0_0_38px_oklch(0.85_0.09_245/0.6)] md:max-w-[180px] md:flex-[1_0_132px]"
+            className="bg-accent text-accent-ink hover:bg-ink h-[60px] flex-none cursor-pointer rounded-full border-none text-xs font-semibold tracking-[0.16em] uppercase transition-colors md:max-w-[180px] md:flex-[1_0_132px]"
           >
             {copy.search}
           </button>
