@@ -47,7 +47,7 @@ export function FilmCard({ film, today, copy, language, isAboveFold }: FilmCardP
       data-film-stop
       className="group flex w-full flex-none flex-col gap-2.5 md:w-[180px]"
     >
-      <div className="rounded-[10px] transition-shadow group-hover:shadow-[0_0_26px_oklch(0.85_0.09_245/0.28)]">
+      <div className="group-hover:outline-accent/70 rounded-[10px] outline-1 outline-offset-[3px] outline-transparent transition-[outline-color]">
         {film.posterPath === null ? (
           <PosterPlaceholder title={title} />
         ) : (

@@ -17,7 +17,7 @@ type DateStripProps = {
 }
 
 const CHIP =
-  'flex min-w-[74px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-2xl border px-3.5 pt-2.5 pb-[11px] transition-[background-color,box-shadow]'
+  'flex min-w-[74px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-2xl border px-3.5 pt-2.5 pb-[11px] transition-[background-color]'
 
 // The days something is on, the one being read lit up. Links rather than clicks, so a day is a URL.
 export function DateStrip({ days, selected, today, copy, language, toHref }: DateStripProps) {
@@ -54,7 +54,7 @@ export function DateStrip({ days, selected, today, copy, language, toHref }: Dat
                 aria-current={isSelected ? 'date' : undefined}
                 className={`${CHIP} ${
                   isSelected
-                    ? 'bg-accent border-accent shadow-[0_0_26px_oklch(0.85_0.09_245/0.4)]'
+                    ? 'bg-accent border-accent'
                     : 'border-accent/20 bg-surface-raised hover:bg-surface-hover'
                 }`}
               >

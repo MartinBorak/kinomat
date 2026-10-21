@@ -42,7 +42,7 @@ export function CinemasPage({ language }: { language: Language }) {
 // The name leads to our page for the cinema; the two links under it lead to the cinema itself.
 function CinemaCard({ cinema, language }: { cinema: Cinema; language: Language }) {
   return (
-    <li className="border-accent/22 bg-surface-raised hover:border-accent/60 group relative flex flex-col gap-3 rounded-2xl border p-5 transition-[border-color,box-shadow] hover:shadow-[0_0_26px_oklch(0.85_0.09_245/0.22)]">
+    <li className="border-accent/22 bg-surface-raised hover:border-accent/60 group hover:bg-surface-hover relative flex flex-col gap-3 rounded-2xl border p-5 transition-colors">
       <h2 className="m-0 text-[17px] leading-snug font-light">
         {/* The link is stretched over the whole card, so the card is what a reader clicks. */}
         <Link

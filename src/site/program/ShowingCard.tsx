@@ -43,7 +43,7 @@ export function ShowingCard({ showing, copy, language }: ShowingCardProps) {
       href={showing.bookingUrl}
       target="_blank"
       rel="noopener"
-      className="border-accent/22 bg-surface-raised flex w-[160px] flex-col gap-[5px] rounded-xl border px-3.5 pt-2.5 pb-[11px] transition-[border-color,box-shadow] hover:border-[oklch(0.85_0.09_245/0.6)] hover:shadow-[0_0_20px_oklch(0.85_0.09_245/0.18)]"
+      className="border-accent/22 bg-surface-raised hover:bg-surface-hover flex w-[160px] flex-col gap-[5px] rounded-xl border px-3.5 pt-2.5 pb-[11px] transition-colors hover:border-[oklch(0.85_0.09_245/0.6)]"
     >
       <time
         dateTime={showing.startsAt.toISOString()}
