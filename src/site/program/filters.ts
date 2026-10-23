@@ -105,6 +105,14 @@ export function toFilterEntries(filters: ProgramFilters): string[][] {
 }
 
 /*
+ * A day as the last segment of a listing's path rather than in its query, so each day is a page of
+ * its own the host can cache, where the query is the reader's alone and is read in the browser.
+ */
+export function toDaySegment(date: Temporal.PlainDate | undefined): string {
+  return date === undefined ? '' : `/${date.toString()}`
+}
+
+/*
  * Everything the Program view reads out of its URL: the day, the language and the filters. A day is
  * a link rather than a click, and it carries the filters so that changing day does not drop them.
  * Without a day the schedule opens on the first day something is still on.
@@ -114,10 +122,9 @@ export function toProgramHref(
   language: Language,
   filters: ProgramFilters = NO_FILTERS,
 ): string {
-  return `${toLanguagePrefix(language)}/program${toQueryString([
-    ...(date === undefined ? [] : [['den', date.toString()]]),
-    ...toFilterEntries(filters),
-  ])}`
+  return `${toLanguagePrefix(language)}/program${toDaySegment(date)}${toQueryString(
+    toFilterEntries(filters),
+  )}`
 }
 
 export function toScheduleHref(language: Language): string {

@@ -1,7 +1,6 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
-import { useSearchParams } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
 import { toFilmHref } from '@/site/films/hrefs'
@@ -16,18 +15,22 @@ import {
   parseFilters,
   type ProgramFilters,
 } from '@/site/program/filters'
-import { type ProgrammeListing } from '@/site/program/groupScreenings'
+import { dropStarted, type ProgrammeListing } from '@/site/program/groupScreenings'
 import { ProgrammeCard } from '@/site/program/ProgrammeCard'
+import { useNow } from '@/site/program/useNow'
 import { EmptyState } from '@/site/ui/EmptyState'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
+import { WithSearchParams } from '@/site/ui/WithSearchParams'
 
 // Days arrive as ISO strings, since a client component's props have to survive being serialized.
 type FilmDetailPageProps = {
   language: Language
   publicId: string
   date: string
+  // Whether the path named the day, rather than the page opening on the first one the film plays.
+  isDayNamed: boolean
   today: string
   days: readonly string[]
   programmes: readonly ProgrammeListing[]
@@ -38,24 +41,35 @@ type FilmDetailPageProps = {
  * the days this film is on. There is no search, because the film is the whole question - and its
  * bill still arrives whole, so a double feature names the film it plays with.
  */
-export function FilmDetailPage({
+export function FilmDetailPage(props: FilmDetailPageProps) {
+  return (
+    <WithSearchParams
+      render={(searchParams) => <FilmDetailView {...props} searchParams={searchParams} />}
+    />
+  )
+}
+
+function FilmDetailView({
   language,
   publicId,
   date: isoDate,
+  isDayNamed,
   today: isoToday,
   days: isoDays,
-  programmes,
-}: FilmDetailPageProps) {
+  programmes: rendered,
+  searchParams,
+}: FilmDetailPageProps & { searchParams: URLSearchParams }) {
   // A query here would be one somebody else's link carried in: there is no field to type it in.
-  const searchParams = useSearchParams()
   const filters = { ...parseFilters(searchParams), query: '' }
+  const now = useNow()
+  const programmes = now === null ? rendered : dropStarted(rendered, now)
 
   const date = Temporal.PlainDate.from(isoDate)
   /*
    * The day only where the URL named one. A link off a day-less URL stays day-less, so it goes on
    * opening on the first day with something on rather than freezing today into it.
    */
-  const requestedDate = searchParams.has('den') ? date : undefined
+  const requestedDate = isDayNamed ? date : undefined
   const today = Temporal.PlainDate.from(isoToday)
   const days = isoDays.map((day) => Temporal.PlainDate.from(day))
 

@@ -3,7 +3,12 @@ import { type Language, toLanguagePrefix } from 'kinomat-core/lib/language'
 import { type Cinema } from 'kinomat-core/types/cinema'
 import { type Temporal } from 'temporal-polyfill'
 
-import { NO_FILTERS, type ProgramFilters, toFilterEntries } from '@/site/program/filters'
+import {
+  NO_FILTERS,
+  type ProgramFilters,
+  toDaySegment,
+  toFilterEntries,
+} from '@/site/program/filters'
 
 // The list of cinemas, which nothing but the language narrows.
 export function toCinemasHref(language: Language): string {
@@ -17,10 +22,9 @@ export function toCinemaHref(
   date?: Temporal.PlainDate,
   filters: ProgramFilters = NO_FILTERS,
 ): string {
-  return `${toLanguagePrefix(language)}/kina/${cinemaId}${toQueryString([
-    ...(date === undefined ? [] : [['den', date.toString()]]),
-    ...toFilterEntries(filters),
-  ])}`
+  return `${toLanguagePrefix(language)}/kina/${cinemaId}${toDaySegment(date)}${toQueryString(
+    toFilterEntries(filters),
+  )}`
 }
 
 /*

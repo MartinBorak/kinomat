@@ -1,7 +1,7 @@
-import { parseDay } from 'kinomat-core/lib/time'
-import { findCinema } from 'kinomat-core/types/cinema'
+import { CINEMAS, findCinema } from 'kinomat-core/types/cinema'
 import { notFound } from 'next/navigation'
 
+import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
 import { CinemaDetailPage } from '@/site/cinemas/CinemaDetailPage'
@@ -25,7 +25,16 @@ function readCinema(segment: string) {
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
 export const instant = false
 
-export async function generateMetadata(props: PageProps<'/[lang]/kina/[kino]'>) {
+/*
+ * Without a sample of its params Cache Components renders the route on every request. One cinema
+ * is enough: every other page, and every named day, is cached on its first visit. Building them all
+ * would have every build worker open its own pool against the database at once.
+ */
+export function generateStaticParams() {
+  return [{ kino: CINEMAS[0].id, den: [] }]
+}
+
+export async function generateMetadata(props: PageProps<'/[lang]/kina/[kino]/[[...den]]'>) {
   const { lang, kino } = await props.params
   const cinema = readCinema(kino)
 
@@ -35,15 +44,16 @@ export async function generateMetadata(props: PageProps<'/[lang]/kina/[kino]'>) 
   }
 }
 
-export default async function CinemaDetail(props: PageProps<'/[lang]/kina/[kino]'>) {
-  const { den } = await props.searchParams
-  const language = readLanguage((await props.params).lang)
-  const cinema = readCinema((await props.params).kino)
+export default async function CinemaDetail(props: PageProps<'/[lang]/kina/[kino]/[[...den]]'>) {
+  const { lang, kino, den } = await props.params
+  const language = readLanguage(lang)
+  const cinema = readCinema(kino)
+  const namedDay = readDaySegment(den)
   const today = await readToday()
 
   const days = await readCinemaDays(cinema.id, today)
   // The strip offers only the days this cinema has something on, so one of those is where it opens.
-  const date = parseDay(den, days[0] ?? today)
+  const date = namedDay ?? days[0] ?? today
   const programmes = groupIntoProgrammes(await readCinemaScreeningsOnDay(cinema.id, date))
 
   return (
@@ -53,6 +63,7 @@ export default async function CinemaDetail(props: PageProps<'/[lang]/kina/[kino]
         language={language}
         cinema={cinema}
         date={date}
+        isDayNamed={namedDay !== undefined}
         today={today}
         days={days}
         programmes={programmes}

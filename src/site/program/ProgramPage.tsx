@@ -1,7 +1,6 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
-import { useSearchParams } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
 import { formatCount } from '@/site/films/labels'
@@ -16,13 +15,15 @@ import {
   type ProgramFilters,
   toProgramHref,
 } from '@/site/program/filters'
-import { type ProgrammeListing } from '@/site/program/groupScreenings'
+import { dropStarted, type ProgrammeListing } from '@/site/program/groupScreenings'
 import { ProgrammeCard } from '@/site/program/ProgrammeCard'
 import { SearchField } from '@/site/program/SearchField'
+import { useNow } from '@/site/program/useNow'
 import { EmptyState } from '@/site/ui/EmptyState'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
+import { WithSearchParams } from '@/site/ui/WithSearchParams'
 
 /*
  * Days arrive as ISO strings because a client component's props have to survive being serialized,
@@ -32,27 +33,40 @@ import { SitePage } from '@/site/ui/SitePage'
 type ProgramPageProps = {
   language: Language
   date: string
+  // Whether the path named the day, rather than the page opening on the first one with something on.
+  isDayNamed: boolean
   today: string
   days: readonly string[]
   programmes: readonly ProgrammeListing[]
 }
 
-export function ProgramPage({
+export function ProgramPage(props: ProgramPageProps) {
+  return (
+    <WithSearchParams
+      render={(searchParams) => <ProgramView {...props} searchParams={searchParams} />}
+    />
+  )
+}
+
+function ProgramView({
   language,
   date: isoDate,
+  isDayNamed,
   today: isoToday,
   days: isoDays,
-  programmes,
-}: ProgramPageProps) {
-  const searchParams = useSearchParams()
+  programmes: rendered,
+  searchParams,
+}: ProgramPageProps & { searchParams: URLSearchParams }) {
   const filters = parseFilters(searchParams)
+  const now = useNow()
+  const programmes = now === null ? rendered : dropStarted(rendered, now)
 
   const date = Temporal.PlainDate.from(isoDate)
   /*
    * The day only where the URL named one. A link off a day-less URL stays day-less, so it goes on
    * opening on the first day with something on rather than freezing today into it.
    */
-  const requestedDate = searchParams.has('den') ? date : undefined
+  const requestedDate = isDayNamed ? date : undefined
   const today = Temporal.PlainDate.from(isoToday)
   const days = isoDays.map((day) => Temporal.PlainDate.from(day))
 

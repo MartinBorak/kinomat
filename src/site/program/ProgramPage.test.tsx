@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { type Language } from 'kinomat-core/lib/language'
 import { parseBratislavaTime } from 'kinomat-core/lib/time'
 import { Temporal } from 'temporal-polyfill'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type ProgrammeListing, type Showing } from '@/site/program/groupScreenings'
 import { ProgramPage } from '@/site/program/ProgramPage'
@@ -13,6 +13,18 @@ import { ProgramPage } from '@/site/program/ProgramPage'
  */
 const url = vi.hoisted(() => ({ searchParams: new URLSearchParams() }))
 vi.mock('next/navigation', () => ({ useSearchParams: () => url.searchParams }))
+
+/*
+ * The listing drops what has started by the reader's clock, so the clock stands on the morning of
+ * TODAY, before any of its showings. Only Date is faked: the clock's own timer keeps running.
+ */
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(parseBratislavaTime('2026-09-05T08:00:00'))
+})
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 const TODAY = Temporal.PlainDate.from('2026-09-05')
 const DAYS = [TODAY, TODAY.add({ days: 1 }), TODAY.add({ days: 2 })].map((day) => day.toString())
@@ -69,7 +81,7 @@ function toShowingWith(programme: ProgrammeListing, said: Partial<Showing>): Pro
 
 function renderProgram(
   programmes: ProgrammeListing[],
-  { date = TODAY, language = 'sk' as Language, search = '' } = {},
+  { date = TODAY, isDayNamed = false, language = 'sk' as Language, search = '' } = {},
 ) {
   url.searchParams = new URLSearchParams(search)
 
@@ -77,6 +89,7 @@ function renderProgram(
     <ProgramPage
       language={language}
       date={date.toString()}
+      isDayNamed={isDayNamed}
       today={TODAY.toString()}
       days={DAYS}
       programmes={programmes}
@@ -136,7 +149,7 @@ describe('the Program view', () => {
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute('aria-current', 'date')
     expect(screen.getByRole('link', { name: /Zajtra/ })).toHaveAttribute(
       'href',
-      '/program?den=2026-09-06',
+      '/program/2026-09-06',
     )
   })
 
@@ -170,6 +183,15 @@ describe('the Program view', () => {
     expect(screen.getByText('1 film')).toBeInTheDocument()
   })
 
+  // The page was cached before the showing began, so it is the reader's clock that drops it.
+  it('drops a showing the minute it has started, and says so when nothing is left', () => {
+    vi.setSystemTime(parseBratislavaTime('2026-09-05T20:16:00'))
+    renderProgram([WAVES])
+
+    expect(screen.queryByRole('heading', { name: 'Vlny' })).not.toBeInTheDocument()
+    expect(screen.getByText('Na tento deň nič nehrá')).toBeInTheDocument()
+  })
+
   it('says a day is empty and a day past the horizon differently', () => {
     renderProgram([], { date: TODAY.add({ days: 1 }) })
     expect(screen.getByText('Na tento deň nič nehrá')).toBeInTheDocument()
@@ -179,13 +201,10 @@ describe('the Program view', () => {
   })
 
   it('reads in English when the URL asks for it, and keeps the day it asked for', () => {
-    renderProgram([WAVES], { language: 'en', search: 'den=2026-09-05' })
+    renderProgram([WAVES], { language: 'en', isDayNamed: true })
 
     expect(screen.getByRole('heading', { name: 'Waves (Vlny)' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'SK' })).toHaveAttribute(
-      'href',
-      '/program?den=2026-09-05',
-    )
+    expect(screen.getByRole('link', { name: 'SK' })).toHaveAttribute('href', '/program/2026-09-05')
   })
 
   // A day-less URL opens on the first day with something on, and switching language must not freeze that.
@@ -247,7 +266,7 @@ describe('filtering the Program view', () => {
 
     expect(screen.getByRole('link', { name: /Zajtra/ })).toHaveAttribute(
       'href',
-      '/program?den=2026-09-06&q=vlny&kino=kino-lumiere',
+      '/program/2026-09-06?q=vlny&kino=kino-lumiere',
     )
   })
 })

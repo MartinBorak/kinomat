@@ -1,6 +1,6 @@
-import { parseDay } from 'kinomat-core/lib/time'
 import type { Metadata } from 'next'
 
+import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
 import { programCopyByLanguage } from '@/site/program/copy'
@@ -14,7 +14,17 @@ import { StructuredData } from '@/site/seo/StructuredData'
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
 export const instant = false
 
-export async function generateMetadata(props: PageProps<'/[lang]/program'>): Promise<Metadata> {
+/*
+ * Without a sample of its params Cache Components renders the route on every request. The day-less
+ * page is the sample; each named day is cached on its first visit.
+ */
+export function generateStaticParams() {
+  return [{ den: [] }]
+}
+
+export async function generateMetadata(
+  props: PageProps<'/[lang]/program/[[...den]]'>,
+): Promise<Metadata> {
   const language = readLanguage((await props.params).lang)
   const copy = programCopyByLanguage[language]
 
@@ -25,16 +35,17 @@ export async function generateMetadata(props: PageProps<'/[lang]/program'>): Pro
   }
 }
 
-export default async function Program(props: PageProps<'/[lang]/program'>) {
-  const { den } = await props.searchParams
-  const language = readLanguage((await props.params).lang)
+export default async function Program(props: PageProps<'/[lang]/program/[[...den]]'>) {
+  const { lang, den } = await props.params
+  const language = readLanguage(lang)
+  const namedDay = readDaySegment(den)
   const today = await readToday()
   const days = await readScheduledDays(today)
   /*
    * The strip offers only days something is still on, so the listing opens on one of those: by late
    * evening today is over, and opening on it would show a day the strip no longer offers.
    */
-  const date = parseDay(den, days[0] ?? today)
+  const date = namedDay ?? days[0] ?? today
   const programmes = groupIntoProgrammes(await readScreeningsOnDay(date))
 
   return (
@@ -43,6 +54,7 @@ export default async function Program(props: PageProps<'/[lang]/program'>) {
       <ProgramPage
         language={language}
         date={date}
+        isDayNamed={namedDay !== undefined}
         today={today}
         days={days}
         programmes={programmes}

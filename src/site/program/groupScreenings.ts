@@ -122,3 +122,25 @@ export function groupIntoProgrammes(rows: readonly ScreeningRow[]): ProgrammeLis
     }))
     .sort(compareBills)
 }
+
+/*
+ * The day as it stands at this instant. The server drops a showing under way when it asks, but a
+ * cached page was asked for hours ago, so the browser drops what has started since. A cinema or a
+ * bill with nothing left goes with its last showing, as it would have from the server.
+ */
+export function dropStarted(
+  programmes: readonly ProgrammeListing[],
+  now: Date,
+): ProgrammeListing[] {
+  return programmes
+    .map((programme) => ({
+      ...programme,
+      cinemas: programme.cinemas
+        .map((cinema) => ({
+          ...cinema,
+          showings: cinema.showings.filter((showing) => showing.startsAt >= now),
+        }))
+        .filter((cinema) => cinema.showings.length > 0),
+    }))
+    .filter((programme) => programme.cinemas.length > 0)
+}

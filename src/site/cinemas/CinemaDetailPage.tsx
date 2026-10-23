@@ -2,7 +2,6 @@
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
 import { type Cinema } from 'kinomat-core/types/cinema'
-import { useSearchParams } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
 import { CinemaLinks } from '@/site/cinemas/CinemaLinks'
@@ -20,13 +19,15 @@ import {
   parseFilters,
   type ProgramFilters,
 } from '@/site/program/filters'
-import { type ProgrammeListing } from '@/site/program/groupScreenings'
+import { dropStarted, type ProgrammeListing } from '@/site/program/groupScreenings'
 import { ProgrammeCard } from '@/site/program/ProgrammeCard'
 import { SearchField } from '@/site/program/SearchField'
+import { useNow } from '@/site/program/useNow'
 import { EmptyState } from '@/site/ui/EmptyState'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
+import { WithSearchParams } from '@/site/ui/WithSearchParams'
 
 // The cinema is settled by the page itself; what is left to choose is what a showing is like.
 const SHOWING_DIMENSIONS = DIMENSIONS.filter((dimension) => dimension !== 'cinemas')
@@ -36,6 +37,8 @@ type CinemaDetailPageProps = {
   language: Language
   cinema: Cinema
   date: string
+  // Whether the path named the day, rather than the page opening on its first one with something on.
+  isDayNamed: boolean
   today: string
   days: readonly string[]
   programmes: readonly ProgrammeListing[]
@@ -45,24 +48,35 @@ type CinemaDetailPageProps = {
  * The schedule as one cinema sees it: the same cards over a strip offering only the days it has
  * something on. No cinema menu and no cinema names on the cards - both would say the same thing.
  */
-export function CinemaDetailPage({
+export function CinemaDetailPage(props: CinemaDetailPageProps) {
+  return (
+    <WithSearchParams
+      render={(searchParams) => <CinemaDetailView {...props} searchParams={searchParams} />}
+    />
+  )
+}
+
+function CinemaDetailView({
   language,
   cinema,
   date: isoDate,
+  isDayNamed,
   today: isoToday,
   days: isoDays,
-  programmes,
-}: CinemaDetailPageProps) {
+  programmes: rendered,
+  searchParams,
+}: CinemaDetailPageProps & { searchParams: URLSearchParams }) {
   // A kino= here would be one somebody else's link carried in, and could only rule this cinema out.
-  const searchParams = useSearchParams()
   const filters = { ...parseFilters(searchParams), cinemas: [] }
+  const now = useNow()
+  const programmes = now === null ? rendered : dropStarted(rendered, now)
 
   const date = Temporal.PlainDate.from(isoDate)
   /*
    * The day only where the URL named one. A link off a day-less URL stays day-less, so it goes on
    * opening on the first day with something on rather than freezing today into it.
    */
-  const requestedDate = searchParams.has('den') ? date : undefined
+  const requestedDate = isDayNamed ? date : undefined
   const today = Temporal.PlainDate.from(isoToday)
   const days = isoDays.map((day) => Temporal.PlainDate.from(day))
 
