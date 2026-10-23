@@ -1,12 +1,14 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { toFilmsHref } from '@/site/films/hrefs'
 import { copyByLanguage } from '@/site/landing/copy'
 import { toHomeHref } from '@/site/landing/hrefs'
+import { toScheduleHref } from '@/site/program/filters'
 import { searchCopyByLanguage } from '@/site/search/copy'
 import { SuggestionPanel } from '@/site/search/SuggestionPanel'
 import {
@@ -171,6 +173,17 @@ export function LandingPage({ films, language }: LandingPageProps) {
             {copy.search}
           </button>
         </form>
+
+        {/* For a reader with no film in mind yet. It gives way while suggestions are open, which
+            need every row of the window they can get. */}
+        {!isOpen && (
+          <p className="text-ink-faint m-0 text-base font-light md:text-center">
+            {copy.undecided}{' '}
+            <Link href={toScheduleHref(language)} className="hover:text-accent text-white">
+              {copy.browseSchedule}
+            </Link>
+          </p>
+        )}
       </main>
 
       <SiteFooter language={language} />

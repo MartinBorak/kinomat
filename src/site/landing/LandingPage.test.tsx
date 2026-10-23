@@ -30,7 +30,11 @@ describe('the landing page', () => {
   it('greets in Slovak, since that is what the cinemas print', () => {
     renderPage()
 
-    expect(screen.getByRole('heading', { name: 'Na čo ideš do kina?' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Na aký film ideš?' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Pozri si program' })).toHaveAttribute(
+      'href',
+      '/program',
+    )
     expect(screen.getByRole('link', { name: 'Kiná' })).toHaveAttribute('href', '/kina')
   })
 
