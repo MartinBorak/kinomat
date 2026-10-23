@@ -114,11 +114,11 @@ export function LandingPage({ films, language }: LandingPageProps) {
             isOpen ? COMPACT_TITLES : ''
           }`}
         >
-          <p className="text-accent/85 text-[10px] font-light tracking-[0.3em] uppercase md:text-center md:text-[10.5px]">
+          <p className="text-accent/85 text-center text-[10px] font-light tracking-[0.3em] uppercase md:text-[10.5px]">
             {copy.kicker}
           </p>
           <h1
-            className={`m-0 text-[38px] leading-[1.08] font-light tracking-[0.01em] text-pretty transition-[font-size] duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] md:text-center md:text-[clamp(34px,6vw,64px)] md:leading-[1.05] ${
+            className={`m-0 text-center text-[38px] leading-[1.08] font-light tracking-[0.01em] text-pretty transition-[font-size] duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] md:text-[clamp(34px,6vw,64px)] md:leading-[1.05] ${
               isOpen ? COMPACT_HEADLINE : ''
             }`}
           >
@@ -177,7 +177,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
         {/* For a reader with no film in mind yet. It gives way while suggestions are open, which
             need every row of the window they can get. */}
         {!isOpen && (
-          <p className="text-ink-faint m-0 text-base font-light md:text-center">
+          <p className="text-ink-faint m-0 text-center text-base font-light">
             {copy.undecided}{' '}
             <Link href={toScheduleHref(language)} className="hover:text-accent text-white">
               {copy.browseSchedule}
