@@ -94,13 +94,32 @@ describe('the films view', () => {
           genres: [COMEDY],
         }),
       ],
-      { search: 'zaner=35' },
+      { search: 'zaner=komedia' },
     )
 
     expect(screen.getByRole('heading', { name: 'Autá' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Vlny' })).not.toBeInTheDocument()
     // The menu is derived from every film playing, so the one just filtered out is still on offer.
     expect(screen.getByRole('button', { name: 'Žáner: Komédia' })).toBeInTheDocument()
+  })
+
+  it('still lists the films of a genre an older link names by its TMDB id', () => {
+    renderFilms(
+      [
+        createFilm({ genres: [DRAMA] }),
+        createFilm({
+          filmId: 2,
+          titleSk: 'Autá',
+          titleEn: '',
+          originalTitle: 'Autá',
+          genres: [COMEDY],
+        }),
+      ],
+      { search: 'zaner=35' },
+    )
+
+    expect(screen.getByRole('heading', { name: 'Autá' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Vlny' })).not.toBeInTheDocument()
   })
 
   it('says nothing is playing when the schedule itself is empty', () => {

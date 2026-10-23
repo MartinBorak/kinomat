@@ -8,6 +8,7 @@ import {
   applyFilters,
   deriveFilterOptions,
   hasAnyFilter,
+  nameGenres,
   NO_FILTERS,
   parseFilters,
   type ProgramFilters,
@@ -146,12 +147,12 @@ describe('what the menus offer', () => {
     ]
 
     expect(deriveFilterOptions(day, SLOVAK, 'sk').genres).toEqual([
-      { value: '18', label: 'Dráma' },
-      { value: '35', label: 'Komédia' },
+      { value: 'drama', label: 'Dráma' },
+      { value: 'komedia', label: 'Komédia' },
     ])
     expect(deriveFilterOptions(day, programCopyByLanguage.en, 'en').genres).toEqual([
-      { value: '35', label: 'Comedy' },
-      { value: '18', label: 'Drama' },
+      { value: 'komedia', label: 'Comedy' },
+      { value: 'drama', label: 'Drama' },
     ])
   })
 })
@@ -194,11 +195,11 @@ describe('applying the filters to a day', () => {
       ),
     ]
 
-    const [kept] = applyFilters(doubleFeature, withFilters({ genres: ['35'] }))
+    const [kept] = applyFilters(doubleFeature, withFilters({ genres: ['komedia'] }))
 
     expect(kept.films.map(({ titleSk }) => titleSk)).toEqual(['Vlny', 'Autá'])
     expect(kept.cinemas[0].showings).toHaveLength(2)
-    expect(applyFilters(doubleFeature, withFilters({ genres: ['27'] }))).toEqual([])
+    expect(applyFilters(doubleFeature, withFilters({ genres: ['horor'] }))).toEqual([])
   })
 
   it('excludes a showing whose cinema printed no subtitles line, rather than calling it none', () => {
@@ -221,6 +222,14 @@ describe('applying the filters to a day', () => {
 
   it('shows the whole day when nothing is filtered', () => {
     expect(applyFilters(day, NO_FILTERS)).toEqual(day)
+  })
+})
+
+describe('naming the genres of an older link', () => {
+  it('reads a TMDB id as the name of its genre, and leaves a name or an unknown id alone', () => {
+    const films = [createFilm('Vlny', [DRAMA, COMEDY])]
+
+    expect(nameGenres(['35', 'drama', '27'], films)).toEqual(['komedia', 'drama', '27'])
   })
 })
 
