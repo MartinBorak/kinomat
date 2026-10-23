@@ -12,6 +12,7 @@ import { FilterBar } from '@/site/program/FilterBar'
 import {
   applyFilters,
   deriveFilterOptions,
+  nameGenres,
   parseFilters,
   type ProgramFilters,
 } from '@/site/program/filters'
@@ -60,7 +61,15 @@ function FilmDetailView({
   searchParams,
 }: FilmDetailPageProps & { searchParams: URLSearchParams }) {
   // A query here would be one somebody else's link carried in: there is no field to type it in.
-  const filters = { ...parseFilters(searchParams), query: '' }
+  const parsed = parseFilters(searchParams)
+  const filters = {
+    ...parsed,
+    query: '',
+    genres: nameGenres(
+      parsed.genres,
+      rendered.flatMap((programme) => programme.films),
+    ),
+  }
   const now = useNow()
   const programmes = now === null ? rendered : dropStarted(rendered, now)
 

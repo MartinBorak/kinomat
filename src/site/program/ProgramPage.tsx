@@ -11,6 +11,7 @@ import { FilterBar } from '@/site/program/FilterBar'
 import {
   applyFilters,
   deriveFilterOptions,
+  nameGenres,
   parseFilters,
   type ProgramFilters,
   toProgramHref,
@@ -57,7 +58,14 @@ function ProgramView({
   programmes: rendered,
   searchParams,
 }: ProgramPageProps & { searchParams: URLSearchParams }) {
-  const filters = parseFilters(searchParams)
+  const parsed = parseFilters(searchParams)
+  const filters = {
+    ...parsed,
+    genres: nameGenres(
+      parsed.genres,
+      rendered.flatMap((programme) => programme.films),
+    ),
+  }
   const now = useNow()
   const programmes = now === null ? rendered : dropStarted(rendered, now)
 

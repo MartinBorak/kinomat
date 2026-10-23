@@ -15,7 +15,13 @@ import { type Ordering, parseOrdering, sortFilms } from '@/site/films/ordering'
 import { OrderingSelect } from '@/site/films/OrderingSelect'
 import { filterCopyByLanguage } from '@/site/program/copy'
 import { FilterBar } from '@/site/program/FilterBar'
-import { NO_FILTERS, NO_OPTIONS, parseFilters, type ProgramFilters } from '@/site/program/filters'
+import {
+  nameGenres,
+  NO_FILTERS,
+  NO_OPTIONS,
+  parseFilters,
+  type ProgramFilters,
+} from '@/site/program/filters'
 import { SearchField } from '@/site/program/SearchField'
 import { EmptyState } from '@/site/ui/EmptyState'
 import { SiteFooter } from '@/site/ui/SiteFooter'
@@ -36,7 +42,7 @@ export function FilmsPage({ language, today: isoToday, films }: FilmsPageProps) 
   const searchParams = useSearchParams()
   const query = searchParams.get('q') ?? ''
   const ordering = parseOrdering(searchParams.get('zoradenie'))
-  const genres = parseFilters(searchParams).genres
+  const genres = nameGenres(parseFilters(searchParams).genres, films)
   const today = Temporal.PlainDate.from(isoToday)
   const copy = filmsCopyByLanguage[language]
   // Off every film playing rather than off what is listed, so narrowing never empties the menu.

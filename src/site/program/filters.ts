@@ -1,7 +1,7 @@
-import { formatGenre } from 'kinomat-core/db/findGenres'
+import { type FilmGenre, formatGenre } from 'kinomat-core/db/findGenres'
 import { toQueryString } from 'kinomat-core/lib/hrefs'
 import { type Language, toLanguagePrefix } from 'kinomat-core/lib/language'
-import { foldForSearch } from 'kinomat-core/lib/text'
+import { foldForSearch, toSlug } from 'kinomat-core/lib/text'
 import { Temporal } from 'temporal-polyfill'
 
 import { type ProgramCopy } from '@/site/program/copy'
@@ -62,6 +62,29 @@ export const NO_OPTIONS: FilterOptions = {
   subtitles: [],
   formats: [],
   genres: [],
+}
+
+/*
+ * A genre as the URL spells it: its Slovak name as a slug, in either language, so "zaner=komedia"
+ * reads like the route around it and one link serves both editions.
+ */
+export function toGenreValue(genre: FilmGenre): string {
+  return toSlug(genre.nameSk)
+}
+
+/*
+ * Links shared before genres were named carry TMDB's ids. Each is read as the name of the genre it
+ * stands for among the films in hand, so it still filters, and a tick in the menu writes the name.
+ */
+export function nameGenres(
+  selection: Selection,
+  films: readonly { genres: readonly FilmGenre[] }[],
+): Selection {
+  const valueById = new Map(
+    films.flatMap((film) => film.genres.map((genre) => [String(genre.id), toGenreValue(genre)])),
+  )
+
+  return selection.map((value) => valueById.get(value) ?? value)
 }
 
 /*
@@ -182,12 +205,7 @@ function matchesQuery(programme: ProgrammeListing, query: string): boolean {
  * query does: a double feature stays whole when either of its films is of a chosen genre.
  */
 function matchesGenres(programme: ProgrammeListing, selection: Selection): boolean {
-  return programme.films.some((film) =>
-    matches(
-      selection,
-      film.genres.map((genre) => String(genre.id)),
-    ),
-  )
+  return programme.films.some((film) => matches(selection, film.genres.map(toGenreValue)))
 }
 
 /*
@@ -263,7 +281,9 @@ export function deriveFilterOptions(
       new Map(
         programmes.flatMap((programme) =>
           programme.films.flatMap((film) =>
-            film.genres.map((genre) => [String(genre.id), formatGenre(genre, language)] as const),
+            film.genres.map(
+              (genre) => [toGenreValue(genre), formatGenre(genre, language)] as const,
+            ),
           ),
         ),
       ),

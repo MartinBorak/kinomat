@@ -16,6 +16,7 @@ import {
   applyFilters,
   deriveFilterOptions,
   DIMENSIONS,
+  nameGenres,
   parseFilters,
   type ProgramFilters,
 } from '@/site/program/filters'
@@ -67,7 +68,15 @@ function CinemaDetailView({
   searchParams,
 }: CinemaDetailPageProps & { searchParams: URLSearchParams }) {
   // A kino= here would be one somebody else's link carried in, and could only rule this cinema out.
-  const filters = { ...parseFilters(searchParams), cinemas: [] }
+  const parsed = parseFilters(searchParams)
+  const filters = {
+    ...parsed,
+    cinemas: [],
+    genres: nameGenres(
+      parsed.genres,
+      rendered.flatMap((programme) => programme.films),
+    ),
+  }
   const now = useNow()
   const programmes = now === null ? rendered : dropStarted(rendered, now)
 
