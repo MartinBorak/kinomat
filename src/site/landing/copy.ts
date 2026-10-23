@@ -4,6 +4,8 @@ export type LandingCopy = {
   kicker: string
   headline: string
   search: string
+  undecided: string
+  browseSchedule: string
   pageDescription: string
 }
 
@@ -11,8 +13,10 @@ export type LandingCopy = {
 export const copyByLanguage: Record<Language, LandingCopy> = {
   sk: {
     kicker: 'Všetky kiná v Bratislave na jednom mieste',
-    headline: 'Na čo ideš do kina?',
+    headline: 'Na aký film ideš?',
     search: 'Hľadať',
+    undecided: 'Ešte nevieš?',
+    browseSchedule: 'Pozri si program',
     pageDescription:
       'Program všetkých bratislavských kín na jednom mieste, od Cinema City a Cinemaxu po Lumière, Mladosť či Nostalgiu. Filmy, kiná a časy premietania na najbližšie dni.',
   },
@@ -20,6 +24,8 @@ export const copyByLanguage: Record<Language, LandingCopy> = {
     kicker: 'Every cinema in Bratislava in one place',
     headline: 'What are you going to see?',
     search: 'Search',
+    undecided: 'Not sure yet?',
+    browseSchedule: 'See the schedule',
     pageDescription:
       'Showtimes from every cinema in Bratislava in one place, from Cinema City and Cinemax to Lumière, Mladosť and Nostalgia. Films, cinemas and times for the days ahead.',
   },
