@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { type Language } from 'kinomat-core/lib/language'
 import { parseBratislavaTime } from 'kinomat-core/lib/time'
 import { Temporal } from 'temporal-polyfill'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { FilmDetailPage } from '@/site/films/FilmDetailPage'
 import { type ProgrammeListing } from '@/site/program/groupScreenings'
@@ -10,6 +10,18 @@ import { type ProgrammeListing } from '@/site/program/groupScreenings'
 // The filters are read from the URL and written back to it, as they are on the schedule itself.
 const url = vi.hoisted(() => ({ searchParams: new URLSearchParams() }))
 vi.mock('next/navigation', () => ({ useSearchParams: () => url.searchParams }))
+
+/*
+ * The listing drops what has started by the reader's clock, so the clock stands on the morning of
+ * TODAY, before any of its showings. Only Date is faked: the clock's own timer keeps running.
+ */
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(parseBratislavaTime('2026-09-05T08:00:00'))
+})
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 const TODAY = Temporal.PlainDate.from('2026-09-05')
 const DAYS = [TODAY, TODAY.add({ days: 2 })]
@@ -56,7 +68,7 @@ const WAVES: ProgrammeListing = {
 
 function renderFilm(
   programmes: ProgrammeListing[],
-  { date = TODAY, language = 'sk' as Language, search = '' } = {},
+  { date = TODAY, isDayNamed = false, language = 'sk' as Language, search = '' } = {},
 ) {
   url.searchParams = new URLSearchParams(search)
 
@@ -65,6 +77,7 @@ function renderFilm(
       language={language}
       publicId={PUBLIC_ID}
       date={date.toString()}
+      isDayNamed={isDayNamed}
       today={TODAY.toString()}
       days={DAYS.map((day) => day.toString())}
       programmes={programmes}
@@ -104,20 +117,20 @@ describe('one film’s page', () => {
 
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}?den=2026-09-05`,
+      `/filmy/${PUBLIC_ID}/2026-09-05`,
     )
     expect(screen.getByRole('link', { name: /7/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}?den=2026-09-07`,
+      `/filmy/${PUBLIC_ID}/2026-09-07`,
     )
   })
 
   it('keeps the day the URL asked for when the language changes, and only that', () => {
-    renderFilm([WAVES], { date: DAYS[1], search: 'den=2026-09-07' })
+    renderFilm([WAVES], { date: DAYS[1], isDayNamed: true })
 
     expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
       'href',
-      `/en/filmy/${PUBLIC_ID}?den=2026-09-07`,
+      `/en/filmy/${PUBLIC_ID}/2026-09-07`,
     )
     cleanup()
     renderFilm([WAVES])
@@ -144,15 +157,11 @@ describe('one film’s page', () => {
   it('writes a filter into the URL, keeping the film and the day', () => {
     const replaceState = vi.spyOn(window.history, 'replaceState')
 
-    renderFilm([WAVES], { date: DAYS[1], search: 'den=2026-09-07' })
+    renderFilm([WAVES], { date: DAYS[1], isDayNamed: true })
     fireEvent.click(screen.getByRole('button', { name: /Titulky/ }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Angličtina' }))
 
-    expect(replaceState).toHaveBeenCalledWith(
-      null,
-      '',
-      `/filmy/${PUBLIC_ID}?den=2026-09-07&titulky=en`,
-    )
+    expect(replaceState).toHaveBeenCalledWith(null, '', `/filmy/${PUBLIC_ID}/2026-09-07?titulky=en`)
   })
 
   it('carries the filters over into every day of the strip', () => {
@@ -160,7 +169,7 @@ describe('one film’s page', () => {
 
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}?den=2026-09-05&kino=kino-lumiere`,
+      `/filmy/${PUBLIC_ID}/2026-09-05?kino=kino-lumiere`,
     )
   })
 

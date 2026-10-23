@@ -7,6 +7,7 @@ import {
   NO_FILTERS,
   type ProgramFilters,
   type Selection,
+  toDaySegment,
   toFilterEntries,
 } from '@/site/program/filters'
 
@@ -32,8 +33,7 @@ export function toFilmHref(
   date?: Temporal.PlainDate,
   filters: ProgramFilters = NO_FILTERS,
 ): string {
-  return `${toLanguagePrefix(language)}/filmy/${publicId}${toQueryString([
-    ...(date === undefined ? [] : [['den', date.toString()]]),
-    ...toFilterEntries(filters),
-  ])}`
+  return `${toLanguagePrefix(language)}/filmy/${publicId}${toDaySegment(date)}${toQueryString(
+    toFilterEntries(filters),
+  )}`
 }

@@ -1,6 +1,6 @@
 import { getBratislavaToday } from 'kinomat-core/lib/time'
-import { cacheLife } from 'next/cache'
 
+import { cacheUntilMidnight } from '@/lib/cacheUntilMidnight'
 import { tagSchedule } from '@/lib/tagSchedule'
 
 /*
@@ -9,7 +9,7 @@ import { tagSchedule } from '@/lib/tagSchedule'
  */
 export async function readToday(): Promise<string> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return getBratislavaToday().toString()

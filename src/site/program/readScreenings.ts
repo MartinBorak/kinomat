@@ -1,8 +1,8 @@
 import { getDatabase } from 'kinomat-core/db/appDatabase'
 import { type CinemaId } from 'kinomat-core/types/cinema'
-import { cacheLife } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 
+import { cacheUntilMidnight } from '@/lib/cacheUntilMidnight'
 import { tagSchedule } from '@/lib/tagSchedule'
 import {
   findCinemaDays,
@@ -25,7 +25,7 @@ async function toDayStrings(days: Promise<Temporal.PlainDate[]>): Promise<string
 
 export async function readScheduledDays(from: string): Promise<string[]> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return toDayStrings(findScheduledDays(getDatabase(), Temporal.PlainDate.from(from)))
@@ -33,7 +33,7 @@ export async function readScheduledDays(from: string): Promise<string[]> {
 
 export async function readScreeningsOnDay(day: string): Promise<ScreeningRow[]> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return findScreeningsOnDay(getDatabase(), Temporal.PlainDate.from(day))
@@ -41,7 +41,7 @@ export async function readScreeningsOnDay(day: string): Promise<ScreeningRow[]> 
 
 export async function readFilmDays(filmId: number, from: string): Promise<string[]> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return toDayStrings(findFilmDays(getDatabase(), filmId, Temporal.PlainDate.from(from)))
@@ -52,7 +52,7 @@ export async function readFilmScreeningsOnDay(
   day: string,
 ): Promise<ScreeningRow[]> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return findFilmScreeningsOnDay(getDatabase(), filmId, Temporal.PlainDate.from(day))
@@ -60,7 +60,7 @@ export async function readFilmScreeningsOnDay(
 
 export async function readCinemaDays(cinemaId: CinemaId, from: string): Promise<string[]> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return toDayStrings(findCinemaDays(getDatabase(), cinemaId, Temporal.PlainDate.from(from)))
@@ -71,7 +71,7 @@ export async function readCinemaScreeningsOnDay(
   day: string,
 ): Promise<ScreeningRow[]> {
   'use cache'
-  cacheLife('minutes')
+  cacheUntilMidnight()
   tagSchedule()
 
   return findCinemaScreeningsOnDay(getDatabase(), cinemaId, Temporal.PlainDate.from(day))

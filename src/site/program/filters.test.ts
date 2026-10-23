@@ -88,12 +88,12 @@ describe('reading the filters out of a URL', () => {
   })
 
   it('writes back only what was chosen, so an untouched link stays short', () => {
-    expect(toProgramHref(DATE, 'sk')).toBe('/program?den=2026-09-05')
-    expect(toProgramHref(DATE, 'en')).toBe('/en/program?den=2026-09-05')
+    expect(toProgramHref(DATE, 'sk')).toBe('/program/2026-09-05')
+    expect(toProgramHref(DATE, 'en')).toBe('/en/program/2026-09-05')
     expect(toProgramHref(undefined, 'sk')).toBe('/program')
     expect(
       toProgramHref(DATE, 'sk', withFilters({ query: 'vlny', cinemas: ['kino-lumiere'] })),
-    ).toBe('/program?den=2026-09-05&q=vlny&kino=kino-lumiere')
+    ).toBe('/program/2026-09-05?q=vlny&kino=kino-lumiere')
   })
 
   it('survives a round trip through the URL', () => {
