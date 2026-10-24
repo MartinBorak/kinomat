@@ -18,7 +18,7 @@ type ShowingCardProps = {
 
 function Tag({ label }: { label: string }) {
   return (
-    <span className="border-accent/26 bg-accent/12 text-accent/90 rounded-[5px] border px-[7px] py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase">
+    <span className="border-line text-ink-faint rounded-[5px] border px-[6px] py-px text-[9px] tracking-[0.14em] uppercase">
       {label}
     </span>
   )
@@ -47,7 +47,7 @@ export function ShowingCard({ showing, copy, language }: ShowingCardProps) {
     >
       <time
         dateTime={showing.startsAt.toISOString()}
-        className="text-[20px] tracking-[0.02em] text-white"
+        className="text-[22px] leading-tight font-medium tracking-[0.02em] text-white"
       >
         {formatTimeOfDay(showing.startsAt)}
       </time>
@@ -73,7 +73,7 @@ export function ShowingCard({ showing, copy, language }: ShowingCardProps) {
        */}
       {price !== '' && (
         <div className="-mx-3.5 mt-auto -mb-[11px] pt-[7px]">
-          <div className="border-accent/22 bg-accent/8 text-ink rounded-b-xl border-t px-3.5 py-[6px] text-center text-[14px] tracking-[0.02em]">
+          <div className="border-accent/22 bg-accent/8 rounded-b-xl border-t px-3.5 py-[6px] text-center text-[16px] font-medium tracking-[0.02em] text-white">
             {price}
           </div>
         </div>
