@@ -60,13 +60,14 @@ export function FilmCard({ film, today, copy, language, isAboveFold }: FilmCardP
       </div>
 
       <div className="flex flex-col gap-1">
-        <h2 className="group-hover:text-accent m-0 text-[15px] leading-snug font-light text-white">
+        <h2 className="group-hover:text-accent m-0 text-[15px] leading-snug font-semibold text-white">
           {originalTitle === '' ? (
             title
           ) : (
             <>
               {/* A line of its own: the column is one poster wide, so two titles do not share one. */}
-              {title} <span className="text-ink-faint block text-[13px]">({originalTitle})</span>
+              {title}{' '}
+              <span className="text-ink-faint block text-[13px] font-light">({originalTitle})</span>
             </>
           )}
         </h2>
