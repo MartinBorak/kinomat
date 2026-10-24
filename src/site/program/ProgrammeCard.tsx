@@ -67,24 +67,16 @@ function FilmHeading({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        <h2 className="m-0 text-[clamp(24px,3.2vw,34px)] leading-tight font-light tracking-[0.01em] text-white">
-          {originalTitle === '' ? (
-            named
-          ) : (
-            <>
-              {/* Sized against the heading, so it stays a note beside a title that scales with the page. */}
-              {named} <span className="text-ink-faint text-[0.55em]">({originalTitle})</span>
-            </>
-          )}
-        </h2>
-        {(film.imdbId !== null || film.csfdId !== null) && (
-          <div className="flex items-center gap-2">
-            {film.imdbId !== null && <OutboundLink label="IMDb" href={toImdbHref(film.imdbId)} />}
-            {film.csfdId !== null && <OutboundLink label="ČSFD" href={toCsfdHref(film.csfdId)} />}
-          </div>
+      <h2 className="m-0 text-[clamp(24px,3.2vw,34px)] leading-tight font-light tracking-[0.01em] text-white">
+        {originalTitle === '' ? (
+          named
+        ) : (
+          <>
+            {/* Sized against the heading, so it stays a note beside a title that scales with the page. */}
+            {named} <span className="text-ink-faint text-[0.55em]">({originalTitle})</span>
+          </>
         )}
-      </div>
+      </h2>
 
       {facts.length > 0 && (
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
@@ -93,6 +85,17 @@ function FilmHeading({
               {text}
             </span>
           ))}
+        </div>
+      )}
+
+      {/*
+       * A line of their own under the facts, so they sit in the same place for every film whatever
+       * the title's length. ČSFD leads, being the one Slovak filmgoers check.
+       */}
+      {(film.imdbId !== null || film.csfdId !== null) && (
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          {film.csfdId !== null && <OutboundLink label="ČSFD" href={toCsfdHref(film.csfdId)} />}
+          {film.imdbId !== null && <OutboundLink label="IMDb" href={toImdbHref(film.imdbId)} />}
         </div>
       )}
     </div>
