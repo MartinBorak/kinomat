@@ -86,8 +86,9 @@ export function formatScreeningFormat(slug: string): string {
 
 /*
  * What a seat costs, as a cinema would print it: whole euros bare, anything else to the cent, and
- * two tiers as a range with the sign on both, "11,90 € – 12,90 €". A free showing is a word rather
- * than a zero, since "0 €" reads as a mistake.
+ * two tiers as a range in the language's own form, the sign once in Slovak, "11,90 – 12,90 €", and on
+ * both in English, "€11.90 – €12.90". A free showing is a word rather than a zero, since "0 €" reads
+ * as a mistake.
  */
 export function formatPrice(
   price: PriceRange | null,
@@ -110,9 +111,10 @@ export function formatPrice(
     maximumFractionDigits: fractionDigits,
   })
 
+  // A range of one price comes back as "~7 €", so an equal pair is formatted as the one price it is.
   return price.min === price.max
     ? format.format(price.max)
-    : `${format.format(price.min)} – ${format.format(price.max)}`
+    : format.formatRange(price.min, price.max)
 }
 
 /*
