@@ -24,7 +24,7 @@ export function SearchField({ query, language, onChange }: SearchFieldProps) {
 
   // On a phone the search takes its own row above the pills; from xl it stands in their row.
   return (
-    <div className="bg-surface-raised border-accent/28 focus-within:border-accent/70 focus-within:bg-surface-hover flex h-[42px] min-w-0 basis-full items-center rounded-full border px-[18px] transition-colors xl:max-w-[320px] xl:flex-1 xl:basis-[240px]">
+    <div className="bg-surface-raised border-accent/28 focus-within:border-accent/70 focus-within:bg-surface-hover rounded-brand flex h-[42px] min-w-0 basis-full items-center border px-[18px] transition-colors xl:max-w-[320px] xl:flex-1 xl:basis-[240px]">
       {/* The platform's own clear cross is too small to hit and missing in Firefox; ours replaces it. */}
       <input
         ref={input}

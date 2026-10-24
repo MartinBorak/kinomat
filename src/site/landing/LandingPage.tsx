@@ -135,7 +135,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
           {/* The panel stands under the field rather than off the form, so it needs no room measured
               for the button beside it. */}
           <div className="relative min-w-0 md:flex-[3_1_280px]">
-            <div className="bg-field border-accent/45 focus-within:border-accent/75 focus-within:bg-surface-hover relative flex h-[60px] items-center gap-3.5 rounded-full border px-6 transition-colors duration-[240ms]">
+            <div className="bg-field border-accent/45 focus-within:border-accent/75 focus-within:bg-surface-hover rounded-brand relative flex h-[60px] items-center gap-3.5 border px-6 transition-colors duration-[240ms]">
               <input
                 ref={searchInput}
                 name="q"
@@ -168,7 +168,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
 
           <button
             type="submit"
-            className="bg-accent text-accent-ink hover:bg-ink h-[60px] flex-none cursor-pointer rounded-full border-none text-xs font-semibold tracking-[0.16em] uppercase transition-colors md:max-w-[180px] md:flex-[1_0_132px]"
+            className="bg-accent text-accent-ink hover:bg-ink rounded-brand h-[60px] flex-none cursor-pointer border-none text-xs font-semibold tracking-[0.16em] uppercase transition-colors md:max-w-[180px] md:flex-[1_0_132px]"
           >
             {copy.search}
           </button>

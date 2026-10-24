@@ -27,7 +27,7 @@ type FilmCardProps = {
 // Where a poster would be, so a film without one still fills its place in the row.
 function PosterPlaceholder({ title }: { title: string }) {
   return (
-    <div className="border-line text-ink-faint grid aspect-[2/3] w-full flex-none place-items-center rounded-[10px] border px-4 text-center text-[13px] font-light md:aspect-auto md:h-[270px] md:w-[180px]">
+    <div className="border-line text-ink-faint rounded-brand grid aspect-[2/3] w-full flex-none place-items-center border px-4 text-center text-[13px] font-light md:aspect-auto md:h-[270px] md:w-[180px]">
       {title}
     </div>
   )
@@ -47,7 +47,7 @@ export function FilmCard({ film, today, copy, language, isAboveFold }: FilmCardP
       data-film-stop
       className="group flex w-full flex-none flex-col gap-2.5 md:w-[180px]"
     >
-      <div className="group-hover:outline-accent/70 rounded-[10px] outline-1 outline-offset-[3px] outline-transparent transition-[outline-color]">
+      <div className="group-hover:outline-accent/70 rounded-brand outline-1 outline-offset-[3px] outline-transparent transition-[outline-color]">
         {film.posterPath === null ? (
           <PosterPlaceholder title={title} />
         ) : (

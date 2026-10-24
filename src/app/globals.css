@@ -47,6 +47,9 @@
   --color-ink-faint: oklch(0.62 0.014 250);
   --color-accent: #a0d6ff;
   --color-accent-ink: oklch(0.18 0.03 250);
+
+  /* One corner for every box, after the rounded projector in the logo. */
+  --radius-brand: 8px;
 }
 
 /* Day switch: the old day leaves completely before the new one arrives, so identical days still blink. */

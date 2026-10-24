@@ -44,7 +44,7 @@ export function FilmPoster({
        */
       unoptimized={isExternalPoster(posterPath)}
       // self-start: a stretched flex item would distort a poster to the height of a tall card.
-      className={`flex-none self-start overflow-hidden rounded-[10px] object-cover ${sizeClassName}`}
+      className={`rounded-brand flex-none self-start overflow-hidden object-cover ${sizeClassName}`}
     />
   )
 }

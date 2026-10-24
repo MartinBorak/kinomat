@@ -57,7 +57,7 @@ export function SuggestionPanel({ query, groups, className = '' }: SuggestionPan
     >
       <div
         ref={rows}
-        className={`border-accent/28 bg-surface-raised overflow-hidden rounded-[20px] border transition-transform duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] md:shadow-[0_26px_60px_oklch(0.15_0.02_255/0.6)] ${
+        className={`border-accent/28 bg-surface-raised rounded-brand overflow-hidden border transition-transform duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] md:shadow-[0_26px_60px_oklch(0.15_0.02_255/0.6)] ${
           isOpen ? 'translate-y-0' : '-translate-y-1.5'
         }`}
       >

@@ -17,7 +17,7 @@ type DateStripProps = {
 }
 
 const CHIP =
-  'flex min-w-[74px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-2xl border px-3.5 pt-2.5 pb-[11px] transition-[background-color]'
+  'flex min-w-[74px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-brand border px-3.5 pt-2.5 pb-[11px] transition-[background-color]'
 
 // The days something is on, the one being read lit up. Links rather than clicks, so a day is a URL.
 export function DateStrip({ days, selected, today, copy, language, toHref }: DateStripProps) {

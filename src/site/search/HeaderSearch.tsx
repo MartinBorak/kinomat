@@ -92,7 +92,7 @@ export function HeaderSearch({ language, className = '', panelClassName = '' }: 
       ref={field}
       className={`relative ${className}`}
     >
-      <div className="bg-field border-accent/45 focus-within:border-accent/75 focus-within:bg-surface-hover flex h-10 items-center gap-2 rounded-full border px-4 transition-colors duration-[240ms]">
+      <div className="bg-field border-accent/45 focus-within:border-accent/75 focus-within:bg-surface-hover rounded-brand flex h-10 items-center gap-2 border px-4 transition-colors duration-[240ms]">
         <input
           ref={input}
           name="q"
