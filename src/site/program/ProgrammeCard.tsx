@@ -114,7 +114,7 @@ function CinemaRow({
   isNamed: boolean
 }) {
   return (
-    <div className="border-line flex flex-wrap items-start gap-x-6 gap-y-3 border-t py-3.5">
+    <div className="border-line/55 flex flex-wrap items-start gap-x-6 gap-y-3 border-t py-3.5">
       {isNamed && (
         <div className="group relative flex-none basis-[210px]">
           <Link
@@ -193,7 +193,7 @@ export function ProgrammeCard({
      */
     <article
       data-film-stop
-      className="border-line grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-[22px] border-b px-[22px] py-8 md:grid-rows-[auto_1fr] md:gap-x-[30px] md:gap-y-[18px] md:px-[6vw] md:pt-[34px] md:pb-[38px]"
+      className="border-ink-faint/35 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-[22px] border-b px-[22px] py-8 md:grid-rows-[auto_1fr] md:gap-x-[30px] md:gap-y-[18px] md:px-[6vw] md:pt-[34px] md:pb-[38px]"
     >
       <div className="col-start-2 row-start-1 flex flex-col gap-2.5">
         {programme.films.map((film) => (
