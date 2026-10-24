@@ -18,7 +18,7 @@ type ShowingCardProps = {
 
 function Tag({ label }: { label: string }) {
   return (
-    <span className="border-line text-ink-faint rounded-[5px] border px-[6px] py-px text-[9px] tracking-[0.14em] uppercase">
+    <span className="border-line text-ink-faint rounded-brand border px-[6px] py-px text-[9px] tracking-[0.14em] uppercase">
       {label}
     </span>
   )
@@ -43,7 +43,7 @@ export function ShowingCard({ showing, copy, language }: ShowingCardProps) {
       href={showing.bookingUrl}
       target="_blank"
       rel="noopener"
-      className="border-accent/22 bg-surface-raised hover:bg-surface-hover flex w-[160px] flex-col gap-[5px] rounded-xl border px-3.5 pt-2.5 pb-[11px] transition-colors hover:border-[oklch(0.85_0.09_245/0.6)]"
+      className="border-accent/22 bg-surface-raised hover:bg-surface-hover rounded-brand flex w-[160px] flex-col gap-[5px] border px-3.5 pt-2.5 pb-[11px] transition-colors hover:border-[oklch(0.85_0.09_245/0.6)]"
     >
       <time
         dateTime={showing.startsAt.toISOString()}
@@ -73,7 +73,7 @@ export function ShowingCard({ showing, copy, language }: ShowingCardProps) {
        */}
       {price !== '' && (
         <div className="-mx-3.5 mt-auto -mb-[11px] pt-[7px]">
-          <div className="border-accent/22 bg-accent/8 rounded-b-xl border-t px-3.5 py-[6px] text-center text-[16px] font-medium tracking-[0.02em] text-white">
+          <div className="border-accent/22 bg-accent/8 rounded-b-brand border-t px-3.5 py-[6px] text-center text-[16px] font-medium tracking-[0.02em] text-white">
             {price}
           </div>
         </div>

@@ -126,7 +126,7 @@ function CinemaRow({
           <span className="sr-only">, {cinema.address}</span>
           <span
             aria-hidden
-            className="border-accent/30 bg-surface-hover text-ink-soft pointer-events-none absolute top-full left-0 z-10 mt-1.5 hidden rounded-lg border px-[11px] py-1.5 text-[11.5px] font-light tracking-[0.06em] whitespace-nowrap shadow-[0_14px_30px_oklch(0.12_0.02_255/0.6)] group-hover:block"
+            className="border-accent/30 bg-surface-hover text-ink-soft rounded-brand pointer-events-none absolute top-full left-0 z-10 mt-1.5 hidden border px-[11px] py-1.5 text-[11.5px] font-light tracking-[0.06em] whitespace-nowrap shadow-[0_14px_30px_oklch(0.12_0.02_255/0.6)] group-hover:block"
           >
             {cinema.address}
           </span>
@@ -170,7 +170,7 @@ function PosterLink({
       href={href}
       aria-hidden
       tabIndex={-1}
-      className="hover:outline-accent/70 flex rounded-[10px] outline-1 outline-offset-[3px] outline-transparent transition-[outline-color]"
+      className="hover:outline-accent/70 rounded-brand flex outline-1 outline-offset-[3px] outline-transparent transition-[outline-color]"
     >
       {poster}
     </Link>

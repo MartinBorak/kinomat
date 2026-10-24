@@ -30,7 +30,7 @@ type FilterBarProps = {
 
 // Shared with the Films view, whose ordering menu stands in a row of these.
 export const PILL =
-  'flex h-[42px] items-center gap-3 rounded-full border px-4 text-[12.5px] font-light tracking-[0.04em] whitespace-nowrap'
+  'flex h-[42px] items-center gap-3 rounded-brand border px-4 text-[12.5px] font-light tracking-[0.04em] whitespace-nowrap'
 
 // What the pill says the menu is set to, which for a single choice is that choice's own name.
 function toSummary(selection: Selection, options: readonly FilterOption[], copy: FilterCopy) {
@@ -55,7 +55,7 @@ function Checkbox({
   onToggle: () => void
 }) {
   return (
-    <label className="hover:bg-surface-hover flex cursor-pointer items-center gap-[11px] rounded-[10px] px-3 py-2.5">
+    <label className="hover:bg-surface-hover rounded-brand flex cursor-pointer items-center gap-[11px] px-3 py-2.5">
       <input type="checkbox" checked={isChecked} onChange={onToggle} className="peer sr-only" />
       <span
         aria-hidden
@@ -128,7 +128,7 @@ function FilterMenu({
           role="group"
           aria-label={menuCopy.name}
           style={{ left: shift }}
-          className="border-accent/28 bg-surface-raised absolute top-[50px] z-20 max-w-[calc(100vw-44px)] min-w-[240px] rounded-2xl border p-2 shadow-[0_26px_60px_oklch(0.12_0.02_255/0.7)]"
+          className="border-accent/28 bg-surface-raised rounded-brand absolute top-[50px] z-20 max-w-[calc(100vw-44px)] min-w-[240px] border p-2 shadow-[0_26px_60px_oklch(0.12_0.02_255/0.7)]"
         >
           {/* Always there, so the first tick does not push the list a row down under the pointer. */}
           <button
