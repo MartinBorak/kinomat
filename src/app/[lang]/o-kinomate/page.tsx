@@ -12,7 +12,11 @@ export async function generateMetadata(props: PageProps<'/[lang]/o-kinomate'>): 
   const language = readLanguage((await props.params).lang)
   const copy = aboutCopyByLanguage[language]
 
-  return { title: copy.title, description: copy.pageDescription }
+  return {
+    title: copy.title,
+    description: copy.pageDescription,
+    alternates: toAlternates('/o-kinomate', language),
+  }
 }
 
 export default async function About(props: PageProps<'/[lang]/o-kinomate'>) {
