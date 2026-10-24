@@ -61,9 +61,9 @@ describe('pricing a showing', () => {
     expect(formatPrice({ min: 7, max: 7 }, ENGLISH, 'en')).toBe('€7')
   })
 
-  // The sign on both ends; a cinema prints "8,90 €", never "8,9 €", so a fraction takes both to the cent.
+  // The sign once in Slovak; a cinema prints "8,90 €", never "8,9 €", so a fraction takes both to the cent.
   it('prints the cheapest and the full ticket as a range, to the cent when either has one', () => {
-    expect(formatPrice({ min: 11.9, max: 12.9 }, SLOVAK, 'sk')).toBe('11,90\u00a0€ – 12,90\u00a0€')
+    expect(formatPrice({ min: 11.9, max: 12.9 }, SLOVAK, 'sk')).toBe('11,90 – 12,90\u00a0€')
     expect(formatPrice({ min: 3, max: 5 }, ENGLISH, 'en')).toBe('€3 – €5')
   })
 
