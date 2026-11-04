@@ -228,7 +228,10 @@ export function FilterBar({
       data-sticky-bar
       className="border-line bg-surface/85 sticky top-0 z-30 flex flex-wrap items-center gap-2.5 border-b px-[22px] py-4 backdrop-blur-md md:px-[6vw]"
     >
-      {/* Plain text with a caret, so the switch that reveals the pills does not pose as one of them. */}
+      {/*
+       * A pill of its own with a sliders mark: as plain small caps it read as a caption beside the
+       * count, and readers scrolled past it never knowing the list could be narrowed.
+       */}
       <button
         type="button"
         onClick={() => {
@@ -236,8 +239,13 @@ export function FilterBar({
           setIsSettled(false)
         }}
         aria-expanded={isExpanded}
-        className="text-ink hover:text-accent flex cursor-pointer items-center gap-2 py-2 text-[10px] tracking-[0.16em] uppercase xl:hidden"
+        className={`${PILL} text-ink cursor-pointer font-normal xl:hidden ${
+          isExpanded || activeCount > 0
+            ? 'bg-surface-hover border-accent/60'
+            : 'bg-surface-raised border-accent/40'
+        }`}
       >
+        <span aria-hidden className="text-accent icon-[lucide--sliders-horizontal] size-4" />
         <span>
           {copy.showFilters}
           {activeCount > 0 && <span className="text-accent"> ({activeCount})</span>}
