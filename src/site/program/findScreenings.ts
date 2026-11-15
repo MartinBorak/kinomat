@@ -2,7 +2,7 @@ import { and, asc, eq, gte, inArray, lt, type SQL, sql } from 'drizzle-orm'
 import { IS_BOOKABLE } from 'kinomat-core/db/bookableScreenings'
 import { type Database } from 'kinomat-core/db/client'
 import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
-import { cinemas, films, programmeFilms, screenings } from 'kinomat-core/db/schema'
+import { cinemas, distributors, films, programmeFilms, screenings } from 'kinomat-core/db/schema'
 import { BRATISLAVA_TIME_ZONE, toBratislavaDayStart } from 'kinomat-core/lib/time'
 import { type CinemaId } from 'kinomat-core/types/cinema'
 import { type PriceRange } from 'kinomat-core/types/priceRange'
@@ -39,6 +39,8 @@ export type ScreeningRow = {
   posterPath: string | null
   directors: string[]
   genres: FilmGenre[]
+  distributorName: string | null
+  distributorUrl: string
 }
 
 // The programmes this film is billed on, which for a double feature is the whole bill, not its half.
@@ -106,11 +108,14 @@ async function selectScreenings(
       posterPath: films.posterPath,
       directors: films.directors,
       genres: selectFilmGenres(),
+      distributorName: distributors.name,
+      distributorUrl: films.distributorUrl,
     })
     .from(screenings)
     .innerJoin(cinemas, eq(cinemas.id, screenings.cinemaId))
     .innerJoin(programmeFilms, eq(programmeFilms.programmeId, screenings.programmeId))
     .innerJoin(films, eq(films.id, programmeFilms.filmId))
+    .leftJoin(distributors, eq(distributors.id, films.distributorId))
     .where(and(where, IS_BOOKABLE))
     .orderBy(asc(screenings.startsAt), asc(programmeFilms.position))
 

@@ -98,6 +98,25 @@ function FilmHeading({
           {film.imdbId !== null && <OutboundLink label="IMDb" href={toImdbHref(film.imdbId)} />}
         </div>
       )}
+
+      {/* The rights holder whose title and poster these are, credited and linked to its page. */}
+      {film.distributorName !== null && (
+        <p className="text-ink-faint m-0 text-[13px] font-light">
+          {copy.distributedBy}{' '}
+          {film.distributorUrl === '' ? (
+            film.distributorName
+          ) : (
+            <a
+              href={film.distributorUrl}
+              target="_blank"
+              rel="noopener"
+              className="hover:text-accent underline-offset-2 hover:underline"
+            >
+              {film.distributorName}
+            </a>
+          )}
+        </p>
+      )}
     </div>
   )
 }

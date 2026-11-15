@@ -43,6 +43,8 @@ const WAVES: ProgrammeListing = {
       posterPath: null,
       directors: [],
       genres: [],
+      distributorName: null,
+      distributorUrl: '',
     },
   ],
   cinemas: [
@@ -170,6 +172,28 @@ describe('one film’s page', () => {
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute(
       'href',
       `/filmy/${PUBLIC_ID}/2026-09-05?kino=kino-lumiere`,
+    )
+  })
+
+  it('credits the distributor, linked to its page for the film', () => {
+    const [film] = WAVES.films
+    const distributed = {
+      ...WAVES,
+      films: [
+        {
+          ...film,
+          distributorName: 'Filmtopia',
+          distributorUrl: 'https://www.filmtopia.sk/filmy/1/17/vlny/',
+        },
+      ],
+    }
+
+    renderFilm([distributed])
+
+    expect(screen.getByText(/Distribúcia/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Filmtopia' })).toHaveAttribute(
+      'href',
+      'https://www.filmtopia.sk/filmy/1/17/vlny/',
     )
   })
 

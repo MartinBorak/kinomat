@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { isExternalPoster, toPosterUrl } from '@/site/ui/posterUrl'
+import { isOptimizablePoster, toPosterUrl } from '@/site/ui/posterUrl'
 
 /*
  * Larger than the design's 124, at the 2:3 most posters are. Most, not all: TMDB serves whatever
@@ -39,10 +39,10 @@ export function FilmPoster({
       height={POSTER_HEIGHT}
       loading={isAboveFold ? 'eager' : 'lazy'}
       /*
-       * The optimizer proxies only TMDB. A poster a person pointed at elsewhere is served as it is,
-       * the box cropping it to size, rather than opening the optimizer to every host on the web.
+       * The optimizer proxies TMDB and the distributors. A poster a person pointed at elsewhere is
+       * served as it is, the box cropping it, rather than opening the optimizer to every host.
        */
-      unoptimized={isExternalPoster(posterPath)}
+      unoptimized={!isOptimizablePoster(posterPath)}
       // self-start: a stretched flex item would distort a poster to the height of a tall card.
       className={`rounded-brand flex-none self-start overflow-hidden object-cover ${sizeClassName}`}
     />

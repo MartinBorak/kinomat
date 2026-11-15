@@ -1,6 +1,8 @@
 import { withSentryConfig } from '@sentry/nextjs/config'
 import type { NextConfig } from 'next'
 
+import { DISTRIBUTOR_POSTER_PREFIXES } from './src/site/ui/posterHosts'
+
 /*
  * What every response says about itself. Nothing here is framed, needs a device, or should be
  * sniffed into another type; HSTS is the host's, since it is the host that terminates TLS.
@@ -30,8 +32,11 @@ const nextConfig: NextConfig = {
   // The shared package ships TypeScript source, which Next leaves alone in node_modules unless told.
   transpilePackages: ['kinomat-core'],
   images: {
-    // Posters are TMDB's, served from its own CDN; the optimizer fetches from nowhere else.
-    remotePatterns: [new URL('https://image.tmdb.org/t/p/**')],
+    // TMDB's posters and the distributors'; the optimizer fetches from nowhere else.
+    remotePatterns: [
+      new URL('https://image.tmdb.org/t/p/**'),
+      ...DISTRIBUTOR_POSTER_PREFIXES.map((prefix) => new URL(`${prefix}**`)),
+    ],
     /*
      * The poster column's width and twice it (see POSTER_WIDTH). Without them the nearest sizes
      * Next has to offer are 256 and 384, which is a poster's worth of pixels nothing displays.
