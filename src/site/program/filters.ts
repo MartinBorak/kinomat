@@ -127,6 +127,9 @@ export function toFilterEntries(filters: ProgramFilters): string[][] {
   ]
 }
 
+// The pages a schedule is listed on: the whole of it, and a festival's part while one runs.
+export type ScheduleSection = 'program' | 'ffi'
+
 /*
  * A day as the last segment of a listing's path rather than in its query, so each day is a page of
  * its own the host can cache, where the query is the reader's alone and is read in the browser.
@@ -144,8 +147,9 @@ export function toProgramHref(
   date: Temporal.PlainDate | undefined,
   language: Language,
   filters: ProgramFilters = NO_FILTERS,
+  section: ScheduleSection = 'program',
 ): string {
-  return `${toLanguagePrefix(language)}/program${toDaySegment(date)}${toQueryString(
+  return `${toLanguagePrefix(language)}/${section}${toDaySegment(date)}${toQueryString(
     toFilterEntries(filters),
   )}`
 }

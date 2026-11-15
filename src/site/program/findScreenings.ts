@@ -120,6 +120,97 @@ async function selectScreenings(
   }))
 }
 
+/*
+ * A festival's films by public id and the days it runs. No cinema feed says "festival", and FFi
+ * marks only its shorts, so the lineup is taken from the festival's own programme by start time.
+ */
+const FESTIVALS: Record<
+  string,
+  { firstDay: string; lastDay: string; filmPublicIds: readonly string[] }
+> = {
+  ffi: {
+    firstDay: '2026-11-18',
+    lastDay: '2026-11-24',
+    filmPublicIds: [
+      'd276ae8c19e1', // Arco
+      '13898150a63e', // Best Of FFi 1
+      '170c6d59c710', // Best Of FFi 2
+      '2429bc70fcf1', // Caravaggio
+      'c4bcf75a7fa4', // Chica Checa
+      'dd6979bd4b21', // Club Kid
+      '616d06a26b43', // Downtown
+      'a2d0d11f5c0c', // Dukla
+      'c55793eb3950', // Dva sršne
+      'ea241697ef0c', // Eva
+      '1fdfc84d504f', // FFi kraťasy: Faceshopping
+      '04b800f47158', // FFi kraťasy: Is It Cold In The Water?
+      '94905dd26ab1', // FFi kraťasy: Just Like We Never Said Goodbye
+      '1e79fb67035b', // FFi kraťasy: L.O.V.E.
+      'd45bf03467f1', // FFi kraťasy: Slovenské premiéry
+      '9d551bb93f03', // FFi kraťasy: Whole New World/Pretend World
+      '1519dec88697', // Garance
+      '7c6604aa211b', // Imaginárne lásky
+      '2bfa5c31128e', // Iván a Hadúm
+      'f374152ee6f4', // Jednorožce
+      '105e09937d19', // Jim Queen
+      'cf67b4375660', // La Gradiva
+      'ed5eecb8184a', // La bola negra
+      '4beac3ecd230', // Leviticus
+      '9a2e5c3a811e', // London
+      '612237163167', // Maspalomas
+      '232c03780928', // Medvedia jaskyňa
+      '60d2dc382d6a', // Melónová žena
+      '0b3845a71ff9', // Muž, ktorého milujem
+      '21c8a1e4d7d1', // Nádherné rána
+      'bfcb92314310', // Palivo v tepnách
+      'e3bb5b8d11d7', // Potichu
+      '3cf3679626ea', // Priateľky
+      '256c514210f0', // Rose
+      '544d5ae0a50f', // Sesterstvo
+      '46626b2f1319', // Sex a smrť v kempe Miasma
+      '6eb40d88c5f4', // Slobodný v srdci
+      'bb4ea3d719ae', // Som Mario
+      '25172c07f713', // Veľké baby neplačú
+      '9e0f55dc5f3a', // Vrah môjho brata
+      '3fb67d35c6d2', // Víkend
+      '45ee83b9d986', // Zbabelec
+      'a0154833bcd8', // Zriedka sa budím zo sna
+      '786c3eaf0478', // Šampión
+      'dbeda3181758', // Život ženy
+    ],
+  },
+}
+
+// Every bill carrying a film of the festival's lineup, so a cinema that also runs one lists it.
+function selectFestivalProgrammes(database: Database, festival: string) {
+  const lineup = database
+    .select({ id: films.id })
+    .from(films)
+    .where(inArray(films.publicId, [...(FESTIVALS[festival]?.filmPublicIds ?? [])]))
+
+  return database
+    .select({ id: programmeFilms.programmeId })
+    .from(programmeFilms)
+    .where(inArray(programmeFilms.filmId, lineup))
+}
+
+// The festival's days only: the same films before or after it are the ordinary run.
+function isDuringFestival(festival: string): SQL | undefined {
+  const dates = FESTIVALS[festival]
+
+  if (dates === undefined) {
+    return sql`false`
+  }
+
+  return and(
+    gte(screenings.startsAt, toBratislavaDayStart(Temporal.PlainDate.from(dates.firstDay))),
+    lt(
+      screenings.startsAt,
+      toBratislavaDayStart(Temporal.PlainDate.from(dates.lastDay).add({ days: 1 })),
+    ),
+  )
+}
+
 // The whole of one Bratislava calendar day, still to come.
 export async function findScreeningsOnDay(
   database: Database,
@@ -142,6 +233,22 @@ export async function findFilmScreeningsOnDay(
   return selectScreenings(
     database,
     and(isOnDay(date, now), inArray(screenings.programmeId, selectProgrammesOf(database, filmId))),
+  )
+}
+
+// A festival's day: every showing of its lineup, marked or not.
+export async function findFestivalScreeningsOnDay(
+  database: Database,
+  festival: string,
+  date: Temporal.PlainDate,
+  now: Date = new Date(),
+): Promise<ScreeningRow[]> {
+  return selectScreenings(
+    database,
+    and(
+      isOnDay(date, now),
+      inArray(screenings.programmeId, selectFestivalProgrammes(database, festival)),
+    ),
   )
 }
 
@@ -197,6 +304,23 @@ export async function findFilmDays(
     and(
       isStillToCome(from, now),
       inArray(screenings.programmeId, selectProgrammesOf(database, filmId)),
+    ),
+  )
+}
+
+// The festival's days that still have one of its films on.
+export async function findFestivalDays(
+  database: Database,
+  festival: string,
+  from: Temporal.PlainDate,
+  now: Date = new Date(),
+): Promise<Temporal.PlainDate[]> {
+  return selectDays(
+    database,
+    and(
+      isStillToCome(from, now),
+      isDuringFestival(festival),
+      inArray(screenings.programmeId, selectFestivalProgrammes(database, festival)),
     ),
   )
 }
