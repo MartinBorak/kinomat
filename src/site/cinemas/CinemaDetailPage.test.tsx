@@ -44,8 +44,6 @@ const WAVES: ProgrammeListing = {
       posterPath: null,
       directors: [],
       genres: [],
-      distributorName: null,
-      distributorUrl: '',
     },
   ],
   cinemas: [

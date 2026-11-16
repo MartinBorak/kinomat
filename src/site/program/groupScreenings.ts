@@ -17,9 +17,6 @@ export type ListedFilm = {
   posterPath: string | null
   directors: string[]
   genres: FilmGenre[]
-  // Null where the distributors' union names nobody; the url is the film's page on its site, or ''.
-  distributorName: string | null
-  distributorUrl: string
 }
 
 export type Showing = {
@@ -61,8 +58,6 @@ function toListedFilm(row: ScreeningRow): ListedFilm {
     posterPath: row.posterPath,
     directors: row.directors,
     genres: row.genres,
-    distributorName: row.distributorName,
-    distributorUrl: row.distributorUrl,
   }
 }
 

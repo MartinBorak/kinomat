@@ -21,8 +21,6 @@ const WAVES: ListedFilm = {
   posterPath: '/vlny.jpg',
   directors: ['Jiří Mádl'],
   genres: [{ id: 18, nameSk: 'Dráma', nameEn: 'Drama' }],
-  distributorName: null,
-  distributorUrl: '',
 }
 
 const LUMIERE = {
@@ -99,8 +97,6 @@ describe('toListingGraph', () => {
       posterPath: null,
       directors: [],
       genres: [],
-      distributorName: null,
-      distributorUrl: '',
     }
     const [movie] = toListingGraph([{ ...PROGRAMME, films: [bare] }], 'sk')['@graph']
 

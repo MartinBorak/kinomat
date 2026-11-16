@@ -32,7 +32,6 @@ export type ProgramCopy = FilterBarCopy & {
   free: string
   minutes: string
   directedBy: string
-  distributedBy: string
   // Slovak counts in three shapes; the plural category a runtime picks says which one to print.
   films: CountCopy
   showings: CountCopy
@@ -85,7 +84,6 @@ export const programCopyByLanguage: Record<Language, ProgramCopy> = {
     free: 'zadarmo',
     minutes: 'min',
     directedBy: 'Réžia',
-    distributedBy: 'Distribúcia',
     films: { one: 'film', few: 'filmy', many: 'filmu', other: 'filmov' },
     showings: {
       one: 'predstavenie',
@@ -113,7 +111,6 @@ export const programCopyByLanguage: Record<Language, ProgramCopy> = {
     free: 'free',
     minutes: 'min',
     directedBy: 'Directed by',
-    distributedBy: 'Distributed by',
     films: { one: 'film', other: 'films' },
     showings: { one: 'showing', other: 'showings' },
     emptyTitle: 'Nothing is on this day',

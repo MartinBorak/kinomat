@@ -31,8 +31,6 @@ function createRow(row: Partial<ScreeningRow>): ScreeningRow {
     posterPath: null,
     directors: [],
     genres: [],
-    distributorName: null,
-    distributorUrl: '',
     ...row,
   }
 }

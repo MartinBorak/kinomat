@@ -56,8 +56,6 @@ function createFilm(titleSk: string, genres: FilmGenre[] = [DRAMA]): ListedFilm 
     posterPath: null,
     directors: [],
     genres,
-    distributorName: null,
-    distributorUrl: '',
   }
 }
 
