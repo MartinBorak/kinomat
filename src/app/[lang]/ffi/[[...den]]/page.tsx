@@ -14,6 +14,11 @@ import { StructuredData } from '@/site/seo/StructuredData'
 // Temporary: Filmový festival inakosti, 18 to 24 November 2026. Remove with its navigation entry after.
 const FESTIVAL = 'ffi'
 
+const TITLE_BY_LANGUAGE: Record<Language, string> = {
+  sk: 'Filmový festival inakosti',
+  en: 'Slovak queer film festival',
+}
+
 const DESCRIPTION_BY_LANGUAGE: Record<Language, string> = {
   sk: 'Filmy Filmového festivalu inakosti a kde ich v Bratislave hrajú.',
   en: 'The Queer Film Festival FFi films and where they play in Bratislava.',
@@ -33,7 +38,7 @@ export async function generateMetadata(
   const language = readLanguage((await props.params).lang)
 
   return {
-    title: 'FFi',
+    title: TITLE_BY_LANGUAGE[language],
     description: DESCRIPTION_BY_LANGUAGE[language],
     alternates: toAlternates('/ffi', language),
   }
