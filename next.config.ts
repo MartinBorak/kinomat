@@ -29,6 +29,9 @@ const nextConfig: NextConfig = {
     ]),
   // Every listing is the same for everyone, so it is worth caching rather than re-querying per reader.
   cacheComponents: true,
+  experimental: {
+    agentUpgrade: 'security',
+  },
   // The shared package ships TypeScript source, which Next leaves alone in node_modules unless told.
   transpilePackages: ['kinomat-core'],
   images: {
