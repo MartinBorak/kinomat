@@ -121,16 +121,23 @@ async function selectScreenings(
 }
 
 /*
- * A festival's films by public id and the days it runs. No cinema feed says "festival", and FFi
- * marks only its shorts, so the lineup is taken from the festival's own programme by start time.
+ * A festival's films by public id, the days it runs and the cinemas it plays in. No cinema feed says
+ * "festival", and FFi marks only its shorts, so the lineup is taken from the festival's own
+ * programme by start time. A lineup film's showings elsewhere are its ordinary run.
  */
 const FESTIVALS: Record<
   string,
-  { firstDay: string; lastDay: string; filmPublicIds: readonly string[] }
+  {
+    firstDay: string
+    lastDay: string
+    cinemaIds: readonly string[]
+    filmPublicIds: readonly string[]
+  }
 > = {
   ffi: {
     firstDay: '2026-11-18',
     lastDay: '2026-11-24',
+    cinemaIds: ['kino-lumiere', 'edison-filmhub'],
     filmPublicIds: [
       'd276ae8c19e1', // Arco
       '13898150a63e', // Best Of FFi 1
@@ -211,6 +218,11 @@ function isDuringFestival(festival: string): SQL | undefined {
   )
 }
 
+// The festival's own cinemas only.
+function isAtFestivalCinema(festival: string): SQL | undefined {
+  return inArray(screenings.cinemaId, [...(FESTIVALS[festival]?.cinemaIds ?? [])])
+}
+
 // The whole of one Bratislava calendar day, still to come.
 export async function findScreeningsOnDay(
   database: Database,
@@ -236,7 +248,7 @@ export async function findFilmScreeningsOnDay(
   )
 }
 
-// A festival's day: every showing of its lineup, marked or not.
+// A festival's day: every showing of its lineup in its cinemas, marked or not.
 export async function findFestivalScreeningsOnDay(
   database: Database,
   festival: string,
@@ -247,6 +259,7 @@ export async function findFestivalScreeningsOnDay(
     database,
     and(
       isOnDay(date, now),
+      isAtFestivalCinema(festival),
       inArray(screenings.programmeId, selectFestivalProgrammes(database, festival)),
     ),
   )
@@ -320,6 +333,7 @@ export async function findFestivalDays(
     and(
       isStillToCome(from, now),
       isDuringFestival(festival),
+      isAtFestivalCinema(festival),
       inArray(screenings.programmeId, selectFestivalProgrammes(database, festival)),
     ),
   )
