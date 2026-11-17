@@ -36,7 +36,8 @@ While FFi runs (18 to 24 November 2026), `--view=ffi` films the festival Story i
 view is `src/app/[lang]/reel/ffi/` (page and `cover/`, the cover over the festival's blurred key
 visual from `public/reel/ffi/`), today's lineup by the clock with every cinema and its times,
 scrolled at 160 px/s, written to `reels/ffi/<day>/` as `story.mp4` and `cover.jpg`. Its
-`caption.txt` follows the BE2CAN one, opening `Filmový festival inakosti (FFi), <weekday> <D>. <month> 🎬`: day, count, one line per film with director and every
+`caption.txt` follows the BE2CAN one, opening `Filmový festival inakosti (FFi), <weekday> <D>. <month> 🎬` and then
+`<N> filmov festivalu @ffi.sk v <M> bratislavských kinách.`: one line per film with director and every
 `cinema time`, then `Celý program festivalu a vstupenky: kinomat.sk/ffi` and the hashtags
 `#kinomatsk #ffi #ffi2026 #filmovyfestivalinakosti #bratislava #kino`.
 
