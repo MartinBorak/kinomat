@@ -7,9 +7,10 @@ import { readToday } from '@/lib/readToday'
 import { formatCount } from '@/site/films/labels'
 import { programCopyByLanguage } from '@/site/program/copy'
 import {
-  type CinemaListing,
+  firstShowingTime,
   groupIntoProgrammes,
   type ProgrammeListing,
+  sortByFirstShowing,
 } from '@/site/program/groupScreenings'
 import {
   readFestivalDays,
@@ -22,17 +23,11 @@ function countScreenings(programme: ProgrammeListing) {
   return programme.cinemas.reduce((sum, cinema) => sum + cinema.showings.length, 0)
 }
 
-function firstShowing(cinemas: readonly CinemaListing[]) {
-  return Math.min(
-    ...cinemas.flatMap((cinema) => cinema.showings.map((showing) => showing.startsAt.getTime())),
-  )
-}
-
 // The showings are already sorted within a cinema; this puts the cinemas themselves on the clock.
 function byClock(programme: ProgrammeListing): ProgrammeListing {
   return {
     ...programme,
-    cinemas: [...programme.cinemas].sort((a, b) => firstShowing([a]) - firstShowing([b])),
+    cinemas: [...programme.cinemas].sort((a, b) => firstShowingTime([a]) - firstShowingTime([b])),
   }
 }
 
@@ -61,14 +56,16 @@ export async function readReelDay(
     festival === undefined
       ? await readScreeningsOnDay(date.toString())
       : await readFestivalScreeningsOnDay(festival, date.toString())
-  const programmes = groupIntoProgrammes(rows)
-    .map((programme) => (festival === undefined ? programme : byClock(programme)))
-    .map((programme) => ({ programme, screenings: countScreenings(programme) }))
-    .sort((a, b) =>
-      festival === undefined
-        ? b.screenings - a.screenings
-        : firstShowing(a.programme.cinemas) - firstShowing(b.programme.cinemas),
-    )
+  const grouped = groupIntoProgrammes(rows)
+  const programmes =
+    festival === undefined
+      ? grouped
+          .map((programme) => ({ programme, screenings: countScreenings(programme) }))
+          .sort((a, b) => b.screenings - a.screenings)
+      : sortByFirstShowing(grouped.map(byClock)).map((programme) => ({
+          programme,
+          screenings: countScreenings(programme),
+        }))
   const locale = LOCALE_BY_LANGUAGE[language]
 
   return {

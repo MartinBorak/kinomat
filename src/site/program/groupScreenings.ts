@@ -144,3 +144,18 @@ export function dropStarted(
     }))
     .filter((programme) => programme.cinemas.length > 0)
 }
+
+// The earliest showing across these cinemas, as epoch milliseconds.
+export function firstShowingTime(cinemas: readonly CinemaListing[]): number {
+  return Math.min(
+    ...cinemas.flatMap((cinema) => cinema.showings.map((showing) => showing.startsAt.getTime())),
+  )
+}
+
+/*
+ * A festival's day read by the clock rather than by title: most of its films screen once, so the
+ * first showing is when a film is on. A tie keeps the title order it came in.
+ */
+export function sortByFirstShowing(programmes: readonly ProgrammeListing[]): ProgrammeListing[] {
+  return [...programmes].sort((a, b) => firstShowingTime(a.cinemas) - firstShowingTime(b.cinemas))
+}

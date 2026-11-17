@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
-import { groupIntoProgrammes } from '@/site/program/groupScreenings'
+import { groupIntoProgrammes, sortByFirstShowing } from '@/site/program/groupScreenings'
 import { ProgramPage } from '@/site/program/ProgramPage'
 import { readFestivalDays, readFestivalScreeningsOnDay } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
@@ -51,9 +51,12 @@ export default async function Ffi(props: PageProps<'/[lang]/ffi/[[...den]]'>) {
   const today = await readToday()
   const days = await readFestivalDays(FESTIVAL, today)
   const date = namedDay ?? days[0] ?? today
-  // A day the strip does not offer is outside the festival, where the same films are the usual run.
+  /*
+   * A day the strip does not offer is outside the festival, where the same films are the usual run.
+   * The festival's films are listed by when they play, not by title.
+   */
   const programmes = days.includes(date)
-    ? groupIntoProgrammes(await readFestivalScreeningsOnDay(FESTIVAL, date))
+    ? sortByFirstShowing(groupIntoProgrammes(await readFestivalScreeningsOnDay(FESTIVAL, date)))
     : []
 
   return (

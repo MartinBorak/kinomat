@@ -2,7 +2,11 @@ import { parseBratislavaTime } from 'kinomat-core/lib/time'
 import { describe, expect, it } from 'vitest'
 
 import { type ScreeningRow } from '@/site/program/findScreenings'
-import { dropStarted, groupIntoProgrammes } from '@/site/program/groupScreenings'
+import {
+  dropStarted,
+  groupIntoProgrammes,
+  sortByFirstShowing,
+} from '@/site/program/groupScreenings'
 
 function createRow(row: Partial<ScreeningRow>): ScreeningRow {
   return {
@@ -121,5 +125,47 @@ describe('dropping what has started', () => {
 
     expect(later.map((programme) => programme.films[0].titleSk)).toEqual(['Vlny'])
     expect(later[0].cinemas[0].showings.map(({ id }) => id)).toEqual([2])
+  })
+})
+
+describe('a festival day by the clock', () => {
+  it('lists the bills by their first showing, whatever their titles', () => {
+    const programmes = sortByFirstShowing(
+      groupIntoProgrammes([
+        createRow({
+          programmeId: 1,
+          filmId: 1,
+          titleSk: 'Arco',
+          startsAt: parseBratislavaTime('2026-11-18T20:00:00'),
+        }),
+        createRow({
+          programmeId: 2,
+          filmId: 2,
+          titleSk: 'Zbabelec',
+          startsAt: parseBratislavaTime('2026-11-18T17:40:00'),
+        }),
+        createRow({
+          programmeId: 3,
+          filmId: 3,
+          titleSk: 'Leviticus',
+          cinemaId: 'edison-filmhub',
+          cinemaName: 'Edison Filmhub',
+          startsAt: parseBratislavaTime('2026-11-18T21:00:00'),
+        }),
+        createRow({
+          screeningId: 4,
+          programmeId: 3,
+          filmId: 3,
+          titleSk: 'Leviticus',
+          startsAt: parseBratislavaTime('2026-11-18T18:00:00'),
+        }),
+      ]),
+    )
+
+    expect(programmes.map((programme) => programme.films[0].titleSk)).toEqual([
+      'Zbabelec',
+      'Leviticus',
+      'Arco',
+    ])
   })
 })
