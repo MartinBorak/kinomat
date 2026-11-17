@@ -14,6 +14,11 @@ export default defineConfig({
     },
   },
   test: {
+    /*
+     * Vitest sets 'test' only when NODE_ENV is unset, so a shell exporting 'development' leaks in,
+     * and next/image then checks every poster against remotePatterns the tests never load.
+     */
+    env: { NODE_ENV: 'test' },
     projects: [
       {
         extends: true,
