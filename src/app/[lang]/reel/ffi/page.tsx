@@ -97,6 +97,15 @@ export default async function FfiStory(props: PageProps<'/[lang]/reel/ffi'>) {
         <p className="text-ink-faint m-0 mt-2.5 text-[12.5px] font-light tracking-[0.06em]">
           {filmCount} · kinomat.sk/ffi
         </p>
+        {/* The festival's mark, so the Story reads as FFi at a glance; white disc as on the cover. */}
+        <div className="absolute top-[96px] right-6 h-[88px]">
+          <div
+            aria-hidden
+            className="absolute top-[4px] left-[4px] h-[73px] w-[73px] rounded-full bg-white"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element -- a filmed frame, not a served page */}
+          <img src="/reel/ffi/mark.png" alt="FFi" className="relative h-[88px] w-auto" />
+        </div>
         <div className="from-surface absolute top-full right-0 left-0 h-6 bg-gradient-to-b to-transparent" />
       </header>
     </div>
