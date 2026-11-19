@@ -39,7 +39,7 @@ scrolled at 160 px/s, written to `reels/ffi/<day>/` as `story.mp4` and `cover.jp
 `caption.txt` follows the BE2CAN one, opening `Filmový festival inakosti (FFi), <weekday> <D>. <month> 🎬` and then
 `<N> filmov festivalu @ffi.sk v <M> bratislavských kinách.`: one line per film with director and every
 `cinema time`, then `Celý program festivalu a vstupenky: kinomat.sk/ffi` and the hashtags
-`#kinomatsk #ffi #ffi2026 #filmovyfestivalinakosti #bratislava #kino`.
+`#kinomatsk #ffi #ffi2026 #bratislava #kino` (Instagram allows five hashtags at most).
 
 Run it in the background and post a one-line status when it starts and when it ends. It takes
 about two minutes for 45 films; frames are rendered into a temp folder and deleted afterwards.
