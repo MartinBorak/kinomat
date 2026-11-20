@@ -34,7 +34,7 @@ node --import tsx scripts/captureReel.mts --day=2026-10-05 # a named day
 
 While FFi runs (18 to 24 November 2026), `--view=ffi` films the festival Story instead: the
 view is `src/app/[lang]/reel/ffi/` (page and `cover/`, the cover over the festival's blurred key
-visual from `public/reel/ffi/`), today's lineup by the clock with every cinema and its times,
+visual from `public/reel/ffi/`), tomorrow's lineup by the clock with every cinema and its times,
 scrolled at 160 px/s, written to `reels/ffi/<day>/` as `story.mp4` and `cover.jpg`. Its
 `caption.txt` follows the BE2CAN one, opening `Filmový festival inakosti (FFi), <weekday> <D>. <month> 🎬` and then
 `<N> filmov festivalu @ffi.sk v <M> bratislavských kinách.`: one line per film with director and every
@@ -43,7 +43,7 @@ scrolled at 160 px/s, written to `reels/ffi/<day>/` as `story.mp4` and `cover.jp
 
 Run it in the background and post a one-line status when it starts and when it ends. It takes
 about two minutes for 45 films; frames are rendered into a temp folder and deleted afterwards.
-An existing folder for the same day is overwritten.
+A day already rendered is refused; never pass `--overwrite` without asking the user first, since the old video may already be posted.
 
 If frames slow to a crawl while nothing uses the CPU, Chrome is being throttled as a background
 page; the script already passes the flags against it, so check they are still there before

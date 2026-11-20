@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { Temporal } from 'temporal-polyfill'
@@ -7,9 +8,10 @@ import { Temporal } from 'temporal-polyfill'
  * Films the /reel view frame by frame in headless Chrome and encodes out/reel.mp4. Frames are
  * placed, not recorded: each one sets the list's offset for its instant and is then captured, so
  * the motion is exact however long a capture takes.
- * Usage: capture.mts [--view=reel|ffi] [--day=YYYY-MM-DD] [--base=http://[::1]:3000] [--cover-only].
- * The Reel is tomorrow's programme; the ffi Story is today's festival day, read slower since every
- * card lists cinemas and times. Both have a cover. [::1] reaches next dev, which listens on every
+ * Usage: capture.mts [--view=reel|ffi] [--day=YYYY-MM-DD] [--base=http://[::1]:3000] [--cover-only]
+ * [--overwrite]. Both views default to tomorrow; the ffi Story is read slower since every card lists
+ * cinemas and times. Both have a cover. A day already rendered is refused unless --overwrite, since
+ * the old video may be the one already posted. [::1] reaches next dev, which listens on every
  * address, rather than another app that may hold 127.0.0.1:3000.
  */
 const args = process.argv.slice(2)
@@ -23,7 +25,7 @@ const VIEWS = {
   ffi: {
     path: '/reel/ffi',
     dir: 'ffi/',
-    daysAhead: 0,
+    daysAhead: 1,
     hasCover: true,
     speed: 160,
     output: 'story.mp4',
@@ -39,6 +41,7 @@ const DAY =
   Temporal.Now.plainDateISO('Europe/Bratislava').add({ days: VIEW.daysAhead }).toString()
 const VIEW_URL = `${readArg('base') ?? 'http://[::1]:3000'}${VIEW.path}?den=${DAY}`
 const COVER_ONLY = args.includes('--cover-only')
+const OVERWRITE = args.includes('--overwrite')
 if (COVER_ONLY && !VIEW.hasCover) {
   throw new Error(`the ${VIEW_NAME} view has no cover`)
 }
@@ -52,6 +55,13 @@ const PORT = 9333
 // Output goes to reels/<day the Reel shows>/ at the repo root; frames are scratch, deleted after.
 const REELS_DIR = new URL('../reels/', import.meta.url)
 const FRAMES_DIR = new URL(`file://${tmpdir()}/kinomat-reel-frames/`)
+const OUT_DIR = new URL(`${VIEW.dir}${DAY}/`, REELS_DIR)
+const EXISTING = ['cover.jpg', VIEW.output].filter((file) => existsSync(new URL(file, OUT_DIR)))
+if (EXISTING.length > 0 && !OVERWRITE) {
+  throw new Error(
+    `${OUT_DIR.pathname} already has ${EXISTING.join(' and ')}; pass --overwrite to replace them`,
+  )
+}
 
 const FPS = 30
 const INTRO_HOLD = 0.6
@@ -140,7 +150,6 @@ function buildTimeline(distance: number): number[] {
 }
 
 async function main() {
-  const outDir: { url?: URL } = {}
   const profile = `${tmpdir()}/kinomat-reel-chrome`
   const chrome = spawn(
     CHROME,
@@ -199,15 +208,14 @@ async function main() {
     if (day.result.value !== DAY) {
       throw new Error(`asked for ${DAY}, the view shows ${day.result.value}`)
     }
-    outDir.url = new URL(`${VIEW.dir}${day.result.value}/`, REELS_DIR)
-    await mkdir(outDir.url, { recursive: true })
+    await mkdir(OUT_DIR, { recursive: true })
     if (VIEW.hasCover) {
       const cover = await cdp.send<Screenshot>('Page.captureScreenshot', {
         format: 'jpeg',
         quality: 95,
       })
-      await writeFile(new URL('cover.jpg', outDir.url), Buffer.from(cover.data, 'base64'))
-      console.log(`${new URL('cover.jpg', outDir.url).pathname} written`)
+      await writeFile(new URL('cover.jpg', OUT_DIR), Buffer.from(cover.data, 'base64'))
+      console.log(`${new URL('cover.jpg', OUT_DIR).pathname} written`)
       if (COVER_ONLY) {
         cdp.close()
         return
@@ -280,7 +288,7 @@ async function main() {
       '18',
       '-movflags',
       '+faststart',
-      new URL(VIEW.output, outDir.url).pathname,
+      new URL(VIEW.output, OUT_DIR).pathname,
     ],
     { stdio: 'inherit' },
   )
@@ -288,7 +296,7 @@ async function main() {
     throw new Error('ffmpeg failed')
   }
   await rm(FRAMES_DIR, { recursive: true, force: true })
-  console.log(`${new URL(VIEW.output, outDir.url).pathname} written`)
+  console.log(`${new URL(VIEW.output, OUT_DIR).pathname} written`)
 }
 
 main().catch((error) => {
