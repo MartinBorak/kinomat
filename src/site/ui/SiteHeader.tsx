@@ -1,6 +1,7 @@
 'use client'
 
 import { type Language, LANGUAGES } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
 import { Fragment, useState } from 'react'
 
@@ -17,6 +18,8 @@ export type LanguageChange = { hrefByLanguage: Record<Language, string> }
 
 type SiteHeaderProps = {
   language: Language
+  // The city the page is in, or null for a page in none, whose links let the proxy pick the city.
+  city: CityId | null
   languageChange: LanguageChange
   // The section this page belongs to, lit in the links; the landing page belongs to none.
   current?: SiteSection | null
@@ -53,18 +56,22 @@ function LanguageTab({
 // The bar every page wears: the mark, the sections, the language, and on a narrow screen a menu.
 export function SiteHeader({
   language,
+  city,
   languageChange,
   current = null,
   hasSearch = false,
 }: SiteHeaderProps) {
-  const navigation = toSiteNavigation(language, current)
+  const navigation = toSiteNavigation(language, city, current)
   const menuLabel = MENU_LABEL_BY_LANGUAGE[language]
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <>
       <header className="border-line relative flex items-center justify-between gap-5 border-b px-[22px] py-4 md:px-[6vw] md:py-[18px]">
-        <Link href={toHomeHref(language)} className="flex flex-none items-center gap-3 md:gap-3.5">
+        <Link
+          href={toHomeHref(language, city)}
+          className="flex flex-none items-center gap-3 md:gap-3.5"
+        >
           <BrandMark />
           <span className="text-[19px] tracking-[0.16em] uppercase md:text-[22px]">Kinomat</span>
         </Link>
@@ -76,6 +83,7 @@ export function SiteHeader({
           {hasSearch && (
             <HeaderSearch
               language={language}
+              city={city}
               className="hidden min-w-[150px] flex-1 md:block md:max-w-[300px]"
               panelClassName="absolute top-full right-0 left-0 z-40 min-w-[320px]"
             />
@@ -133,7 +141,7 @@ export function SiteHeader({
         <div className="border-line bg-surface-raised relative z-40 flex flex-col border-b md:hidden">
           {hasSearch && (
             <div className="border-line border-b px-[22px] py-3.5">
-              <HeaderSearch language={language} />
+              <HeaderSearch language={language} city={city} />
             </div>
           )}
 

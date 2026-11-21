@@ -1,5 +1,6 @@
 import { toQueryString } from 'kinomat-core/lib/hrefs'
 import { type Language, toLanguagePrefix } from 'kinomat-core/lib/language'
+import { type CityId, toCityPrefix } from 'kinomat-core/types/city'
 import { type Temporal } from 'temporal-polyfill'
 
 import { DEFAULT_ORDERING, type Ordering } from '@/site/films/ordering'
@@ -11,14 +12,15 @@ import {
   toFilterEntries,
 } from '@/site/program/filters'
 
-// The index, as a query and a genre narrow it and an order arranges it.
+// A city's index, as a query and a genre narrow it and an order arranges it.
 export function toFilmsHref(
   query: string,
   language: Language,
+  city: CityId | null,
   ordering: Ordering = DEFAULT_ORDERING,
   genres: Selection = [],
 ): string {
-  return `${toLanguagePrefix(language)}/filmy${toQueryString([
+  return `${toLanguagePrefix(language)}${toCityPrefix(city)}/filmy${toQueryString([
     ...(query === '' ? [] : [['q', query]]),
     ...(ordering === DEFAULT_ORDERING ? [] : [['zoradenie', ordering]]),
     // Written by the same rule the schedule's filters are, so one link reads like the other.

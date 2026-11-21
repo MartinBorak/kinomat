@@ -1,6 +1,7 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import { useSearchParams } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
@@ -30,6 +31,7 @@ import { SitePage } from '@/site/ui/SitePage'
 
 type FilmsPageProps = {
   language: Language
+  city: CityId
   today: string
   films: readonly FilmRow[]
 }
@@ -38,7 +40,7 @@ type FilmsPageProps = {
  * Every film currently playing, narrowed by what is typed. The whole list is here rather than
  * queried per keystroke: it is one poster grid of what is on, and the search only hides rows of it.
  */
-export function FilmsPage({ language, today: isoToday, films }: FilmsPageProps) {
+export function FilmsPage({ language, city, today: isoToday, films }: FilmsPageProps) {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') ?? ''
   const ordering = parseOrdering(searchParams.get('zoradenie'))
@@ -51,16 +53,20 @@ export function FilmsPage({ language, today: isoToday, films }: FilmsPageProps) 
 
   // The query, the order and the genre are in the URL rather than in state: a change rewrites it.
   function changeQuery(next: string) {
-    window.history.replaceState(null, '', toFilmsHref(next, language, ordering, genres))
+    window.history.replaceState(null, '', toFilmsHref(next, language, city, ordering, genres))
   }
 
   function changeOrdering(next: Ordering) {
-    window.history.replaceState(null, '', toFilmsHref(query, language, next, genres))
+    window.history.replaceState(null, '', toFilmsHref(query, language, city, next, genres))
   }
 
   // The bar hands back every dimension it knows; here that is the query beside the one menu shown.
   function changeFilters(next: ProgramFilters) {
-    window.history.replaceState(null, '', toFilmsHref(next.query, language, ordering, next.genres))
+    window.history.replaceState(
+      null,
+      '',
+      toFilmsHref(next.query, language, city, ordering, next.genres),
+    )
   }
 
   const empty =
@@ -73,8 +79,11 @@ export function FilmsPage({ language, today: isoToday, films }: FilmsPageProps) 
       <SiteHeader
         current="filmy"
         language={language}
+        city={city}
         languageChange={{
-          hrefByLanguage: toHrefByLanguage((next) => toFilmsHref(query, next, ordering, genres)),
+          hrefByLanguage: toHrefByLanguage((next) =>
+            toFilmsHref(query, next, city, ordering, genres),
+          ),
         }}
         hasSearch
       />

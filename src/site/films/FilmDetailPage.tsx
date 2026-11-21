@@ -105,6 +105,7 @@ function FilmDetailView({
       <SiteHeader
         current="filmy"
         language={language}
+        city={null}
         languageChange={{
           hrefByLanguage: toHrefByLanguage((next) =>
             toFilmHref(publicId, next, requestedDate, filters),

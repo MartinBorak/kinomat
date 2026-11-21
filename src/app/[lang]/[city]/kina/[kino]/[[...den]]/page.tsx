@@ -1,22 +1,37 @@
 import { CINEMAS, findCinema } from 'kinomat-core/types/cinema'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
+import { Temporal } from 'temporal-polyfill'
 
 import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
 import { CinemaDetailPage } from '@/site/cinemas/CinemaDetailPage'
+import { toCinemaHref } from '@/site/cinemas/hrefs'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import { readCinemaDays, readCinemaScreeningsOnDay } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
 import { toAlternates } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
-// A segment naming no cinema of ours is a page that is not there.
-function readCinema(segment: string) {
-  const cinema = findCinema(segment)
+type CinemaPageProps = PageProps<'/[lang]/[city]/kina/[kino]/[[...den]]'>
+
+/*
+ * The cinema the segment names, under its own city. A segment naming no cinema of ours is a page that
+ * is not there; one filed under another city is sent to its own, since the cinema decides the city.
+ */
+async function readCinema(props: CinemaPageProps) {
+  const { lang, city, kino, den } = await props.params
+  const cinema = findCinema(kino)
 
   if (cinema === null) {
     notFound()
+  }
+
+  if (cinema.cityId !== city) {
+    const day = readDaySegment(den)
+    const date = day === undefined ? undefined : Temporal.PlainDate.from(day)
+
+    permanentRedirect(toCinemaHref(cinema, readLanguage(lang), date))
   }
 
   return cinema
@@ -31,23 +46,23 @@ export const instant = false
  * would have every build worker open its own pool against the database at once.
  */
 export function generateStaticParams() {
-  return [{ kino: CINEMAS[0].id, den: [] }]
+  return [{ city: CINEMAS[0].cityId, kino: CINEMAS[0].id, den: [] }]
 }
 
-export async function generateMetadata(props: PageProps<'/[lang]/kina/[kino]/[[...den]]'>) {
-  const { lang, kino } = await props.params
-  const cinema = readCinema(kino)
+export async function generateMetadata(props: CinemaPageProps) {
+  const { lang } = await props.params
+  const cinema = await readCinema(props)
 
   return {
     title: cinema.name,
-    alternates: toAlternates(`/kina/${cinema.id}`, readLanguage(lang)),
+    alternates: toAlternates(`/${cinema.cityId}/kina/${cinema.id}`, readLanguage(lang)),
   }
 }
 
-export default async function CinemaDetail(props: PageProps<'/[lang]/kina/[kino]/[[...den]]'>) {
-  const { lang, kino, den } = await props.params
+export default async function CinemaDetail(props: CinemaPageProps) {
+  const { lang, den } = await props.params
   const language = readLanguage(lang)
-  const cinema = readCinema(kino)
+  const cinema = await readCinema(props)
   const namedDay = readDaySegment(den)
   const today = await readToday()
 

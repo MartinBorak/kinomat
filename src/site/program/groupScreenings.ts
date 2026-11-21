@@ -1,4 +1,5 @@
 import { type FilmGenre } from 'kinomat-core/db/findGenres'
+import { type CityId } from 'kinomat-core/types/city'
 import { type PriceRange } from 'kinomat-core/types/priceRange'
 
 import { type ScreeningRow } from '@/site/program/findScreenings'
@@ -34,6 +35,7 @@ export type CinemaListing = {
   id: string
   name: string
   address: string
+  cityId: CityId
   showings: Showing[]
 }
 
@@ -95,6 +97,7 @@ function toCinemaListings(rows: readonly ScreeningRow[]): CinemaListing[] {
       id: cinemaRows[0].cinemaId,
       name: cinemaRows[0].cinemaName,
       address: cinemaRows[0].cinemaAddress,
+      cityId: cinemaRows[0].cinemaCityId,
       showings: toShowings(cinemaRows),
     }))
     .sort((a, b) => a.name.localeCompare(b.name, 'sk'))

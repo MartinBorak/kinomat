@@ -1,6 +1,7 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -33,6 +34,7 @@ const COMPACT_HEADLINE =
 type LandingPageProps = {
   films: readonly SuggestedFilm[]
   language: Language
+  city: CityId
 }
 
 /*
@@ -40,7 +42,7 @@ type LandingPageProps = {
  * keeps a page mounted, hidden, after leaving it, so state seeded on arrival would outlive the URL
  * that seeded it and greet a reader coming back in English in Slovak.
  */
-export function LandingPage({ films, language }: LandingPageProps) {
+export function LandingPage({ films, language, city }: LandingPageProps) {
   const [query, setQuery] = useState('')
   const searchInput = useRef<HTMLInputElement>(null)
   const pathname = usePathname()
@@ -52,7 +54,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
    * listener leaves with the URL rather than with the page.
    */
   useEffect(() => {
-    if (pathname !== toHomeHref(language)) {
+    if (pathname !== toHomeHref(language, city)) {
       return
     }
 
@@ -75,16 +77,16 @@ export function LandingPage({ films, language }: LandingPageProps) {
     document.addEventListener('keydown', focusSearchOnTyping)
 
     return () => document.removeEventListener('keydown', focusSearchOnTyping)
-  }, [pathname, language])
+  }, [pathname, language, city])
 
   // The kept-mounted page would greet a returning reader with their last search; it leaves with the URL.
   useEffect(() => {
-    if (pathname !== toHomeHref(language)) {
+    if (pathname !== toHomeHref(language, city)) {
       return
     }
 
     return () => setQuery('')
-  }, [pathname, language])
+  }, [pathname, language, city])
 
   const copy = copyByLanguage[language]
   const searchCopy = searchCopyByLanguage[language]
@@ -101,7 +103,8 @@ export function LandingPage({ films, language }: LandingPageProps) {
 
       <SiteHeader
         language={language}
-        languageChange={{ hrefByLanguage: toHrefByLanguage(toHomeHref) }}
+        city={city}
+        languageChange={{ hrefByLanguage: toHrefByLanguage((next) => toHomeHref(next, city)) }}
       />
 
       <main
@@ -127,7 +130,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
         </div>
 
         <form
-          action={toFilmsHref('', language)}
+          action={toFilmsHref('', language, city)}
           // An empty search names nothing to look for, so the button does nothing rather than navigate.
           onSubmit={(event) => query.trim() === '' && event.preventDefault()}
           className="relative flex w-full flex-col gap-3 md:max-w-[660px] md:flex-row md:flex-wrap"
@@ -179,7 +182,7 @@ export function LandingPage({ films, language }: LandingPageProps) {
         {!isOpen && (
           <p className="text-ink-faint m-0 text-center text-base font-light">
             {copy.undecided}{' '}
-            <Link href={toScheduleHref(language)} className="hover:text-accent text-white">
+            <Link href={toScheduleHref(language, city)} className="hover:text-accent text-white">
               {copy.browseSchedule}
             </Link>
           </p>

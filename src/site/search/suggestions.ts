@@ -21,7 +21,7 @@ export function toCinemaSuggestions(language: Language): Suggestion[] {
     name: cinema.name,
     alternates: [],
     meta: toStreet(cinema.address),
-    href: toCinemaHref(cinema.id, language),
+    href: toCinemaHref(cinema, language),
   }))
 }
 

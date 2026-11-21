@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LandingPage } from '@/site/landing/LandingPage'
 
 // The type-to-focus listener follows the URL, not the mounted page, so a test says where the URL is.
-const url = vi.hoisted(() => ({ pathname: '/' }))
+const url = vi.hoisted(() => ({ pathname: '/bratislava' }))
 vi.mock('next/navigation', () => ({ usePathname: () => url.pathname }))
 
 beforeEach(() => {
-  url.pathname = '/'
+  url.pathname = '/bratislava'
 })
 
 const FILMS = [
@@ -23,7 +23,7 @@ const FILMS = [
 ]
 
 function renderPage(language: Language = 'sk') {
-  render(<LandingPage films={FILMS} language={language} />)
+  render(<LandingPage films={FILMS} language={language} city="bratislava" />)
 }
 
 describe('the landing page', () => {
@@ -33,9 +33,9 @@ describe('the landing page', () => {
     expect(screen.getByRole('heading', { name: 'Na aký film ideš?' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Pozri si program' })).toHaveAttribute(
       'href',
-      '/program',
+      '/bratislava/program',
     )
-    expect(screen.getByRole('link', { name: 'Kiná' })).toHaveAttribute('href', '/kina')
+    expect(screen.getByRole('link', { name: 'Kiná' })).toHaveAttribute('href', '/bratislava/kina')
   })
 
   it('offers no suggestions until something is typed', () => {
@@ -51,7 +51,7 @@ describe('the landing page', () => {
 
     expect(screen.getByRole('link', { name: /Kino Lumière/ })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere',
+      '/bratislava/kina/kino-lumiere',
     )
   })
 
@@ -95,7 +95,7 @@ describe('the landing page', () => {
   it('switches language by linking to itself', () => {
     renderPage()
 
-    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en')
+    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en/bratislava')
   })
 
   it('keeps English on every way off the page', () => {
@@ -105,8 +105,11 @@ describe('the landing page', () => {
       target: { value: 'vlny' },
     })
 
-    expect(screen.getByRole('link', { name: 'Cinemas' })).toHaveAttribute('href', '/en/kina')
-    expect(screen.getByRole('link', { name: 'Kinomat' })).toHaveAttribute('href', '/en')
+    expect(screen.getByRole('link', { name: 'Cinemas' })).toHaveAttribute(
+      'href',
+      '/en/bratislava/kina',
+    )
+    expect(screen.getByRole('link', { name: 'Kinomat' })).toHaveAttribute('href', '/en/bratislava')
     // The Slovak query still finds the film, and the row shows the reader's own title for it.
     expect(screen.getByRole('link', { name: /Waves/ })).toHaveAttribute(
       'href',
@@ -114,7 +117,7 @@ describe('the landing page', () => {
     )
     expect(screen.getByRole('textbox', { name: /film/i }).closest('form')).toHaveAttribute(
       'action',
-      '/en/filmy',
+      '/en/bratislava/filmy',
     )
   })
 
@@ -148,7 +151,7 @@ describe('the landing page', () => {
 
   // The router keeps a left page mounted, so the listener has to follow the URL off the page.
   it('grabs nothing once the URL points elsewhere', () => {
-    url.pathname = '/program'
+    url.pathname = '/bratislava/program'
     renderPage()
 
     fireEvent.keyDown(document.body, { key: 'v' })
@@ -157,13 +160,13 @@ describe('the landing page', () => {
   })
 
   it('forgets the search once the reader leaves and comes back', () => {
-    const { rerender } = render(<LandingPage films={FILMS} language="sk" />)
+    const { rerender } = render(<LandingPage films={FILMS} language="sk" city="bratislava" />)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'vlny' } })
 
-    url.pathname = '/program'
-    rerender(<LandingPage films={FILMS} language="sk" />)
-    url.pathname = '/'
-    rerender(<LandingPage films={FILMS} language="sk" />)
+    url.pathname = '/bratislava/program'
+    rerender(<LandingPage films={FILMS} language="sk" city="bratislava" />)
+    url.pathname = '/bratislava'
+    rerender(<LandingPage films={FILMS} language="sk" city="bratislava" />)
 
     expect(screen.getByRole('textbox')).toHaveValue('')
   })

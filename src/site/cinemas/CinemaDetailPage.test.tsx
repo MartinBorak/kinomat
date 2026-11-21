@@ -51,6 +51,7 @@ const WAVES: ProgrammeListing = {
       id: LUMIERE.id,
       name: LUMIERE.name,
       address: LUMIERE.address,
+      cityId: 'bratislava',
       showings: [
         {
           id: 1,
@@ -130,11 +131,11 @@ describe('one cinema’s page', () => {
 
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere/2026-09-05',
+      '/bratislava/kina/kino-lumiere/2026-09-05',
     )
     expect(screen.getByRole('link', { name: /7/ })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere/2026-09-07',
+      '/bratislava/kina/kino-lumiere/2026-09-07',
     )
   })
 
@@ -143,14 +144,14 @@ describe('one cinema’s page', () => {
 
     expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
       'href',
-      '/en/kina/kino-lumiere/2026-09-07',
+      '/en/bratislava/kina/kino-lumiere/2026-09-07',
     )
     cleanup()
     renderCinema([WAVES])
 
     expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
       'href',
-      '/en/kina/kino-lumiere',
+      '/en/bratislava/kina/kino-lumiere',
     )
   })
 
@@ -161,7 +162,11 @@ describe('one cinema’s page', () => {
     fireEvent.click(screen.getByRole('button', { name: /Titulky/ }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Angličtina' }))
 
-    expect(replaceState).toHaveBeenCalledWith(null, '', '/kina/kino-lumiere/2026-09-07?titulky=en')
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      '',
+      '/bratislava/kina/kino-lumiere/2026-09-07?titulky=en',
+    )
   })
 
   it('narrows the day to what is typed, since a cinema’s programme is worth searching', () => {

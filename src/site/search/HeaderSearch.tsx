@@ -1,6 +1,7 @@
 'use client'
 
 import { type Language } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import { useEffect, useRef, useState } from 'react'
 
 import { toFilmsHref } from '@/site/films/hrefs'
@@ -16,6 +17,7 @@ import {
 
 type HeaderSearchProps = {
   language: Language
+  city: CityId | null
   className?: string
   // Left in flow the panel grows what it stands in, which is what the opened menu wants of it.
   panelClassName?: string
@@ -25,7 +27,12 @@ type HeaderSearchProps = {
  * The hero's search, shrunk to fit a header: the same field and the same panel. Enter goes where
  * the hero's button goes: the Films view, narrowed by what nobody picked a suggestion for.
  */
-export function HeaderSearch({ language, className = '', panelClassName = '' }: HeaderSearchProps) {
+export function HeaderSearch({
+  language,
+  city,
+  className = '',
+  panelClassName = '',
+}: HeaderSearchProps) {
   const copy = searchCopyByLanguage[language]
   const [query, setQuery] = useState('')
   const [isDismissed, setIsDismissed] = useState(false)
@@ -86,7 +93,7 @@ export function HeaderSearch({ language, className = '', panelClassName = '' }: 
 
   return (
     <form
-      action={toFilmsHref('', language)}
+      action={toFilmsHref('', language, city)}
       // An empty search names nothing to look for, so Enter does nothing rather than navigate.
       onSubmit={(event) => query.trim() === '' && event.preventDefault()}
       ref={field}

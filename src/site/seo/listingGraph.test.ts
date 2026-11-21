@@ -27,6 +27,7 @@ const LUMIERE = {
   id: 'kino-lumiere',
   name: 'Kino Lumière',
   address: 'Špitálska 4, Bratislava',
+  cityId: 'bratislava' as const,
 }
 
 const SHOWING = {

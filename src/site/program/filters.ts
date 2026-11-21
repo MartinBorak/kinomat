@@ -2,6 +2,7 @@ import { type FilmGenre, formatGenre } from 'kinomat-core/db/findGenres'
 import { toQueryString } from 'kinomat-core/lib/hrefs'
 import { type Language, toLanguagePrefix } from 'kinomat-core/lib/language'
 import { foldForSearch, toSlug } from 'kinomat-core/lib/text'
+import { type CityId, toCityPrefix } from 'kinomat-core/types/city'
 import { Temporal } from 'temporal-polyfill'
 
 import { type ProgramCopy } from '@/site/program/copy'
@@ -139,23 +140,25 @@ export function toDaySegment(date: Temporal.PlainDate | undefined): string {
 }
 
 /*
- * Everything the Program view reads out of its URL: the day, the language and the filters. A day is
- * a link rather than a click, and it carries the filters so that changing day does not drop them.
- * Without a day the schedule opens on the first day something is still on.
+ * Everything the Program view reads out of its URL: the day, the language, the city and the filters.
+ * A day is a link rather than a click, and it carries the filters so that changing day does not drop
+ * them. Without a day the schedule opens on the first day something is still on. A festival's part
+ * belongs to no city.
  */
 export function toProgramHref(
   date: Temporal.PlainDate | undefined,
   language: Language,
+  city: CityId | null,
   filters: ProgramFilters = NO_FILTERS,
   section: ScheduleSection = 'program',
 ): string {
-  return `${toLanguagePrefix(language)}/${section}${toDaySegment(date)}${toQueryString(
+  return `${toLanguagePrefix(language)}${toCityPrefix(city)}/${section}${toDaySegment(date)}${toQueryString(
     toFilterEntries(filters),
   )}`
 }
 
-export function toScheduleHref(language: Language): string {
-  return toProgramHref(undefined, language)
+export function toScheduleHref(language: Language, city: CityId | null): string {
+  return toProgramHref(undefined, language, city)
 }
 
 export function hasAnyFilter(filters: ProgramFilters): boolean {

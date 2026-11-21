@@ -1,5 +1,6 @@
 import { type Language, LOCALE_BY_LANGUAGE } from 'kinomat-core/lib/language'
 import { parseDay } from 'kinomat-core/lib/time'
+import { type CityId } from 'kinomat-core/types/city'
 import { notFound } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
@@ -18,6 +19,9 @@ import {
   readScheduledDays,
   readScreeningsOnDay,
 } from '@/site/program/readScreenings'
+
+// The account posts Bratislava's day only, until other cities are decided on.
+const REEL_CITY: CityId = 'bratislava'
 
 function countScreenings(programme: ProgrammeListing) {
   return programme.cinemas.reduce((sum, cinema) => sum + cinema.showings.length, 0)
@@ -49,12 +53,12 @@ export async function readReelDay(
   const today = await readToday()
   const days =
     festival === undefined
-      ? await readScheduledDays(today)
+      ? await readScheduledDays(REEL_CITY, today)
       : await readFestivalDays(festival, today)
   const date = Temporal.PlainDate.from(parseDay(den, days[0] ?? today))
   const rows =
     festival === undefined
-      ? await readScreeningsOnDay(date.toString())
+      ? await readScreeningsOnDay(REEL_CITY, date.toString())
       : await readFestivalScreeningsOnDay(festival, date.toString())
   const grouped = groupIntoProgrammes(rows)
   const programmes =

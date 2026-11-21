@@ -1,5 +1,7 @@
+import { DEFAULT_CITY } from 'kinomat-core/types/city'
 import type { Metadata } from 'next'
 
+import { readCity } from '@/lib/readCity'
 import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
@@ -16,43 +18,46 @@ export const instant = false
 
 /*
  * Without a sample of its params Cache Components renders the route on every request. The day-less
- * page is the sample; each named day is cached on its first visit.
+ * page of the default city is the sample; each other city and named day is cached on its first visit.
  */
 export function generateStaticParams() {
-  return [{ den: [] }]
+  return [{ city: DEFAULT_CITY, den: [] }]
 }
 
 export async function generateMetadata(
-  props: PageProps<'/[lang]/program/[[...den]]'>,
+  props: PageProps<'/[lang]/[city]/program/[[...den]]'>,
 ): Promise<Metadata> {
-  const language = readLanguage((await props.params).lang)
+  const { lang, city } = await props.params
+  const language = readLanguage(lang)
   const copy = programCopyByLanguage[language]
 
   return {
     title: copy.pageTitle,
     description: copy.pageDescription,
-    alternates: toAlternates('/program', language),
+    alternates: toAlternates(`/${readCity(city)}/program`, language),
   }
 }
 
-export default async function Program(props: PageProps<'/[lang]/program/[[...den]]'>) {
-  const { lang, den } = await props.params
+export default async function Program(props: PageProps<'/[lang]/[city]/program/[[...den]]'>) {
+  const { lang, city: segment, den } = await props.params
   const language = readLanguage(lang)
+  const city = readCity(segment)
   const namedDay = readDaySegment(den)
   const today = await readToday()
-  const days = await readScheduledDays(today)
+  const days = await readScheduledDays(city, today)
   /*
    * The strip offers only days something is still on, so the listing opens on one of those: by late
    * evening today is over, and opening on it would show a day the strip no longer offers.
    */
   const date = namedDay ?? days[0] ?? today
-  const programmes = groupIntoProgrammes(await readScreeningsOnDay(date))
+  const programmes = groupIntoProgrammes(await readScreeningsOnDay(city, date))
 
   return (
     <>
       <StructuredData data={toListingGraph(programmes, language)} />
       <ProgramPage
         language={language}
+        city={city}
         date={date}
         isDayNamed={namedDay !== undefined}
         today={today}

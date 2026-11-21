@@ -52,6 +52,7 @@ const WAVES: ProgrammeListing = {
       id: 'kino-lumiere',
       name: 'Kino Lumière',
       address: 'Špitálska 4, Bratislava',
+      cityId: 'bratislava',
       showings: [
         {
           id: 1,
@@ -88,6 +89,7 @@ function renderProgram(
   render(
     <ProgramPage
       language={language}
+      city="bratislava"
       date={date.toString()}
       isDayNamed={isDayNamed}
       today={TODAY.toString()}
@@ -126,7 +128,7 @@ describe('the Program view', () => {
     expect(screen.getByRole('link', { name: 'Vlny' })).toHaveAttribute('href', '/filmy/k7f3q2abcd')
     expect(screen.getByRole('link', { name: 'Kino Lumière' })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere',
+      '/bratislava/kina/kino-lumiere',
     )
   })
 
@@ -139,7 +141,7 @@ describe('the Program view', () => {
     )
     expect(screen.getByRole('link', { name: 'Kino Lumière' })).toHaveAttribute(
       'href',
-      '/en/kina/kino-lumiere',
+      '/en/bratislava/kina/kino-lumiere',
     )
   })
 
@@ -149,7 +151,7 @@ describe('the Program view', () => {
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute('aria-current', 'date')
     expect(screen.getByRole('link', { name: /Zajtra/ })).toHaveAttribute(
       'href',
-      '/program/2026-09-06',
+      '/bratislava/program/2026-09-06',
     )
   })
 
@@ -204,14 +206,17 @@ describe('the Program view', () => {
     renderProgram([WAVES], { language: 'en', isDayNamed: true })
 
     expect(screen.getByRole('heading', { name: 'Waves (Vlny)' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'SK' })).toHaveAttribute('href', '/program/2026-09-05')
+    expect(screen.getByRole('link', { name: 'SK' })).toHaveAttribute(
+      'href',
+      '/bratislava/program/2026-09-05',
+    )
   })
 
   // A day-less URL opens on the first day with something on, and switching language must not freeze that.
   it('leaves the day out of the language link where the URL named none', () => {
     renderProgram([WAVES], { language: 'en' })
 
-    expect(screen.getByRole('link', { name: 'SK' })).toHaveAttribute('href', '/program')
+    expect(screen.getByRole('link', { name: 'SK' })).toHaveAttribute('href', '/bratislava/program')
   })
 })
 
@@ -258,7 +263,7 @@ describe('filtering the Program view', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Titulky: Ľubovoľné titulky' }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Angličtina' }))
 
-    expect(replaceState).toHaveBeenCalledWith(null, '', '/program?titulky=en')
+    expect(replaceState).toHaveBeenCalledWith(null, '', '/bratislava/program?titulky=en')
   })
 
   it('carries the filters onto every other day, so changing day keeps them', () => {
@@ -266,7 +271,7 @@ describe('filtering the Program view', () => {
 
     expect(screen.getByRole('link', { name: /Zajtra/ })).toHaveAttribute(
       'href',
-      '/program/2026-09-06?q=vlny&kino=kino-lumiere',
+      '/bratislava/program/2026-09-06?q=vlny&kino=kino-lumiere',
     )
   })
 })

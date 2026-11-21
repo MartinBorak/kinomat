@@ -118,7 +118,7 @@ function CinemaRow({
       {isNamed && (
         <div className="group relative flex-none basis-[210px]">
           <Link
-            href={toCinemaHref(cinema.id, language)}
+            href={toCinemaHref(cinema, language)}
             className="text-ink hover:text-accent text-[14.5px]"
           >
             {cinema.name}

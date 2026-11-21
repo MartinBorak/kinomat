@@ -1,5 +1,6 @@
 import { getDatabase } from 'kinomat-core/db/appDatabase'
 import { type CinemaId } from 'kinomat-core/types/cinema'
+import { type CityId } from 'kinomat-core/types/city'
 import { Temporal } from 'temporal-polyfill'
 
 import { cacheUntilMidnight } from '@/lib/cacheUntilMidnight'
@@ -25,20 +26,20 @@ async function toDayStrings(days: Promise<Temporal.PlainDate[]>): Promise<string
   return (await days).map((day) => day.toString())
 }
 
-export async function readScheduledDays(from: string): Promise<string[]> {
+export async function readScheduledDays(city: CityId, from: string): Promise<string[]> {
   'use cache'
   cacheUntilMidnight()
   tagSchedule()
 
-  return toDayStrings(findScheduledDays(getDatabase(), Temporal.PlainDate.from(from)))
+  return toDayStrings(findScheduledDays(getDatabase(), city, Temporal.PlainDate.from(from)))
 }
 
-export async function readScreeningsOnDay(day: string): Promise<ScreeningRow[]> {
+export async function readScreeningsOnDay(city: CityId, day: string): Promise<ScreeningRow[]> {
   'use cache'
   cacheUntilMidnight()
   tagSchedule()
 
-  return findScreeningsOnDay(getDatabase(), Temporal.PlainDate.from(day))
+  return findScreeningsOnDay(getDatabase(), city, Temporal.PlainDate.from(day))
 }
 
 export async function readFilmDays(filmId: number, from: string): Promise<string[]> {

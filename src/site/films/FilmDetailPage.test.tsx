@@ -50,6 +50,7 @@ const WAVES: ProgrammeListing = {
       id: 'kino-lumiere',
       name: 'Kino Lumière',
       address: 'Špitálska 4, Bratislava',
+      cityId: 'bratislava',
       showings: [
         {
           id: 1,
@@ -108,7 +109,7 @@ describe('one film’s page', () => {
     expect(screen.queryByRole('link', { name: 'Vlny' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kino Lumière' })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere',
+      '/bratislava/kina/kino-lumiere',
     )
   })
 

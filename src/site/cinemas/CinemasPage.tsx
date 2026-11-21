@@ -1,5 +1,6 @@
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
 import { CINEMAS, type Cinema } from 'kinomat-core/types/cinema'
+import { type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
 
 import { CinemaLinks } from '@/site/cinemas/CinemaLinks'
@@ -9,19 +10,23 @@ import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
 
 /*
- * Every cinema we aggregate, named and no more: there is no poster to show one by, and what it is
- * playing is a question its own page answers. The registry is the whole list, so nothing is queried.
+ * Every cinema we aggregate in the city, named and no more: there is no poster to show one by, and
+ * what it is playing is a question its own page answers. The registry is the whole list, so nothing
+ * is queried.
  */
-export function CinemasPage({ language }: { language: Language }) {
+export function CinemasPage({ language, city }: { language: Language; city: CityId }) {
   // Alphabetical the way Slovak alphabetizes, so Č and Ľ fall where a reader looks for them.
-  const listed = [...CINEMAS].sort((one, other) => one.name.localeCompare(other.name, 'sk'))
+  const listed = CINEMAS.filter((cinema) => cinema.cityId === city).sort((one, other) =>
+    one.name.localeCompare(other.name, 'sk'),
+  )
 
   return (
     <SitePage>
       <SiteHeader
         current="kina"
         language={language}
-        languageChange={{ hrefByLanguage: toHrefByLanguage(toCinemasHref) }}
+        city={city}
+        languageChange={{ hrefByLanguage: toHrefByLanguage((next) => toCinemasHref(next, city)) }}
         hasSearch
       />
 
@@ -46,7 +51,7 @@ function CinemaCard({ cinema, language }: { cinema: Cinema; language: Language }
       <h2 className="m-0 text-[17px] leading-snug font-light">
         {/* The link is stretched over the whole card, so the card is what a reader clicks. */}
         <Link
-          href={toCinemaHref(cinema.id, language)}
+          href={toCinemaHref(cinema, language)}
           className="group-hover:text-accent text-white after:absolute after:inset-0"
         >
           {cinema.name}

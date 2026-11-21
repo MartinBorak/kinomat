@@ -5,6 +5,7 @@ import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
 import { cinemas, films, programmeFilms, screenings } from 'kinomat-core/db/schema'
 import { BRATISLAVA_TIME_ZONE, toBratislavaDayStart } from 'kinomat-core/lib/time'
 import { type CinemaId } from 'kinomat-core/types/cinema'
+import { type CityId } from 'kinomat-core/types/city'
 import { type PriceRange } from 'kinomat-core/types/priceRange'
 import { Temporal } from 'temporal-polyfill'
 
@@ -26,6 +27,7 @@ export type ScreeningRow = {
   cinemaId: string
   cinemaName: string
   cinemaAddress: string
+  cinemaCityId: CityId
   filmId: number
   publicId: string
   filmPosition: number
@@ -93,6 +95,7 @@ async function selectScreenings(
       cinemaId: screenings.cinemaId,
       cinemaName: cinemas.name,
       cinemaAddress: cinemas.address,
+      cinemaCityId: cinemas.cityId,
       filmId: films.id,
       publicId: films.publicId,
       filmPosition: programmeFilms.position,
@@ -223,13 +226,22 @@ function isAtFestivalCinema(festival: string): SQL | undefined {
   return inArray(screenings.cinemaId, [...(FESTIVALS[festival]?.cinemaIds ?? [])])
 }
 
-// The whole of one Bratislava calendar day, still to come.
+// The cinemas of one city, which is what its schedule lists.
+function isInCity(database: Database, city: CityId): SQL | undefined {
+  return inArray(
+    screenings.cinemaId,
+    database.select({ id: cinemas.id }).from(cinemas).where(eq(cinemas.cityId, city)),
+  )
+}
+
+// The whole of one calendar day in one city, still to come.
 export async function findScreeningsOnDay(
   database: Database,
+  city: CityId,
   date: Temporal.PlainDate,
   now: Date = new Date(),
 ): Promise<ScreeningRow[]> {
-  return selectScreenings(database, isOnDay(date, now))
+  return selectScreenings(database, and(isOnDay(date, now), isInCity(database, city)))
 }
 
 /*
@@ -294,15 +306,16 @@ async function selectDays(
 }
 
 /*
- * The days the date strip offers: the ones something is actually on, from today forward. Cinemas
+ * The days a city's date strip offers: the ones something is actually on there, from today forward. Cinemas
  * publish 8 to 30 days ahead and skip days in between, so a generated range would offer empty ones.
  */
 export async function findScheduledDays(
   database: Database,
+  city: CityId,
   from: Temporal.PlainDate,
   now: Date = new Date(),
 ): Promise<Temporal.PlainDate[]> {
-  return selectDays(database, isStillToCome(from, now))
+  return selectDays(database, and(isStillToCome(from, now), isInCity(database, city)))
 }
 
 // The days this one film is on, which is the whole of what its own strip has to offer.

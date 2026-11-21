@@ -22,6 +22,7 @@ function createRow(row: Partial<ScreeningRow>): ScreeningRow {
     cinemaId: 'kino-lumiere',
     cinemaName: 'Kino Lumière',
     cinemaAddress: 'Špitálska 4, Bratislava',
+    cinemaCityId: 'bratislava',
     filmId: 1,
     publicId: 'k7f3q2abcd',
     filmPosition: 0,

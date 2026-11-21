@@ -21,6 +21,7 @@ export function AboutPage({ language }: { language: Language }) {
       <SiteHeader
         current="o-kinomate"
         language={language}
+        city={null}
         languageChange={{ hrefByLanguage: toHrefByLanguage(toAboutHref) }}
         hasSearch
       />

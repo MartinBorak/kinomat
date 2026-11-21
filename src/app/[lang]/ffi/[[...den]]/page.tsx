@@ -65,6 +65,7 @@ export default async function Ffi(props: PageProps<'/[lang]/ffi/[[...den]]'>) {
       <ProgramPage
         section="ffi"
         language={language}
+        city={null}
         date={date}
         isDayNamed={namedDay !== undefined}
         today={today}

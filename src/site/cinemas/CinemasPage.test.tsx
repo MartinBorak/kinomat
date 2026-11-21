@@ -12,15 +12,17 @@ function cardOf(name: string) {
 }
 
 describe('the cinemas view', () => {
-  it('lists every cinema we aggregate', () => {
-    render(<CinemasPage language="sk" />)
+  it('lists every cinema we aggregate in the city', () => {
+    render(<CinemasPage language="sk" city="bratislava" />)
 
-    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(CINEMAS.length)
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(
+      CINEMAS.filter((cinema) => cinema.cityId === 'bratislava').length,
+    )
     expect(screen.getByRole('heading', { name: 'Kino Lumière' })).toBeInTheDocument()
   })
 
   it('names them in the order Slovak alphabetizes them in', () => {
-    render(<CinemasPage language="sk" />)
+    render(<CinemasPage language="sk" city="bratislava" />)
 
     const names = screen
       .getAllByRole('heading', { level: 2 })
@@ -30,16 +32,16 @@ describe('the cinemas view', () => {
   })
 
   it('sends a cinema’s name to its own page here', () => {
-    render(<CinemasPage language="sk" />)
+    render(<CinemasPage language="sk" city="bratislava" />)
 
     expect(screen.getByRole('link', { name: 'Kino Lumière' })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere',
+      '/bratislava/kina/kino-lumiere',
     )
   })
 
   it('links out to the page the cinema publishes for itself', () => {
-    render(<CinemasPage language="sk" />)
+    render(<CinemasPage language="sk" city="bratislava" />)
 
     const site = cardOf('Kino Lumière').getByRole('link', { name: 'stránka kina' })
 
@@ -48,7 +50,7 @@ describe('the cinemas view', () => {
   })
 
   it('puts the address on a map, named so the right entrance is found', () => {
-    render(<CinemasPage language="sk" />)
+    render(<CinemasPage language="sk" city="bratislava" />)
 
     expect(cardOf('Kino Lumière').getByRole('link', { name: 'mapa' })).toHaveAttribute(
       'href',
@@ -57,15 +59,15 @@ describe('the cinemas view', () => {
   })
 
   it('shows where the cinema stands, in every language', () => {
-    render(<CinemasPage language="en" />)
+    render(<CinemasPage language="en" city="bratislava" />)
 
     expect(cardOf('Kino Lumière').getByText('Špitálska 4, Bratislava')).toBeInTheDocument()
     expect(cardOf('Kino Lumière').getByRole('link', { name: 'cinema site' })).toBeInTheDocument()
   })
 
   it('stays on the list when the language changes', () => {
-    render(<CinemasPage language="sk" />)
+    render(<CinemasPage language="sk" city="bratislava" />)
 
-    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en/kina')
+    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en/bratislava/kina')
   })
 })

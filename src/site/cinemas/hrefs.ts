@@ -1,6 +1,7 @@
 import { toQueryString } from 'kinomat-core/lib/hrefs'
 import { type Language, toLanguagePrefix } from 'kinomat-core/lib/language'
 import { type Cinema } from 'kinomat-core/types/cinema'
+import { type CityId, toCityPrefix } from 'kinomat-core/types/city'
 import { type Temporal } from 'temporal-polyfill'
 
 import {
@@ -10,19 +11,19 @@ import {
   toFilterEntries,
 } from '@/site/program/filters'
 
-// The list of cinemas, which nothing but the language narrows.
-export function toCinemasHref(language: Language): string {
-  return `${toLanguagePrefix(language)}/kina`
+// A city's list of cinemas.
+export function toCinemasHref(language: Language, city: CityId | null): string {
+  return `${toLanguagePrefix(language)}${toCityPrefix(city)}/kina`
 }
 
-// One cinema's own page. Without a day it opens on its first day with something on.
+// One cinema's own page, under its own city. Without a day it opens on its first day with something on.
 export function toCinemaHref(
-  cinemaId: string,
+  cinema: Pick<Cinema, 'id' | 'cityId'>,
   language: Language,
   date?: Temporal.PlainDate,
   filters: ProgramFilters = NO_FILTERS,
 ): string {
-  return `${toLanguagePrefix(language)}/kina/${cinemaId}${toDaySegment(date)}${toQueryString(
+  return `${toCinemasHref(language, cinema.cityId)}/${cinema.id}${toDaySegment(date)}${toQueryString(
     toFilterEntries(filters),
   )}`
 }

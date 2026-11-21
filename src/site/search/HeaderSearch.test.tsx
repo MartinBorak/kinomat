@@ -23,7 +23,7 @@ beforeEach(() => {
 })
 
 function renderSearch(language: Language = 'sk') {
-  render(<HeaderSearch language={language} />)
+  render(<HeaderSearch language={language} city="bratislava" />)
 
   return screen.getByRole('textbox')
 }
@@ -52,7 +52,7 @@ describe('the header’s search', () => {
 
     expect(await screen.findByRole('link', { name: /Kino Lumière/ })).toHaveAttribute(
       'href',
-      '/kina/kino-lumiere',
+      '/bratislava/kina/kino-lumiere',
     )
 
     fireEvent.change(field, { target: { value: 'vlny' } })
@@ -70,10 +70,10 @@ describe('the header’s search', () => {
 
     expect(await screen.findByRole('link', { name: /Kino Lumière/ })).toHaveAttribute(
       'href',
-      '/en/kina/kino-lumiere',
+      '/en/bratislava/kina/kino-lumiere',
     )
     // The submission goes to the films view in the same language, or it would answer in Slovak.
-    expect(field.closest('form')).toHaveAttribute('action', '/en/filmy')
+    expect(field.closest('form')).toHaveAttribute('action', '/en/bratislava/filmy')
   })
 
   // Closed over the rows it was showing, as on the landing page: the closing plays over them.
@@ -102,7 +102,7 @@ describe('the header’s search', () => {
     fireEvent.change(field, { target: { value: 'vlny' } })
     await screen.findByRole('link', { name: /Vlny/ })
 
-    expect(field.closest('form')).toHaveAttribute('action', '/filmy')
+    expect(field.closest('form')).toHaveAttribute('action', '/bratislava/filmy')
     expect(field).toHaveAttribute('name', 'q')
   })
 })

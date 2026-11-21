@@ -39,7 +39,7 @@ function createFilm(film: Partial<FilmRow> = {}): FilmRow {
 function renderFilms(films: FilmRow[], { language = 'sk' as Language, search = '' } = {}) {
   url.searchParams = new URLSearchParams(search)
 
-  render(<FilmsPage language={language} today={TODAY.toString()} films={films} />)
+  render(<FilmsPage language={language} city="bratislava" today={TODAY.toString()} films={films} />)
 }
 
 describe('the films view', () => {
@@ -134,7 +134,7 @@ describe('the films view', () => {
     renderFilms([createFilm()])
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'vlny' } })
 
-    expect(replaceState).toHaveBeenCalledWith(null, '', '/filmy?q=vlny')
+    expect(replaceState).toHaveBeenCalledWith(null, '', '/bratislava/filmy?q=vlny')
   })
 
   it('reorders the grid by what the URL asks for', () => {
@@ -160,7 +160,11 @@ describe('the films view', () => {
       target: { value: 'nazov-desc' },
     })
 
-    expect(replaceState).toHaveBeenCalledWith(null, '', '/filmy?q=vlny&zoradenie=nazov-desc')
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      '',
+      '/bratislava/filmy?q=vlny&zoradenie=nazov-desc',
+    )
   })
 
   it('keeps the order when the language changes', () => {
@@ -168,14 +172,17 @@ describe('the films view', () => {
 
     expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
       'href',
-      '/en/filmy?zoradenie=nazov',
+      '/en/bratislava/filmy?zoradenie=nazov',
     )
   })
 
   it('keeps the query when the language changes', () => {
     renderFilms([createFilm()], { search: 'q=vlny' })
 
-    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en/filmy?q=vlny')
+    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
+      'href',
+      '/en/bratislava/filmy?q=vlny',
+    )
   })
 
   it('reads a film under its English title once the page is in English', () => {

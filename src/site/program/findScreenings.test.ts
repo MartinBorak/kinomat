@@ -23,6 +23,7 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
 
     const rows = await findScreeningsOnDay(
       database,
+      'bratislava',
       DAY,
       parseBratislavaTime('2026-09-10T09:00:00'),
     )
@@ -39,6 +40,7 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
 
     const rows = await findScreeningsOnDay(
       database,
+      'bratislava',
       DAY,
       parseBratislavaTime('2026-09-10T18:00:00'),
     )
@@ -53,6 +55,7 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
 
     const rows = await findScreeningsOnDay(
       database,
+      'bratislava',
       DAY,
       parseBratislavaTime('2026-09-10T09:00:00'),
     )
@@ -67,9 +70,17 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
       { titles: ['Vlny'], times: ['2026-09-10T20:00:00', '2026-09-13T18:00:00'] },
     ])
 
-    const days = await findScheduledDays(database, DAY, MORNING)
+    const days = await findScheduledDays(database, 'bratislava', DAY, MORNING)
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-10', '2026-09-13'])
+  })
+
+  // The fixture's cinema is in Bratislava, so another city's schedule has neither its day nor its showing.
+  it('reads one city only', async ({ database }) => {
+    await billFilms(database, [{ titles: ['Vlny'], times: ['2026-09-10T20:00:00'] }])
+
+    expect(await findScheduledDays(database, 'kosice', DAY, MORNING)).toEqual([])
+    expect(await findScreeningsOnDay(database, 'kosice', DAY, MORNING)).toEqual([])
   })
 
   /*
@@ -81,7 +92,12 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
       { titles: ['Vlny'], times: ['2026-09-10T08:00:00', '2026-09-11T20:00:00'] },
     ])
 
-    const days = await findScheduledDays(database, DAY, parseBratislavaTime('2026-09-10T09:00:00'))
+    const days = await findScheduledDays(
+      database,
+      'bratislava',
+      DAY,
+      parseBratislavaTime('2026-09-10T09:00:00'),
+    )
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-11'])
   })
@@ -98,6 +114,7 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
 
     const rows = await findScreeningsOnDay(
       database,
+      'bratislava',
       DAY,
       parseBratislavaTime('2026-09-10T09:00:00'),
     )
@@ -111,7 +128,7 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
       { titles: ['Vlny'], times: ['2026-09-13T18:00:00'] },
     ])
 
-    const days = await findScheduledDays(database, DAY, MORNING)
+    const days = await findScheduledDays(database, 'bratislava', DAY, MORNING)
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-13'])
   })
@@ -121,7 +138,7 @@ describe.skipIf(!databaseUrl)('reading a day', () => {
       { titles: ['Vlny'], times: ['2026-09-10T18:00:00', '2026-09-10T21:00:00'] },
     ])
 
-    const days = await findScheduledDays(database, DAY, MORNING)
+    const days = await findScheduledDays(database, 'bratislava', DAY, MORNING)
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-10'])
   })

@@ -1,6 +1,7 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import { Temporal } from 'temporal-polyfill'
 
 import { formatCount } from '@/site/films/labels'
@@ -34,6 +35,8 @@ import { WithSearchParams } from '@/site/ui/WithSearchParams'
  */
 type ProgramPageProps = {
   language: Language
+  // Null for a festival's part, which belongs to no city.
+  city: CityId | null
   date: string
   // Whether the path named the day, rather than the page opening on the first one with something on.
   isDayNamed: boolean
@@ -54,6 +57,7 @@ export function ProgramPage(props: ProgramPageProps) {
 function ProgramView({
   section = 'program',
   language,
+  city,
   date: isoDate,
   isDayNamed,
   today: isoToday,
@@ -91,7 +95,11 @@ function ProgramView({
 
   // Nothing here is stored, so a filter rewrites the URL it was read from rather than asking again.
   function changeFilters(next: ProgramFilters) {
-    window.history.replaceState(null, '', toProgramHref(requestedDate, language, next, section))
+    window.history.replaceState(
+      null,
+      '',
+      toProgramHref(requestedDate, language, city, next, section),
+    )
   }
 
   // What is missing: the day itself, the horizon it lies past, or only what the filters cut away.
@@ -108,9 +116,10 @@ function ProgramView({
       <SiteHeader
         current={section}
         language={language}
+        city={city}
         languageChange={{
           hrefByLanguage: toHrefByLanguage((next) =>
-            toProgramHref(requestedDate, next, filters, section),
+            toProgramHref(requestedDate, next, city, filters, section),
           ),
         }}
         hasSearch
@@ -122,7 +131,7 @@ function ProgramView({
         today={today}
         copy={copy}
         language={language}
-        toHref={(day) => toProgramHref(day, language, filters, section)}
+        toHref={(day) => toProgramHref(day, language, city, filters, section)}
       />
 
       <FilterBar

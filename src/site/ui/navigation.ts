@@ -1,4 +1,5 @@
 import { type Language } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 
 import { aboutCopyByLanguage } from '@/site/about/copy'
 import { toAboutHref } from '@/site/about/hrefs'
@@ -22,22 +23,28 @@ export type SiteSection = 'kina' | 'filmy' | 'program' | 'ffi' | 'o-kinomate'
  * The About page is the fourth: it was a footer link alone, at the end of a day's listing, and a
  * reader asking where a price comes from should find the answer one tap away. Its label is the
  * page's own title.
+ *
+ * A page outside any city links the city's sections bare, and the proxy fills in the reader's city.
  */
-export function toSiteNavigation(language: Language, current: SiteSection | null): NavItem[] {
+export function toSiteNavigation(
+  language: Language,
+  city: CityId | null,
+  current: SiteSection | null,
+): NavItem[] {
   const labels = LABELS_BY_LANGUAGE[language]
 
   return [
-    { label: labels.cinemas, href: toCinemasHref(language), isCurrent: current === 'kina' },
-    { label: labels.films, href: toFilmsHref('', language), isCurrent: current === 'filmy' },
+    { label: labels.cinemas, href: toCinemasHref(language, city), isCurrent: current === 'kina' },
+    { label: labels.films, href: toFilmsHref('', language, city), isCurrent: current === 'filmy' },
     {
       label: labels.schedule,
-      href: toScheduleHref(language),
+      href: toScheduleHref(language, city),
       isCurrent: current === 'program',
     },
     // Only while the festival runs, 18 to 24 November 2026; remove it, and its page, afterwards.
     {
       label: 'FFi',
-      href: toProgramHref(undefined, language, NO_FILTERS, 'ffi'),
+      href: toProgramHref(undefined, language, null, NO_FILTERS, 'ffi'),
       isCurrent: current === 'ffi',
     },
     {

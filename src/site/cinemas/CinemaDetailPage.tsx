@@ -97,7 +97,7 @@ function CinemaDetailView({
 
   // Nothing here is stored, so a filter rewrites the URL it was read from rather than asking again.
   function changeFilters(next: ProgramFilters) {
-    window.history.replaceState(null, '', toCinemaHref(cinema.id, language, requestedDate, next))
+    window.history.replaceState(null, '', toCinemaHref(cinema, language, requestedDate, next))
   }
 
   // What is missing: everything this cinema has, or only what the filters cut away.
@@ -111,9 +111,10 @@ function CinemaDetailView({
       <SiteHeader
         current="kina"
         language={language}
+        city={cinema.cityId}
         languageChange={{
           hrefByLanguage: toHrefByLanguage((next) =>
-            toCinemaHref(cinema.id, next, requestedDate, filters),
+            toCinemaHref(cinema, next, requestedDate, filters),
           ),
         }}
         hasSearch
@@ -135,7 +136,7 @@ function CinemaDetailView({
         today={today}
         copy={copy}
         language={language}
-        toHref={(day) => toCinemaHref(cinema.id, language, day, filters)}
+        toHref={(day) => toCinemaHref(cinema, language, day, filters)}
       />
 
       <FilterBar

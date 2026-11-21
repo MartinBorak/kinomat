@@ -67,7 +67,11 @@ function createProgramme(
   return {
     id: 1,
     films,
-    cinemas: cinemas.map((cinema) => ({ ...cinema, address: 'Špitálska 4, Bratislava' })),
+    cinemas: cinemas.map((cinema) => ({
+      ...cinema,
+      address: 'Špitálska 4, Bratislava',
+      cityId: 'bratislava',
+    })),
   }
 }
 
@@ -89,17 +93,23 @@ describe('reading the filters out of a URL', () => {
   })
 
   it('writes back only what was chosen, so an untouched link stays short', () => {
-    expect(toProgramHref(DATE, 'sk')).toBe('/program/2026-09-05')
-    expect(toProgramHref(DATE, 'en')).toBe('/en/program/2026-09-05')
-    expect(toProgramHref(undefined, 'sk')).toBe('/program')
+    expect(toProgramHref(DATE, 'sk', 'bratislava')).toBe('/bratislava/program/2026-09-05')
+    expect(toProgramHref(DATE, 'en', 'kosice')).toBe('/en/kosice/program/2026-09-05')
+    expect(toProgramHref(undefined, 'sk', 'bratislava')).toBe('/bratislava/program')
+    expect(toProgramHref(undefined, 'sk', null, NO_FILTERS, 'ffi')).toBe('/ffi')
     expect(
-      toProgramHref(DATE, 'sk', withFilters({ query: 'vlny', cinemas: ['kino-lumiere'] })),
-    ).toBe('/program/2026-09-05?q=vlny&kino=kino-lumiere')
+      toProgramHref(
+        DATE,
+        'sk',
+        'bratislava',
+        withFilters({ query: 'vlny', cinemas: ['kino-lumiere'] }),
+      ),
+    ).toBe('/bratislava/program/2026-09-05?q=vlny&kino=kino-lumiere')
   })
 
   it('survives a round trip through the URL', () => {
     const filters = withFilters({ query: 'vlny', cinemas: ['kino-lumiere'], subtitles: ['en'] })
-    const query = toProgramHref(DATE, 'sk', filters).split('?')[1]
+    const query = toProgramHref(DATE, 'sk', 'bratislava', filters).split('?')[1]
 
     expect(parseFilters(new URLSearchParams(query))).toEqual(filters)
   })
