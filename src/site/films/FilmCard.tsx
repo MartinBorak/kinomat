@@ -1,4 +1,5 @@
 import { type Language } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
 import { type Temporal } from 'temporal-polyfill'
 
@@ -18,6 +19,7 @@ import { FilmPoster } from '@/site/ui/FilmPoster'
 
 type FilmCardProps = {
   film: FilmRow
+  city: CityId
   today: Temporal.PlainDate
   copy: FilmsCopy
   language: Language
@@ -34,7 +36,7 @@ function PosterPlaceholder({ title }: { title: string }) {
 }
 
 // One film in the index: what it is, when it can next be seen, and in how many cinemas.
-export function FilmCard({ film, today, copy, language, isAboveFold }: FilmCardProps) {
+export function FilmCard({ film, city, today, copy, language, isAboveFold }: FilmCardProps) {
   const title = formatFilmTitle(film, language)
   const originalTitle = formatOriginalTitle(film, language)
   const meta = formatFilmMeta(film, copy)
@@ -43,7 +45,7 @@ export function FilmCard({ film, today, copy, language, isAboveFold }: FilmCardP
 
   return (
     <Link
-      href={toFilmHref(film.publicId, language)}
+      href={toFilmHref(film.publicId, language, city)}
       data-film-stop
       className="group flex w-full flex-none flex-col gap-2.5 md:w-[180px]"
     >

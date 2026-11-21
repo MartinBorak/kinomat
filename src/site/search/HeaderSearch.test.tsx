@@ -60,7 +60,7 @@ describe('the header’s search', () => {
 
     expect(await screen.findByRole('link', { name: /Vlny/ })).toHaveAttribute(
       'href',
-      '/filmy/k7f3q2abcd',
+      '/bratislava/filmy/k7f3q2abcd',
     )
   })
 

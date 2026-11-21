@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { type Language } from 'kinomat-core/lib/language'
 import { parseBratislavaTime } from 'kinomat-core/lib/time'
+import { type CityId } from 'kinomat-core/types/city'
 import { Temporal } from 'temporal-polyfill'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -69,18 +70,27 @@ const WAVES: ProgrammeListing = {
 
 function renderFilm(
   programmes: ProgrammeListing[],
-  { date = TODAY, isDayNamed = false, language = 'sk' as Language, search = '' } = {},
+  {
+    date = TODAY,
+    isDayNamed = false,
+    language = 'sk' as Language,
+    search = '',
+    days = DAYS,
+    otherCities = [] as CityId[],
+  } = {},
 ) {
   url.searchParams = new URLSearchParams(search)
 
   render(
     <FilmDetailPage
       language={language}
+      city="bratislava"
+      otherCities={otherCities}
       publicId={PUBLIC_ID}
       date={date.toString()}
       isDayNamed={isDayNamed}
       today={TODAY.toString()}
-      days={DAYS.map((day) => day.toString())}
+      days={days.map((day) => day.toString())}
       programmes={programmes}
     />,
   )
@@ -118,11 +128,11 @@ describe('one film’s page', () => {
 
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}/2026-09-05`,
+      `/bratislava/filmy/${PUBLIC_ID}/2026-09-05`,
     )
     expect(screen.getByRole('link', { name: /7/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}/2026-09-07`,
+      `/bratislava/filmy/${PUBLIC_ID}/2026-09-07`,
     )
   })
 
@@ -131,14 +141,14 @@ describe('one film’s page', () => {
 
     expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
       'href',
-      `/en/filmy/${PUBLIC_ID}/2026-09-07`,
+      `/en/bratislava/filmy/${PUBLIC_ID}/2026-09-07`,
     )
     cleanup()
     renderFilm([WAVES])
 
     expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute(
       'href',
-      `/en/filmy/${PUBLIC_ID}`,
+      `/en/bratislava/filmy/${PUBLIC_ID}`,
     )
   })
 
@@ -162,7 +172,11 @@ describe('one film’s page', () => {
     fireEvent.click(screen.getByRole('button', { name: /Titulky/ }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Angličtina' }))
 
-    expect(replaceState).toHaveBeenCalledWith(null, '', `/filmy/${PUBLIC_ID}/2026-09-07?titulky=en`)
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      '',
+      `/bratislava/filmy/${PUBLIC_ID}/2026-09-07?titulky=en`,
+    )
   })
 
   it('carries the filters over into every day of the strip', () => {
@@ -170,7 +184,7 @@ describe('one film’s page', () => {
 
     expect(screen.getByRole('link', { name: /Dnes/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}/2026-09-05?kino=kino-lumiere`,
+      `/bratislava/filmy/${PUBLIC_ID}/2026-09-05?kino=kino-lumiere`,
     )
   })
 
@@ -178,5 +192,27 @@ describe('one film’s page', () => {
     renderFilm([])
 
     expect(screen.getByText('Na tento deň nič nehrá')).toBeInTheDocument()
+  })
+  // Each other city's page opens on that city's own first day, so the link names no day.
+  it('names the other cities it plays in, each a link to its page there', () => {
+    renderFilm([WAVES], { date: DAYS[1], isDayNamed: true, otherCities: ['kosice', 'nitra'] })
+
+    expect(screen.getByText('Hrá aj v:')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Košice' })).toHaveAttribute(
+      'href',
+      `/kosice/filmy/${PUBLIC_ID}`,
+    )
+    expect(screen.getByRole('link', { name: 'Nitra' })).toHaveAttribute(
+      'href',
+      `/nitra/filmy/${PUBLIC_ID}`,
+    )
+  })
+
+  it('says the film is not on in this city, and where it is instead', () => {
+    renderFilm([], { days: [], otherCities: ['kosice'] })
+
+    expect(screen.getByText('Tento film v Bratislave nehrá')).toBeInTheDocument()
+    expect(screen.getByText('Hrá v:')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Košice' })).toBeInTheDocument()
   })
 })

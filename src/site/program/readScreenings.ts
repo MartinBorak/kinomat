@@ -10,6 +10,7 @@ import {
   findCinemaScreeningsOnDay,
   findFestivalDays,
   findFestivalScreeningsOnDay,
+  findFilmCities,
   findFilmDays,
   findFilmScreeningsOnDay,
   findScheduledDays,
@@ -42,23 +43,32 @@ export async function readScreeningsOnDay(city: CityId, day: string): Promise<Sc
   return findScreeningsOnDay(getDatabase(), city, Temporal.PlainDate.from(day))
 }
 
-export async function readFilmDays(filmId: number, from: string): Promise<string[]> {
+export async function readFilmDays(filmId: number, city: CityId, from: string): Promise<string[]> {
   'use cache'
   cacheUntilMidnight()
   tagSchedule()
 
-  return toDayStrings(findFilmDays(getDatabase(), filmId, Temporal.PlainDate.from(from)))
+  return toDayStrings(findFilmDays(getDatabase(), filmId, city, Temporal.PlainDate.from(from)))
+}
+
+export async function readFilmCities(filmId: number): Promise<CityId[]> {
+  'use cache'
+  cacheUntilMidnight()
+  tagSchedule()
+
+  return findFilmCities(getDatabase(), filmId)
 }
 
 export async function readFilmScreeningsOnDay(
   filmId: number,
+  city: CityId,
   day: string,
 ): Promise<ScreeningRow[]> {
   'use cache'
   cacheUntilMidnight()
   tagSchedule()
 
-  return findFilmScreeningsOnDay(getDatabase(), filmId, Temporal.PlainDate.from(day))
+  return findFilmScreeningsOnDay(getDatabase(), filmId, city, Temporal.PlainDate.from(day))
 }
 
 export async function readFestivalDays(festival: string, from: string): Promise<string[]> {

@@ -151,7 +151,13 @@ describe.skipIf(!databaseUrl)('reading one film', () => {
       { titles: ['Dune'], times: ['2026-09-10T18:00:00'] },
     ])
 
-    const rows = await findFilmScreeningsOnDay(database, filmIdByTitle.get('Vlny')!, DAY, MORNING)
+    const rows = await findFilmScreeningsOnDay(
+      database,
+      filmIdByTitle.get('Vlny')!,
+      'bratislava',
+      DAY,
+      MORNING,
+    )
 
     expect(rows.map((row) => row.titleSk)).toEqual(['Vlny'])
   })
@@ -168,6 +174,7 @@ describe.skipIf(!databaseUrl)('reading one film', () => {
     const rows = await findFilmScreeningsOnDay(
       database,
       filmIdByTitle.get('Zakorenení vo vode')!,
+      'bratislava',
       DAY,
       MORNING,
     )
@@ -181,7 +188,13 @@ describe.skipIf(!databaseUrl)('reading one film', () => {
       { titles: ['Dune'], times: ['2026-09-11T18:00:00'] },
     ])
 
-    const days = await findFilmDays(database, filmIdByTitle.get('Vlny')!, DAY, MORNING)
+    const days = await findFilmDays(
+      database,
+      filmIdByTitle.get('Vlny')!,
+      'bratislava',
+      DAY,
+      MORNING,
+    )
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-10', '2026-09-13'])
   })
@@ -191,7 +204,13 @@ describe.skipIf(!databaseUrl)('reading one film', () => {
       { titles: ['Vlny'], times: ['2026-09-10T08:00:00', '2026-09-13T18:00:00'] },
     ])
 
-    const days = await findFilmDays(database, filmIdByTitle.get('Vlny')!, DAY, MORNING)
+    const days = await findFilmDays(
+      database,
+      filmIdByTitle.get('Vlny')!,
+      'bratislava',
+      DAY,
+      MORNING,
+    )
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-13'])
   })
@@ -202,7 +221,13 @@ describe.skipIf(!databaseUrl)('reading one film', () => {
       { titles: ['Vlny', 'Dune'], times: ['2026-09-10T17:00:00'] },
     ])
 
-    const days = await findFilmDays(database, filmIdByTitle.get('Vlny')!, DAY, MORNING)
+    const days = await findFilmDays(
+      database,
+      filmIdByTitle.get('Vlny')!,
+      'bratislava',
+      DAY,
+      MORNING,
+    )
 
     expect(days.map((day) => day.toString())).toEqual(['2026-09-10'])
   })

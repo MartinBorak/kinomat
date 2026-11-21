@@ -125,7 +125,10 @@ describe('the Program view', () => {
   it('leads from a film and a cinema it plays at to their own pages', () => {
     renderProgram([WAVES])
 
-    expect(screen.getByRole('link', { name: 'Vlny' })).toHaveAttribute('href', '/filmy/k7f3q2abcd')
+    expect(screen.getByRole('link', { name: 'Vlny' })).toHaveAttribute(
+      'href',
+      '/bratislava/filmy/k7f3q2abcd',
+    )
     expect(screen.getByRole('link', { name: 'Kino Lumière' })).toHaveAttribute(
       'href',
       '/bratislava/kina/kino-lumiere',
@@ -137,7 +140,7 @@ describe('the Program view', () => {
 
     expect(screen.getByRole('link', { name: 'Waves' })).toHaveAttribute(
       'href',
-      '/en/filmy/k7f3q2abcd',
+      '/en/bratislava/filmy/k7f3q2abcd',
     )
     expect(screen.getByRole('link', { name: 'Kino Lumière' })).toHaveAttribute(
       'href',

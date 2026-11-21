@@ -28,14 +28,15 @@ export function toFilmsHref(
   ])}`
 }
 
-// One film's own page. Without a day it opens on the first the film plays, which the server knows.
+// One film's page in a city. Without a day it opens on the first the film plays there.
 export function toFilmHref(
   publicId: string,
   language: Language,
+  city: CityId | null,
   date?: Temporal.PlainDate,
   filters: ProgramFilters = NO_FILTERS,
 ): string {
-  return `${toLanguagePrefix(language)}/filmy/${publicId}${toDaySegment(date)}${toQueryString(
+  return `${toFilmsHref('', language, city)}/${publicId}${toDaySegment(date)}${toQueryString(
     toFilterEntries(filters),
   )}`
 }

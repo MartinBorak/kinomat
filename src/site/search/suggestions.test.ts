@@ -82,14 +82,14 @@ describe('film suggestions', () => {
   }
 
   it('answers to every title the film has, whichever one is shown', () => {
-    const [suggestion] = toFilmSuggestions([FILM], 'sk')
+    const [suggestion] = toFilmSuggestions([FILM], 'sk', 'bratislava')
 
     expect(matchSuggestions([suggestion], 'waves')).toHaveLength(1)
     expect(matchSuggestions([suggestion], 'vlny')).toHaveLength(1)
   })
 
   it('shows the reader their own title for it', () => {
-    expect(toFilmSuggestions([FILM], 'sk')[0].name).toBe('Vlny')
-    expect(toFilmSuggestions([FILM], 'en')[0].name).toBe('Waves')
+    expect(toFilmSuggestions([FILM], 'sk', 'bratislava')[0].name).toBe('Vlny')
+    expect(toFilmSuggestions([FILM], 'en', 'bratislava')[0].name).toBe('Waves')
   })
 })

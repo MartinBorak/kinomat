@@ -32,9 +32,19 @@ type ProgrammeCardProps = {
   currentFilmPublicId?: string
 }
 
-// Where the poster and the title lead, which for the film a page is about is nowhere.
-function toFilmLink(film: ListedFilm, language: Language, currentFilmPublicId?: string) {
-  return film.publicId === currentFilmPublicId ? null : toFilmHref(film.publicId, language)
+/*
+ * Where the poster and the title lead, which for the film a page is about is nowhere. A card lists
+ * one city's cinemas, so the film's page is the one in their city.
+ */
+function toFilmLink(
+  film: ListedFilm,
+  programme: ProgrammeListing,
+  language: Language,
+  currentFilmPublicId?: string,
+) {
+  const city = programme.cinemas[0]?.cityId ?? null
+
+  return film.publicId === currentFilmPublicId ? null : toFilmHref(film.publicId, language, city)
 }
 
 // One film of the bill: what it is called, when it was made, and where it can be read about.
@@ -200,7 +210,7 @@ export function ProgrammeCard({
           <FilmHeading
             key={film.id}
             film={film}
-            href={toFilmLink(film, language, currentFilmPublicId)}
+            href={toFilmLink(film, programme, language, currentFilmPublicId)}
             copy={copy}
             language={language}
           />
@@ -214,7 +224,7 @@ export function ProgrammeCard({
           <PosterLink
             key={film.id}
             film={film}
-            href={toFilmLink(film, language, currentFilmPublicId)}
+            href={toFilmLink(film, programme, language, currentFilmPublicId)}
             isAboveFold={isAboveFold}
           />
         ))}

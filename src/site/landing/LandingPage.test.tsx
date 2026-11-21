@@ -60,7 +60,10 @@ describe('the landing page', () => {
 
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'vlny' } })
 
-    expect(screen.getByRole('link', { name: /Vlny/ })).toHaveAttribute('href', '/filmy/k7f3q2abcd')
+    expect(screen.getByRole('link', { name: /Vlny/ })).toHaveAttribute(
+      'href',
+      '/bratislava/filmy/k7f3q2abcd',
+    )
   })
 
   /*
@@ -113,7 +116,7 @@ describe('the landing page', () => {
     // The Slovak query still finds the film, and the row shows the reader's own title for it.
     expect(screen.getByRole('link', { name: /Waves/ })).toHaveAttribute(
       'href',
-      '/en/filmy/k7f3q2abcd',
+      '/en/bratislava/filmy/k7f3q2abcd',
     )
     expect(screen.getByRole('textbox', { name: /film/i }).closest('form')).toHaveAttribute(
       'action',

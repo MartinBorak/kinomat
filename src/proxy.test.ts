@@ -101,8 +101,17 @@ describe('the city proxy', () => {
     )
   })
 
-  it('leaves a film’s page and the About page outside any city', () => {
-    expect(proxy(request('/filmy/k7f3q2abcd', 'kosice')).status).toBe(200)
+  // A film's page lists one city's showings, so a link without the city goes to the reader's.
+  it('sends a film’s page without a city to the reader’s, keeping its day and query', () => {
+    const response = proxy(request('/en/filmy/k7f3q2abcd/2026-09-05?kino=x', 'kosice'))
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe(
+      'https://kinomat.test/en/kosice/filmy/k7f3q2abcd/2026-09-05?kino=x',
+    )
+  })
+
+  it('leaves the About page outside any city', () => {
     expect(proxy(request('/o-kinomate', 'kosice')).status).toBe(200)
   })
 

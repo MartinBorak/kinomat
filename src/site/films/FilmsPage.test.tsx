@@ -57,7 +57,7 @@ describe('the films view', () => {
 
     expect(screen.getByRole('link', { name: /Vlny/ })).toHaveAttribute(
       'href',
-      `/filmy/${PUBLIC_ID}`,
+      `/bratislava/filmy/${PUBLIC_ID}`,
     )
   })
 

@@ -1,4 +1,5 @@
 import { type Language } from 'kinomat-core/lib/language'
+import { type SupportedCity } from 'kinomat-core/types/city'
 
 import { type CountCopy } from '@/site/films/labels'
 import { type Ordering } from '@/site/films/ordering'
@@ -18,6 +19,11 @@ export type FilmsCopy = {
   emptyHint: string
   noMatchTitle: string
   noMatchHint: string
+  // A film's page in a city it is not playing in, and the line naming where it plays.
+  notInCityTitle: (city: SupportedCity) => string
+  notInCityHint: string
+  showingIn: string
+  alsoShowingIn: string
 }
 
 export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
@@ -44,6 +50,10 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
     emptyHint: 'Skús to znova, keď kiná zverejnia program.',
     noMatchTitle: 'Taký film teraz nehrá',
     noMatchHint: 'Skús kratší názov alebo ho napíš inak.',
+    notInCityTitle: (city) => `Tento film ${city.slovakLocative} nehrá`,
+    notInCityHint: 'Pozri, kde hrá inde.',
+    showingIn: 'Hrá v',
+    alsoShowingIn: 'Hrá aj v',
   },
   en: {
     pageTitle: 'Films',
@@ -67,5 +77,9 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
     emptyHint: 'Try again once the cinemas publish their schedule.',
     noMatchTitle: 'That film is not playing',
     noMatchHint: 'Try a shorter title or a different spelling.',
+    notInCityTitle: (city) => `This film is not showing in ${city.name}`,
+    notInCityHint: 'See where else it is on.',
+    showingIn: 'Showing in',
+    alsoShowingIn: 'Also showing in',
   },
 }

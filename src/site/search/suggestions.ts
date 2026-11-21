@@ -57,10 +57,11 @@ export function toSuggestedFilms(films: readonly FilmRow[]): SuggestedFilm[] {
   }))
 }
 
-// A film shows the reader's own title but answers to every name it has, and leads to its own page.
+// A film shows the reader's own title but answers to every name it has, and leads to its page in the city.
 export function toFilmSuggestions(
   films: readonly SuggestedFilm[],
   language: Language,
+  city: CityId | null,
 ): Suggestion[] {
   return films.map((film) => {
     const name = formatFilmTitle(film, language)
@@ -71,7 +72,7 @@ export function toFilmSuggestions(
         (title) => title !== '' && title !== name,
       ),
       meta: film.releaseYear === null ? '' : String(film.releaseYear),
-      href: toFilmHref(film.publicId, language),
+      href: toFilmHref(film.publicId, language, city),
     }
   })
 }
@@ -121,7 +122,7 @@ export function toLabelledSuggestions(
   const copy = searchCopyByLanguage[language]
 
   return [
-    { label: copy.filmsLabel, suggestions: toFilmSuggestions(films, language) },
+    { label: copy.filmsLabel, suggestions: toFilmSuggestions(films, language, city) },
     { label: copy.cinemasLabel, suggestions: toCinemaSuggestions(language, city) },
   ]
 }

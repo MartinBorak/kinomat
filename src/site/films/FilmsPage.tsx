@@ -111,6 +111,7 @@ export function FilmsPage({ language, city, today: isoToday, films }: FilmsPageP
             <FilmCard
               key={film.filmId}
               film={film}
+              city={city}
               today={today}
               copy={copy}
               language={language}

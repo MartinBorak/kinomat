@@ -1,8 +1,10 @@
 import { toQueryString } from 'kinomat-core/lib/hrefs'
+import { DEFAULT_CITY } from 'kinomat-core/types/city'
 import { isFilmAlias, isFilmPublicId } from 'kinomat-core/types/film'
 import { notFound, redirect } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
+import { readCity } from '@/lib/readCity'
 import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
@@ -11,12 +13,16 @@ import { toFilmHref } from '@/site/films/hrefs'
 import { formatFilmTitle } from '@/site/films/labels'
 import { readFilmPublicIdByAlias, readPlayingFilm, readPlayingFilms } from '@/site/films/readFilms'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
-import { readFilmDays, readFilmScreeningsOnDay } from '@/site/program/readScreenings'
+import {
+  readFilmCities,
+  readFilmDays,
+  readFilmScreeningsOnDay,
+} from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
 import { toAlternates } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
-type FilmPageProps = PageProps<'/[lang]/filmy/[film]/[[...den]]'>
+type FilmPageProps = PageProps<'/[lang]/[city]/filmy/[film]/[[...den]]'>
 
 // The query as it came, so an alias link to a day or a filter lands on that day with that filter.
 function toQuery(searchParams: Awaited<FilmPageProps['searchParams']>): string {
@@ -35,7 +41,7 @@ function toQuery(searchParams: Awaited<FilmPageProps['searchParams']>): string {
  * are a page that is not there. The lookups are cached, so asking twice is free.
  */
 async function readFilm(props: FilmPageProps) {
-  const { lang, film: segment, den } = await props.params
+  const { lang, city, film: segment, den } = await props.params
 
   if (isFilmPublicId(segment)) {
     const film = await readPlayingFilm(segment)
@@ -51,7 +57,7 @@ async function readFilm(props: FilmPageProps) {
       const date = day === undefined ? undefined : Temporal.PlainDate.from(day)
 
       redirect(
-        `${toFilmHref(publicId, readLanguage(lang), date)}${toQuery(await props.searchParams)}`,
+        `${toFilmHref(publicId, readLanguage(lang), readCity(city), date)}${toQuery(await props.searchParams)}`,
       )
     }
   }
@@ -70,36 +76,41 @@ export const instant = false
 export async function generateStaticParams() {
   const [film] = await readPlayingFilms()
 
-  return [{ film: film?.publicId ?? 'zatial-nic', den: [] }]
+  return [{ city: DEFAULT_CITY, film: film?.publicId ?? 'zatial-nic', den: [] }]
 }
 
 export async function generateMetadata(props: FilmPageProps) {
-  const { lang } = await props.params
+  const { lang, city } = await props.params
   const film = await readFilm(props)
 
   return {
     title: formatFilmTitle(film, readLanguage(lang)),
-    alternates: toAlternates(`/filmy/${film.publicId}`, readLanguage(lang)),
+    alternates: toAlternates(`/${readCity(city)}/filmy/${film.publicId}`, readLanguage(lang)),
   }
 }
 
 export default async function Film(props: FilmPageProps) {
-  const { lang, den } = await props.params
+  const { lang, city: segment, den } = await props.params
   const language = readLanguage(lang)
+  const city = readCity(segment)
   const film = await readFilm(props)
   const namedDay = readDaySegment(den)
   const today = await readToday()
 
-  const days = await readFilmDays(film.filmId, today)
-  // The strip offers only the days this film is on, so one of those is where it opens.
+  const days = await readFilmDays(film.filmId, city, today)
+  // The strip offers only the days this film is on here, so one of those is where it opens.
   const date = namedDay ?? days[0] ?? today
-  const programmes = groupIntoProgrammes(await readFilmScreeningsOnDay(film.filmId, date))
+  const programmes = groupIntoProgrammes(await readFilmScreeningsOnDay(film.filmId, city, date))
+  // Where else it plays, so a reader whose city has none of it is told where to go instead.
+  const otherCities = (await readFilmCities(film.filmId)).filter((other) => other !== city)
 
   return (
     <>
       <StructuredData data={toListingGraph(programmes, language)} />
       <FilmDetailPage
         language={language}
+        city={city}
+        otherCities={otherCities}
         publicId={film.publicId}
         date={date}
         isDayNamed={namedDay !== undefined}

@@ -16,11 +16,11 @@ import { CITY_COOKIE, readRememberedCity } from '@/lib/rememberedCity'
 const CITY_SEGMENT = CITIES.map((city) => city.id).join('|')
 // The listings that take a day; the reel takes one too, but in its query, and is no page to link to.
 const DAY_LISTING_PATTERN = new RegExp(
-  `^(?:/en)?(?:(?:/(?:${CITY_SEGMENT}))?/(?:program|kina/[^/]+)|/filmy/[^/]+)/?$`,
+  `^(?:/en)?(?:/(?:${CITY_SEGMENT}))?/(?:program|kina/[^/]+|filmy/[^/]+)/?$`,
 )
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-// A city's pages, spelled without the city: its front page, its schedule, its cinemas, its films.
-const CITYLESS_LISTING_PATTERN = /^\/(?:|program(?:\/.*)?|kina(?:\/.*)?|filmy\/?)$/
+// A city's pages, spelled without the city: its front page, schedule, cinemas, films and a film.
+const CITYLESS_LISTING_PATTERN = /^\/(?:|program(?:\/.*)?|kina(?:\/.*)?|filmy(?:\/.*)?)$/
 
 // A year: the city a reader lives in changes rarely, and every visit to one renews it.
 const CITY_COOKIE_MAX_AGE = 60 * 60 * 24 * 365

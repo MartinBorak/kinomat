@@ -5,7 +5,7 @@ import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
 import { cinemas, films, programmeFilms, screenings } from 'kinomat-core/db/schema'
 import { BRATISLAVA_TIME_ZONE, toBratislavaDayStart } from 'kinomat-core/lib/time'
 import { type CinemaId } from 'kinomat-core/types/cinema'
-import { type CityId } from 'kinomat-core/types/city'
+import { CITIES, type CityId } from 'kinomat-core/types/city'
 import { type PriceRange } from 'kinomat-core/types/priceRange'
 import { Temporal } from 'temporal-polyfill'
 
@@ -251,12 +251,17 @@ export async function findScreeningsOnDay(
 export async function findFilmScreeningsOnDay(
   database: Database,
   filmId: number,
+  city: CityId,
   date: Temporal.PlainDate,
   now: Date = new Date(),
 ): Promise<ScreeningRow[]> {
   return selectScreenings(
     database,
-    and(isOnDay(date, now), inArray(screenings.programmeId, selectProgrammesOf(database, filmId))),
+    and(
+      isOnDay(date, now),
+      isInCity(database, city),
+      inArray(screenings.programmeId, selectProgrammesOf(database, filmId)),
+    ),
   )
 }
 
@@ -318,10 +323,11 @@ export async function findScheduledDays(
   return selectDays(database, and(isStillToCome(from, now), isInCity(database, city)))
 }
 
-// The days this one film is on, which is the whole of what its own strip has to offer.
+// The days this one film is on in a city, which is the whole of what its own strip has to offer.
 export async function findFilmDays(
   database: Database,
   filmId: number,
+  city: CityId,
   from: Temporal.PlainDate,
   now: Date = new Date(),
 ): Promise<Temporal.PlainDate[]> {
@@ -329,6 +335,7 @@ export async function findFilmDays(
     database,
     and(
       isStillToCome(from, now),
+      isInCity(database, city),
       inArray(screenings.programmeId, selectProgrammesOf(database, filmId)),
     ),
   )
@@ -360,4 +367,26 @@ export async function findCinemaDays(
   now: Date = new Date(),
 ): Promise<Temporal.PlainDate[]> {
   return selectDays(database, and(isStillToCome(from, now), eq(screenings.cinemaId, cinemaId)))
+}
+
+// Every city the film still plays in, in the registry's order, so its page can name the others.
+export async function findFilmCities(
+  database: Database,
+  filmId: number,
+  now: Date = new Date(),
+): Promise<CityId[]> {
+  const rows = await database
+    .selectDistinct({ city: cinemas.cityId })
+    .from(screenings)
+    .innerJoin(cinemas, eq(cinemas.id, screenings.cinemaId))
+    .where(
+      and(
+        gte(screenings.startsAt, now),
+        inArray(screenings.programmeId, selectProgrammesOf(database, filmId)),
+        IS_BOOKABLE,
+      ),
+    )
+  const playing = new Set(rows.map((row) => row.city))
+
+  return CITIES.map((city) => city.id).filter((city) => playing.has(city))
 }
