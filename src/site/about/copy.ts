@@ -44,7 +44,7 @@ export const aboutCopyByLanguage: Record<Language, AboutCopy> = {
       {
         title: 'Súkromie',
         paragraphs: [
-          'Kinomat nepoužíva cookies ani nič iné neukladá do tvojho prehliadača a nikoho nesleduje.',
+          'Kinomat ukladá do tvojho prehliadača jedinú cookie: mesto, ktorého program si naposledy pozeral, aby sme ti ho pri ďalšej návšteve ukázali znova. Nič iné neukladáme a nikoho nesledujeme.',
           'Návštevnosť počítame anonymne a bez cookies: vidíme počty zobrazení stránok, nie návštevníkov.',
           'Ak nám napíšeš, tvoju adresu použijeme len na odpoveď.',
         ],
@@ -82,7 +82,7 @@ export const aboutCopyByLanguage: Record<Language, AboutCopy> = {
       {
         title: 'Privacy',
         paragraphs: [
-          'Kinomat sets no cookies, stores nothing else in your browser and tracks nobody.',
+          'Kinomat stores a single cookie in your browser: the city whose programme you last looked at, so we can show it to you again on your next visit. We store nothing else and track nobody.',
           'Visits are counted anonymously and without cookies: we see page view counts, not visitors.',
           'If you write to us, we use your address only to reply.',
         ],
