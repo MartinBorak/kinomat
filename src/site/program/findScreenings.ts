@@ -226,8 +226,8 @@ function isAtFestivalCinema(festival: string): SQL | undefined {
   return inArray(screenings.cinemaId, [...(FESTIVALS[festival]?.cinemaIds ?? [])])
 }
 
-// The cinemas of one city, which is what its schedule lists.
-function isInCity(database: Database, city: CityId): SQL | undefined {
+// The cinemas of one city, which is what its schedule and its films list.
+export function isInCity(database: Database, city: CityId): SQL | undefined {
   return inArray(
     screenings.cinemaId,
     database.select({ id: cinemas.id }).from(cinemas).where(eq(cinemas.cityId, city)),

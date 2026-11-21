@@ -26,13 +26,10 @@ export async function generateMetadata(props: PageProps<'/[lang]/[city]'>) {
 }
 
 export default async function Home(props: PageProps<'/[lang]/[city]'>) {
-  const { lang, city } = await props.params
+  const { lang, city: segment } = await props.params
+  const city = readCity(segment)
 
   return (
-    <LandingPage
-      films={await readSuggestedFilms()}
-      language={readLanguage(lang)}
-      city={readCity(city)}
-    />
+    <LandingPage films={await readSuggestedFilms(city)} language={readLanguage(lang)} city={city} />
   )
 }

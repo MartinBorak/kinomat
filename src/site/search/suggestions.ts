@@ -1,6 +1,8 @@
+import { toQueryString } from 'kinomat-core/lib/hrefs'
 import { type Language } from 'kinomat-core/lib/language'
 import { foldForSearch } from 'kinomat-core/lib/text'
 import { CINEMAS } from 'kinomat-core/types/cinema'
+import { type CityId } from 'kinomat-core/types/city'
 
 import { toCinemaHref } from '@/site/cinemas/hrefs'
 import { type FilmRow } from '@/site/films/findFilms'
@@ -11,13 +13,14 @@ import { searchCopyByLanguage } from '@/site/search/copy'
 // One row of the search panel: what it shows, the other names it answers to, and where it leads.
 export type Suggestion = { name: string; alternates: readonly string[]; meta: string; href: string }
 
-// The street a cinema stands on, which is the address minus the city every one of them shares.
+// The street a cinema stands on, which is the address minus the city every one listed shares.
 function toStreet(address: string): string {
   return address.split(',')[0]
 }
 
-export function toCinemaSuggestions(language: Language): Suggestion[] {
-  return CINEMAS.map((cinema) => ({
+// The city's own cinemas; before a page in no city knows which city it is searching, none.
+export function toCinemaSuggestions(language: Language, city: CityId | null): Suggestion[] {
+  return CINEMAS.filter((cinema) => cinema.cityId === city).map((cinema) => ({
     name: cinema.name,
     alternates: [],
     meta: toStreet(cinema.address),
@@ -31,8 +34,18 @@ export type SuggestedFilm = Pick<
   'publicId' | 'titleSk' | 'titleEn' | 'originalTitle' | 'releaseYear'
 >
 
-// Where the header's search fetches its films once focused, instead of every page carrying them.
-export const SUGGESTED_FILMS_ROUTE = '/api/navrhy'
+// What the search route answers: a city's films, and which city that is.
+export type SuggestedFilms = { city: CityId; films: SuggestedFilm[] }
+
+export const CITY_PARAMETER = 'mesto'
+
+/*
+ * Where the header's search fetches its films once focused, instead of every page carrying them.
+ * Without a city the route answers for the one the reader last looked at.
+ */
+export function toSuggestedFilmsRoute(city: CityId | null): string {
+  return `/api/navrhy${city === null ? '' : toQueryString([[CITY_PARAMETER, city]])}`
+}
 
 export function toSuggestedFilms(films: readonly FilmRow[]): SuggestedFilm[] {
   return films.map(({ publicId, titleSk, titleEn, originalTitle, releaseYear }) => ({
@@ -100,11 +113,15 @@ export function findSuggestionGroups<T extends { name: string; alternates: reado
 }
 
 // What every search on the site offers: the films playing, then the cinemas.
-export function toLabelledSuggestions(films: readonly SuggestedFilm[], language: Language) {
+export function toLabelledSuggestions(
+  films: readonly SuggestedFilm[],
+  language: Language,
+  city: CityId | null,
+) {
   const copy = searchCopyByLanguage[language]
 
   return [
     { label: copy.filmsLabel, suggestions: toFilmSuggestions(films, language) },
-    { label: copy.cinemasLabel, suggestions: toCinemaSuggestions(language) },
+    { label: copy.cinemasLabel, suggestions: toCinemaSuggestions(language, city) },
   ]
 }

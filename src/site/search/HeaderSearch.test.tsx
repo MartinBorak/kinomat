@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { type Language } from 'kinomat-core/lib/language'
+import { type CityId } from 'kinomat-core/types/city'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { HeaderSearch } from '@/site/search/HeaderSearch'
-import { SUGGESTED_FILMS_ROUTE, type SuggestedFilm } from '@/site/search/suggestions'
+import { type SuggestedFilm } from '@/site/search/suggestions'
 
 const FILMS: SuggestedFilm[] = [
   {
@@ -18,12 +19,12 @@ const FILMS: SuggestedFilm[] = [
 const fetchFilms = vi.fn()
 
 beforeEach(() => {
-  fetchFilms.mockReset().mockResolvedValue(Response.json(FILMS))
+  fetchFilms.mockReset().mockResolvedValue(Response.json({ city: 'bratislava', films: FILMS }))
   vi.stubGlobal('fetch', fetchFilms)
 })
 
-function renderSearch(language: Language = 'sk') {
-  render(<HeaderSearch language={language} city="bratislava" />)
+function renderSearch(language: Language = 'sk', city: CityId | null = 'bratislava') {
+  render(<HeaderSearch language={language} city={city} />)
 
   return screen.getByRole('textbox')
 }
@@ -42,7 +43,7 @@ describe('the header’s search', () => {
     fireEvent.focus(field)
     fireEvent.change(field, { target: { value: 'vlny' } })
 
-    expect(fetchFilms).toHaveBeenCalledExactlyOnceWith(SUGGESTED_FILMS_ROUTE)
+    expect(fetchFilms).toHaveBeenCalledExactlyOnceWith('/api/navrhy?mesto=bratislava')
   })
 
   it('offers both a film and a cinema, the way the landing page does', async () => {
@@ -104,5 +105,27 @@ describe('the header’s search', () => {
 
     expect(field.closest('form')).toHaveAttribute('action', '/bratislava/filmy')
     expect(field).toHaveAttribute('name', 'q')
+  })
+  it('offers only the city’s own cinemas', async () => {
+    const field = renderSearch('sk', 'kosice')
+
+    fireEvent.change(field, { target: { value: 'vlny' } })
+    await screen.findByRole('link', { name: /Vlny/ })
+    fireEvent.change(field, { target: { value: 'lumiere' } })
+
+    expect(screen.queryByRole('link', { name: /Kino Lumière/ })).not.toBeInTheDocument()
+  })
+
+  // A film's page is in no city, so the route answers for the reader's own and says which it is.
+  it('asks a page in no city’s search for the reader’s city, and offers that city’s cinemas', async () => {
+    const field = renderSearch('sk', null)
+
+    fireEvent.change(field, { target: { value: 'lumiere' } })
+
+    expect(fetchFilms).toHaveBeenCalledExactlyOnceWith('/api/navrhy')
+    expect(await screen.findByRole('link', { name: /Kino Lumière/ })).toHaveAttribute(
+      'href',
+      '/bratislava/kina/kino-lumiere',
+    )
   })
 })

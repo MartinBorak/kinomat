@@ -2,6 +2,9 @@ import { and, asc, eq, gte, type SQL, sql } from 'drizzle-orm'
 import { type Database } from 'kinomat-core/db/client'
 import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
 import { films, programmeFilms, screenings } from 'kinomat-core/db/schema'
+import { type CityId } from 'kinomat-core/types/city'
+
+import { isInCity } from '@/site/program/findScreenings'
 
 /*
  * A film and where it stands in what is on: its own fields, plus a summary of the showings still to
@@ -65,6 +68,15 @@ export async function findPlayingFilms(
   now: Date = new Date(),
 ): Promise<FilmRow[]> {
   return selectPlaying(database, now, undefined)
+}
+
+// The same, in one city: its count, cinemas and next showing are that city's alone.
+export async function findCityFilms(
+  database: Database,
+  city: CityId,
+  now: Date = new Date(),
+): Promise<FilmRow[]> {
+  return selectPlaying(database, now, isInCity(database, city))
 }
 
 /*

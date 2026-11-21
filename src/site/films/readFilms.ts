@@ -1,9 +1,11 @@
 import { getDatabase } from 'kinomat-core/db/appDatabase'
+import { type CityId } from 'kinomat-core/types/city'
 import { cacheLife } from 'next/cache'
 
 import { cacheUntilMidnight } from '@/lib/cacheUntilMidnight'
 import { tagSchedule } from '@/lib/tagSchedule'
 import {
+  findCityFilms,
   findFilmPublicIdByAlias,
   findPlayingFilm,
   findPlayingFilms,
@@ -27,16 +29,25 @@ export async function readPlayingFilms(): Promise<FilmRow[]> {
   return findPlayingFilms(getDatabase())
 }
 
+export async function readCityFilms(city: CityId): Promise<FilmRow[]> {
+  'use cache'
+  cacheLife('minutes')
+  tagSchedule()
+
+  return findCityFilms(getDatabase(), city)
+}
+
 /*
- * The films search can offer, which are names and years and nothing that ages with the clock. So
- * this outlasts the minute: the landing page is rebuilt whenever it lapses, and a publish clears it.
+ * The films search can offer in a city, which are names and years and nothing that ages with the
+ * clock. So this outlasts the minute: the landing page is rebuilt whenever it lapses, and a publish
+ * clears it.
  */
-export async function readSuggestedFilms(): Promise<SuggestedFilm[]> {
+export async function readSuggestedFilms(city: CityId): Promise<SuggestedFilm[]> {
   'use cache'
   cacheLife('hours')
   tagSchedule()
 
-  return toSuggestedFilms(await readPlayingFilms())
+  return toSuggestedFilms(await readCityFilms(city))
 }
 
 export async function readPlayingFilm(publicId: string): Promise<FilmRow | null> {

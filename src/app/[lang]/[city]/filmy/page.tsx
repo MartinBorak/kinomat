@@ -7,7 +7,7 @@ import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
 import { filmsCopyByLanguage } from '@/site/films/copy'
 import { FilmsPage } from '@/site/films/FilmsPage'
-import { readPlayingFilms } from '@/site/films/readFilms'
+import { readCityFilms } from '@/site/films/readFilms'
 import { toAlternates } from '@/site/seo/site'
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
@@ -33,7 +33,8 @@ export async function generateMetadata(
 }
 
 export default async function Films(props: PageProps<'/[lang]/[city]/filmy'>) {
-  const { lang, city } = await props.params
+  const { lang, city: segment } = await props.params
+  const city = readCity(segment)
 
   /*
    * The query, order and genres live in the URL and are read in the browser, so no two readers see
@@ -44,9 +45,9 @@ export default async function Films(props: PageProps<'/[lang]/[city]/filmy'>) {
   return (
     <FilmsPage
       language={readLanguage(lang)}
-      city={readCity(city)}
+      city={city}
       today={await readToday()}
-      films={await readPlayingFilms()}
+      films={await readCityFilms(city)}
     />
   )
 }

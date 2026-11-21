@@ -10,9 +10,9 @@ import { searchCopyByLanguage } from '@/site/search/copy'
 import { SuggestionPanel } from '@/site/search/SuggestionPanel'
 import {
   findSuggestionGroups,
-  SUGGESTED_FILMS_ROUTE,
-  type SuggestedFilm,
+  type SuggestedFilms,
   toLabelledSuggestions,
+  toSuggestedFilmsRoute,
 } from '@/site/search/suggestions'
 
 type HeaderSearchProps = {
@@ -36,7 +36,7 @@ export function HeaderSearch({
   const copy = searchCopyByLanguage[language]
   const [query, setQuery] = useState('')
   const [isDismissed, setIsDismissed] = useState(false)
-  const [films, setFilms] = useState<readonly SuggestedFilm[]>([])
+  const [suggested, setSuggested] = useState<SuggestedFilms | null>(null)
   const [isRequested, setIsRequested] = useState(false)
   const field = useRef<HTMLFormElement>(null)
   const input = useRef<HTMLInputElement>(null)
@@ -51,9 +51,9 @@ export function HeaderSearch({
     }
 
     setIsRequested(true)
-    fetch(SUGGESTED_FILMS_ROUTE)
-      .then((response) => response.json() as Promise<SuggestedFilm[]>)
-      .then(setFilms)
+    fetch(toSuggestedFilmsRoute(city))
+      .then((response) => response.json() as Promise<SuggestedFilms>)
+      .then(setSuggested)
       .catch(() => setIsRequested(false))
   }
 
@@ -79,10 +79,13 @@ export function HeaderSearch({
     }
   }, [])
 
-  // The cinemas are a registry both sides hold; only the films have to be asked of the server.
+  // The cinemas are a registry both sides hold; the films, and a city-less page's city, are asked.
   const groups = isDismissed
     ? []
-    : findSuggestionGroups(toLabelledSuggestions(films, language), query)
+    : findSuggestionGroups(
+        toLabelledSuggestions(suggested?.films ?? [], language, city ?? suggested?.city ?? null),
+        query,
+      )
 
   // Pasted or autofilled text changes the field without focusing it, so a change also requests.
   function changeQuery(next: string) {

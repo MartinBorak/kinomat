@@ -95,7 +95,9 @@ export function SiteHeader({
         <div className="flex min-w-0 flex-1 items-center justify-end gap-5 md:min-h-10 md:gap-7">
           {/* Too narrow a field to type a film into, below md: there it waits inside the menu. */}
           {hasSearch && (
+            // Keyed by city: the router keeps the header across cities, and its films are one city's.
             <HeaderSearch
+              key={city}
               language={language}
               city={city}
               className="hidden min-w-[150px] flex-1 md:block md:max-w-[300px]"
@@ -155,7 +157,7 @@ export function SiteHeader({
         <div className="border-line bg-surface-raised relative z-40 flex flex-col border-b md:hidden">
           {hasSearch && (
             <div className="border-line border-b px-[22px] py-3.5">
-              <HeaderSearch language={language} city={city} />
+              <HeaderSearch key={city} language={language} city={city} />
             </div>
           )}
 

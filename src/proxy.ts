@@ -1,7 +1,9 @@
 import { DEFAULT_LANGUAGE, isLanguage } from 'kinomat-core/lib/language'
 import { findCinema } from 'kinomat-core/types/cinema'
-import { CITIES, type CityId, DEFAULT_CITY, isCityId } from 'kinomat-core/types/city'
+import { CITIES, type CityId, isCityId } from 'kinomat-core/types/city'
 import { type NextRequest, NextResponse } from 'next/server'
+
+import { CITY_COOKIE, readRememberedCity } from '@/lib/rememberedCity'
 
 /*
  * Every public page lives under app/[lang], but the default language is written bare: /kina is
@@ -20,7 +22,6 @@ const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 // A city's pages, spelled without the city: its front page, its schedule, its cinemas, its films.
 const CITYLESS_LISTING_PATTERN = /^\/(?:|program(?:\/.*)?|kina(?:\/.*)?|filmy\/?)$/
 
-const CITY_COOKIE = 'mesto'
 // A year: the city a reader lives in changes rarely, and every visit to one renews it.
 const CITY_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
@@ -44,12 +45,6 @@ function toDayPath(request: NextRequest): URL | null {
   }
 
   return moved
-}
-
-function readRememberedCity(request: NextRequest): CityId {
-  const remembered = request.cookies.get(CITY_COOKIE)?.value ?? ''
-
-  return isCityId(remembered) ? remembered : DEFAULT_CITY
 }
 
 /*

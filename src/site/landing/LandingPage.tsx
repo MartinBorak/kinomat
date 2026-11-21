@@ -90,7 +90,7 @@ export function LandingPage({ films, language, city }: LandingPageProps) {
 
   const copy = copyByLanguage[language]
   const searchCopy = searchCopyByLanguage[language]
-  const groups = findSuggestionGroups(toLabelledSuggestions(films, language), query)
+  const groups = findSuggestionGroups(toLabelledSuggestions(films, language, city), query)
   // What the panel being open means everywhere else on the page, the hero making room for it.
   const isOpen = groups.length > 0
 
