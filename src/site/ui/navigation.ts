@@ -1,16 +1,19 @@
 import { type Language } from 'kinomat-core/lib/language'
-import { type CityId } from 'kinomat-core/types/city'
+import { CITIES, type CityId } from 'kinomat-core/types/city'
 
 import { aboutCopyByLanguage } from '@/site/about/copy'
 import { toAboutHref } from '@/site/about/hrefs'
 import { toCinemasHref } from '@/site/cinemas/hrefs'
 import { toFilmsHref } from '@/site/films/hrefs'
+import { toHomeHref } from '@/site/landing/hrefs'
 import { NO_FILTERS, toProgramHref, toScheduleHref } from '@/site/program/filters'
 
 const LABELS_BY_LANGUAGE: Record<Language, { cinemas: string; films: string; schedule: string }> = {
   sk: { cinemas: 'Kiná', films: 'Filmy', schedule: 'Program' },
   en: { cinemas: 'Cinemas', films: 'Films', schedule: 'Schedule' },
 }
+
+export const CITY_LABEL_BY_LANGUAGE: Record<Language, string> = { sk: 'Mesto', en: 'City' }
 
 type NavItem = { label: string; href: string; isCurrent: boolean }
 
@@ -53,4 +56,34 @@ export function toSiteNavigation(
       isCurrent: current === 'o-kinomate',
     },
   ]
+}
+
+// The section a page belongs to, in another city: a cinema's own page is one city's only, so its list.
+function toSectionHref(language: Language, city: CityId, current: SiteSection | null): string {
+  switch (current) {
+    case 'kina':
+      return toCinemasHref(language, city)
+    case 'filmy':
+      return toFilmsHref('', language, city)
+    case 'program':
+      return toScheduleHref(language, city)
+    default:
+      return toHomeHref(language, city)
+  }
+}
+
+/*
+ * The city menu's links, each to the section the reader is in. The day and the filters stay behind,
+ * since a day or a cinema chosen in one city names nothing in the next.
+ */
+export function toCityNavigation(
+  language: Language,
+  city: CityId,
+  current: SiteSection | null,
+): NavItem[] {
+  return CITIES.map((other) => ({
+    label: other.name,
+    href: toSectionHref(language, other.id, current),
+    isCurrent: other.id === city,
+  }))
 }

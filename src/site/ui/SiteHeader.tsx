@@ -8,6 +8,7 @@ import { Fragment, useState } from 'react'
 import { toHomeHref } from '@/site/landing/hrefs'
 import { HeaderSearch } from '@/site/search/HeaderSearch'
 import { BrandMark } from '@/site/ui/BrandMark'
+import { CitySwitcher } from '@/site/ui/CitySwitcher'
 import { type SiteSection, toSiteNavigation } from '@/site/ui/navigation'
 
 /*
@@ -68,13 +69,26 @@ export function SiteHeader({
   return (
     <>
       <header className="border-line relative flex items-center justify-between gap-5 border-b px-[22px] py-4 md:px-[6vw] md:py-[18px]">
-        <Link
-          href={toHomeHref(language, city)}
-          className="flex flex-none items-center gap-3 md:gap-3.5"
-        >
-          <BrandMark />
-          <span className="text-[19px] tracking-[0.16em] uppercase md:text-[22px]">Kinomat</span>
-        </Link>
+        {/* The city stands under the wordmark on a phone, where the bar has no room beside it. */}
+        <div className="flex flex-none flex-col items-start gap-1 md:flex-row md:items-center md:gap-6">
+          <Link
+            href={toHomeHref(language, city)}
+            className="flex flex-none items-center gap-3 md:gap-3.5"
+          >
+            <BrandMark />
+            <span className="text-[19px] tracking-[0.16em] uppercase md:text-[22px]">Kinomat</span>
+          </Link>
+
+          {/* A page in no city, a film's or About, has no city to switch from. */}
+          {city !== null && (
+            <CitySwitcher
+              language={language}
+              city={city}
+              current={current}
+              className="pl-[46px] md:pl-0"
+            />
+          )}
+        </div>
 
         {/* The rest takes the width the brand leaves, so the search grows into whatever is spare, and
             the height of the field whether or not it carries one - the bar is one bar on every page. */}

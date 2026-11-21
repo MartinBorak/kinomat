@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { toSiteNavigation } from '@/site/ui/navigation'
+import { toCityNavigation, toSiteNavigation } from '@/site/ui/navigation'
 
 describe('the site navigation', () => {
   it('links the city’s views, the festival and the About page in Slovak, and marks the current one', () => {
@@ -33,5 +33,30 @@ describe('the site navigation', () => {
       '/ffi',
       '/o-kinomate',
     ])
+  })
+})
+
+describe('the city menu', () => {
+  it('offers every city, in the section the reader is in, and marks the current one', () => {
+    const items = toCityNavigation('sk', 'kosice', 'program')
+
+    expect(items.map((item) => item.label)).toEqual([
+      'Banská Bystrica',
+      'Bratislava',
+      'Košice',
+      'Nitra',
+      'Prešov',
+      'Trenčín',
+      'Trnava',
+      'Žilina',
+    ])
+    expect(items.find((item) => item.isCurrent)?.label).toBe('Košice')
+    expect(items.find((item) => item.label === 'Nitra')?.href).toBe('/nitra/program')
+  })
+
+  // A cinema is one city's only, so its page leads to the other city's list of them.
+  it('sends a cinema’s page to the other city’s cinemas, and the front page to its front page', () => {
+    expect(toCityNavigation('en', 'kosice', 'kina').at(-1)?.href).toBe('/en/zilina/kina')
+    expect(toCityNavigation('sk', 'kosice', null).at(-1)?.href).toBe('/zilina')
   })
 })
