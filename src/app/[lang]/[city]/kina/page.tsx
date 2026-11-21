@@ -1,11 +1,11 @@
-import { DEFAULT_CITY } from 'kinomat-core/types/city'
+import { CITY_BY_ID, DEFAULT_CITY } from 'kinomat-core/types/city'
 import type { Metadata } from 'next'
 
 import { readCity } from '@/lib/readCity'
 import { readLanguage } from '@/lib/readLanguage'
 import { CinemasPage } from '@/site/cinemas/CinemasPage'
 import { cinemasCopyByLanguage } from '@/site/cinemas/copy'
-import { toAlternates } from '@/site/seo/site'
+import { toAlternates, toCityTitle } from '@/site/seo/site'
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
 export const instant = false
@@ -16,14 +16,15 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata(props: PageProps<'/[lang]/[city]/kina'>): Promise<Metadata> {
-  const { lang, city } = await props.params
+  const { lang, city: segment } = await props.params
   const language = readLanguage(lang)
+  const city = readCity(segment)
   const copy = cinemasCopyByLanguage[language]
 
   return {
-    title: copy.pageTitle,
-    description: copy.pageDescription,
-    alternates: toAlternates(`/${readCity(city)}/kina`, language),
+    title: toCityTitle(copy.pageTitle, city),
+    description: copy.pageDescription(CITY_BY_ID[city]),
+    alternates: toAlternates(`/${city}/kina`, language),
   }
 }
 

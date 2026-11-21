@@ -1,32 +1,33 @@
 import { type Language } from 'kinomat-core/lib/language'
+import { type SupportedCity } from 'kinomat-core/types/city'
 
 export type LandingCopy = {
-  kicker: string
+  kicker: (city: SupportedCity) => string
   headline: string
   search: string
   undecided: string
   browseSchedule: string
-  pageDescription: string
+  pageDescription: (city: SupportedCity) => string
 }
 
 // Every string the page shows, in both languages: one dictionary rather than an i18n framework.
 export const copyByLanguage: Record<Language, LandingCopy> = {
   sk: {
-    kicker: 'Všetky kiná v Bratislave na jednom mieste',
+    kicker: (city) => `Všetky kiná ${city.slovakLocative} na jednom mieste`,
     headline: 'Na aký film ideš?',
     search: 'Hľadať',
     undecided: 'Ešte nevieš?',
     browseSchedule: 'Pozri si program',
-    pageDescription:
-      'Program všetkých bratislavských kín na jednom mieste, od Cinema City a Cinemaxu po Lumière, Mladosť či Nostalgiu. Filmy, kiná a časy premietania na najbližšie dni.',
+    pageDescription: (city) =>
+      `Program všetkých ${city.slovakPluralAdjective} kín na jednom mieste. Filmy, kiná a časy premietania na najbližšie dni.`,
   },
   en: {
-    kicker: 'Every cinema in Bratislava in one place',
+    kicker: (city) => `Every cinema in ${city.name} in one place`,
     headline: 'What are you going to see?',
     search: 'Search',
     undecided: 'Not sure yet?',
     browseSchedule: 'See the schedule',
-    pageDescription:
-      'Showtimes from every cinema in Bratislava in one place, from Cinema City and Cinemax to Lumière, Mladosť and Nostalgia. Films, cinemas and times for the days ahead.',
+    pageDescription: (city) =>
+      `Showtimes from every cinema in ${city.name} in one place. Films, cinemas and times for the days ahead.`,
   },
 }

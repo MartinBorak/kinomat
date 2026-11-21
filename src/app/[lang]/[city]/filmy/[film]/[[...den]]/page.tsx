@@ -19,7 +19,7 @@ import {
   readFilmScreeningsOnDay,
 } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
-import { toAlternates } from '@/site/seo/site'
+import { toAlternates, toCityTitle } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
 type FilmPageProps = PageProps<'/[lang]/[city]/filmy/[film]/[[...den]]'>
@@ -84,7 +84,7 @@ export async function generateMetadata(props: FilmPageProps) {
   const film = await readFilm(props)
 
   return {
-    title: formatFilmTitle(film, readLanguage(lang)),
+    title: toCityTitle(formatFilmTitle(film, readLanguage(lang)), readCity(city)),
     alternates: toAlternates(`/${readCity(city)}/filmy/${film.publicId}`, readLanguage(lang)),
   }
 }

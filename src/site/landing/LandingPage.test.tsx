@@ -173,4 +173,10 @@ describe('the landing page', () => {
 
     expect(screen.getByRole('textbox')).toHaveValue('')
   })
+  // Slovak declines the city, so each one carries its own form rather than a pattern of endings.
+  it('names the city it lists, declined in Slovak', () => {
+    render(<LandingPage films={FILMS} language="sk" city="kosice" />)
+
+    expect(screen.getByText('Všetky kiná v Košiciach na jednom mieste')).toBeInTheDocument()
+  })
 })

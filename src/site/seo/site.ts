@@ -1,4 +1,5 @@
 import { LANGUAGES, type Language, toLanguagePrefix } from 'kinomat-core/lib/language'
+import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 import { type Metadata } from 'next'
 
 // The one absolute name the site has; robots, the sitemap and every canonical must agree on it.
@@ -23,4 +24,9 @@ export function toAlternates(path: string, language: Language): Metadata['altern
       'x-default': toLanguagePath(path, 'sk'),
     },
   }
+}
+
+// A city page's title names its city, which is what a search for a city's programme looks for.
+export function toCityTitle(title: string, city: CityId): string {
+  return `${title} · ${CITY_BY_ID[city].name}`
 }

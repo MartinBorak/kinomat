@@ -1,4 +1,4 @@
-import { DEFAULT_CITY } from 'kinomat-core/types/city'
+import { CITY_BY_ID, DEFAULT_CITY } from 'kinomat-core/types/city'
 
 import { readCity } from '@/lib/readCity'
 import { readLanguage } from '@/lib/readLanguage'
@@ -16,12 +16,14 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata(props: PageProps<'/[lang]/[city]'>) {
-  const { lang, city } = await props.params
+  const { lang, city: segment } = await props.params
   const language = readLanguage(lang)
+  const city = readCity(segment)
 
   return {
-    description: copyByLanguage[language].pageDescription,
-    alternates: toAlternates(`/${readCity(city)}`, language),
+    title: CITY_BY_ID[city].name,
+    description: copyByLanguage[language].pageDescription(CITY_BY_ID[city]),
+    alternates: toAlternates(`/${city}`, language),
   }
 }
 

@@ -1,4 +1,5 @@
 import { type Language } from 'kinomat-core/lib/language'
+import { type SupportedCity } from 'kinomat-core/types/city'
 
 import { type CountCopy } from '@/site/films/labels'
 import { type Dimension } from '@/site/program/filters'
@@ -23,7 +24,7 @@ export type FilterBarCopy = {
 
 export type ProgramCopy = FilterBarCopy & {
   pageTitle: string
-  pageDescription: string
+  pageDescription: (city: SupportedCity) => string
   today: string
   tomorrow: string
   days: string
@@ -74,8 +75,8 @@ export const programCopyByLanguage: Record<Language, ProgramCopy> = {
   sk: {
     ...filterCopyByLanguage.sk,
     pageTitle: 'Program',
-    pageDescription:
-      'Program všetkých bratislavských kín na dnes a najbližšie dni, podľa kina, zvuku, titulkov a žánru.',
+    pageDescription: (city) =>
+      `Program všetkých ${city.slovakPluralAdjective} kín na dnes a najbližšie dni, podľa kina, zvuku, titulkov a žánru.`,
     today: 'Dnes',
     tomorrow: 'Zajtra',
     days: 'Dni',
@@ -101,8 +102,8 @@ export const programCopyByLanguage: Record<Language, ProgramCopy> = {
   en: {
     ...filterCopyByLanguage.en,
     pageTitle: 'Schedule',
-    pageDescription:
-      'Showtimes across all Bratislava cinemas for today and the days ahead, by cinema, audio, subtitles and genre.',
+    pageDescription: (city) =>
+      `Showtimes across all ${city.name} cinemas for today and the days ahead, by cinema, audio, subtitles and genre.`,
     today: 'Today',
     tomorrow: 'Tomorrow',
     days: 'Days',

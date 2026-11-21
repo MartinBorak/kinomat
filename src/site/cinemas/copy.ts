@@ -1,8 +1,9 @@
 import { type Language } from 'kinomat-core/lib/language'
+import { type SupportedCity } from 'kinomat-core/types/city'
 
 export type CinemasCopy = {
   pageTitle: string
-  pageDescription: string
+  pageDescription: (city: SupportedCity) => string
   website: string
   map: string
   emptyTitle: string
@@ -12,7 +13,7 @@ export type CinemasCopy = {
 export const cinemasCopyByLanguage: Record<Language, CinemasCopy> = {
   sk: {
     pageTitle: 'Kiná',
-    pageDescription: 'Všetky kiná v Bratislave a čo v nich práve hrajú.',
+    pageDescription: (city) => `Všetky kiná ${city.slovakLocative} a čo v nich práve hrajú.`,
     website: 'stránka kina',
     map: 'mapa',
     emptyTitle: 'Toto kino teraz nič nehrá',
@@ -20,7 +21,7 @@ export const cinemasCopyByLanguage: Record<Language, CinemasCopy> = {
   },
   en: {
     pageTitle: 'Cinemas',
-    pageDescription: 'Every cinema in Bratislava and what is playing in each.',
+    pageDescription: (city) => `Every cinema in ${city.name} and what is playing in each.`,
     website: 'cinema site',
     map: 'map',
     emptyTitle: 'This cinema has nothing on',

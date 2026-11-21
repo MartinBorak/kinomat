@@ -10,7 +10,7 @@ import { toCinemaHref } from '@/site/cinemas/hrefs'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import { readCinemaDays, readCinemaScreeningsOnDay } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
-import { toAlternates } from '@/site/seo/site'
+import { toAlternates, toCityTitle } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
 type CinemaPageProps = PageProps<'/[lang]/[city]/kina/[kino]/[[...den]]'>
@@ -54,7 +54,7 @@ export async function generateMetadata(props: CinemaPageProps) {
   const cinema = await readCinema(props)
 
   return {
-    title: cinema.name,
+    title: toCityTitle(cinema.name, cinema.cityId),
     alternates: toAlternates(`/${cinema.cityId}/kina/${cinema.id}`, readLanguage(lang)),
   }
 }

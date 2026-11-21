@@ -9,8 +9,8 @@ import { Document } from '@/site/ui/Document'
 import { ScrollButtons } from '@/site/ui/ScrollButtons'
 
 const DESCRIPTION_BY_LANGUAGE: Record<Language, string> = {
-  sk: 'Program bratislavských kín na jednom mieste',
-  en: 'Bratislava’s cinema showtimes in one place',
+  sk: 'Program kín slovenských miest na jednom mieste',
+  en: 'Cinema showtimes from Slovak cities in one place',
 }
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.

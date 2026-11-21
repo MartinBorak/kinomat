@@ -1,7 +1,7 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
-import { type CityId } from 'kinomat-core/types/city'
+import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -118,7 +118,7 @@ export function LandingPage({ films, language, city }: LandingPageProps) {
           }`}
         >
           <p className="text-accent/85 text-center text-[10px] font-light tracking-[0.3em] uppercase md:text-[10.5px]">
-            {copy.kicker}
+            {copy.kicker(CITY_BY_ID[city])}
           </p>
           <h1
             className={`m-0 text-center text-[38px] leading-[1.08] font-light tracking-[0.01em] text-pretty transition-[font-size] duration-[320ms] ease-[cubic-bezier(0.22,0.9,0.24,1)] md:text-[clamp(34px,6vw,64px)] md:leading-[1.05] ${

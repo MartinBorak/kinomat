@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Kinomat',
     short_name: 'Kinomat',
-    description: 'Program bratislavských kín na jednom mieste',
+    description: 'Program kín slovenských miest na jednom mieste',
     start_url: '/',
     display: 'browser',
     background_color: '#0F1E45',

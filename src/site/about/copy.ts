@@ -18,7 +18,7 @@ export const aboutCopyByLanguage: Record<Language, AboutCopy> = {
     title: 'O Kinomate',
     pageDescription:
       'Kto robí Kinomat, odkiaľ berie program a informácie o filmoch a čo si o tebe pamätá.',
-    lead: 'Program bratislavských kín na jednom mieste. Nekomerčný projekt.',
+    lead: 'Program kín slovenských miest na jednom mieste. Nekomerčný projekt.',
     sections: [
       {
         title: 'Odkiaľ je program',
@@ -56,7 +56,7 @@ export const aboutCopyByLanguage: Record<Language, AboutCopy> = {
     title: 'About Kinomat',
     pageDescription:
       'Who makes Kinomat, where its showtimes and film details come from, and what it keeps about you.',
-    lead: 'Bratislava’s cinema showtimes in one place. A non-commercial project.',
+    lead: 'Cinema showtimes from Slovak cities in one place. A non-commercial project.',
     sections: [
       {
         title: 'Where the showtimes come from',

@@ -6,7 +6,7 @@ import { type Ordering } from '@/site/films/ordering'
 
 export type FilmsCopy = {
   pageTitle: string
-  pageDescription: string
+  pageDescription: (city: SupportedCity) => string
   today: string
   tomorrow: string
   minutes: string
@@ -29,8 +29,8 @@ export type FilmsCopy = {
 export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
   sk: {
     pageTitle: 'Filmy',
-    pageDescription:
-      'Všetky filmy, ktoré práve hrajú v bratislavských kinách, s dátumami a kinami.',
+    pageDescription: (city) =>
+      `Všetky filmy, ktoré práve hrajú v ${city.slovakPluralAdjective} kinách, s dátumami a kinami.`,
     today: 'Dnes',
     tomorrow: 'Zajtra',
     minutes: 'min',
@@ -57,7 +57,8 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
   },
   en: {
     pageTitle: 'Films',
-    pageDescription: 'Every film now playing in Bratislava’s cinemas, with dates and venues.',
+    pageDescription: (city) =>
+      `Every film now playing in ${city.name}’s cinemas, with dates and venues.`,
     today: 'Today',
     tomorrow: 'Tomorrow',
     minutes: 'min',

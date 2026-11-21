@@ -1,4 +1,4 @@
-import { DEFAULT_CITY } from 'kinomat-core/types/city'
+import { CITY_BY_ID, DEFAULT_CITY } from 'kinomat-core/types/city'
 import type { Metadata } from 'next'
 
 import { readCity } from '@/lib/readCity'
@@ -10,7 +10,7 @@ import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import { ProgramPage } from '@/site/program/ProgramPage'
 import { readScheduledDays, readScreeningsOnDay } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
-import { toAlternates } from '@/site/seo/site'
+import { toAlternates, toCityTitle } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
@@ -27,14 +27,15 @@ export function generateStaticParams() {
 export async function generateMetadata(
   props: PageProps<'/[lang]/[city]/program/[[...den]]'>,
 ): Promise<Metadata> {
-  const { lang, city } = await props.params
+  const { lang, city: segment } = await props.params
   const language = readLanguage(lang)
+  const city = readCity(segment)
   const copy = programCopyByLanguage[language]
 
   return {
-    title: copy.pageTitle,
-    description: copy.pageDescription,
-    alternates: toAlternates(`/${readCity(city)}/program`, language),
+    title: toCityTitle(copy.pageTitle, city),
+    description: copy.pageDescription(CITY_BY_ID[city]),
+    alternates: toAlternates(`/${city}/program`, language),
   }
 }
 
