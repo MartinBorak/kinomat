@@ -68,9 +68,9 @@ export function SiteHeader({
 
   return (
     <>
-      <header className="border-line relative flex items-center justify-between gap-5 border-b px-[22px] py-4 md:px-[6vw] md:py-[18px]">
-        {/* The city stands under the wordmark on a phone, where the bar has no room beside it. */}
-        <div className="flex flex-none flex-col items-start gap-1 md:flex-row md:items-center md:gap-6">
+      <header className="border-line relative flex items-center justify-between gap-3 border-b px-[22px] py-4 md:gap-5 md:px-[6vw] md:py-[18px]">
+        {/* The city stands under the wordmark until the bar has room for it beside the sections. */}
+        <div className="flex flex-none flex-col items-start gap-1 xl:flex-row xl:items-center xl:gap-6">
           <Link
             href={toHomeHref(language, city)}
             className="flex flex-none items-center gap-3 md:gap-3.5"
@@ -85,29 +85,29 @@ export function SiteHeader({
               language={language}
               city={city}
               current={current}
-              className="pl-[46px] md:pl-0"
+              className="pl-[46px] md:pl-[54px] xl:pl-0"
             />
           )}
         </div>
 
         {/* The rest takes the width the brand leaves, so the search grows into whatever is spare, and
             the height of the field whether or not it carries one - the bar is one bar on every page. */}
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-5 md:min-h-10 md:gap-7">
-          {/* Too narrow a field to type a film into, below md: there it waits inside the menu. */}
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-3 md:min-h-10 md:gap-7">
+          {/* Below lg the sections leave no room for a field: there it waits inside the menu. */}
           {hasSearch && (
             // Keyed by city: the router keeps the header across cities, and its films are one city's.
             <HeaderSearch
               key={city}
               language={language}
               city={city}
-              className="hidden min-w-[150px] flex-1 md:block md:max-w-[300px]"
+              className="hidden min-w-[150px] flex-1 lg:block lg:max-w-[300px]"
               panelClassName="absolute top-full right-0 left-0 z-40 min-w-[320px]"
             />
           )}
 
           <nav
             aria-label={menuLabel}
-            className="text-ink-soft hidden flex-none gap-[30px] text-[12.5px] font-light tracking-[0.14em] uppercase md:flex"
+            className="text-ink-soft hidden flex-none gap-[30px] text-[12.5px] font-light tracking-[0.14em] uppercase lg:flex"
           >
             {/* Filmy and Program are dynamic, so the default prefetch stops at their shell. */}
             {navigation.map((item) => (
@@ -145,7 +145,7 @@ export function SiteHeader({
             aria-label={menuLabel}
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen((open) => !open)}
-            className="flex size-11 flex-none cursor-pointer flex-col items-center justify-center gap-1 md:hidden"
+            className="-mr-3 flex size-11 flex-none cursor-pointer flex-col items-center justify-center gap-1 lg:hidden"
           >
             <span className="bg-ink-soft h-0.5 w-5 rounded-sm" />
             <span className="bg-ink-soft h-0.5 w-5 rounded-sm" />
@@ -154,7 +154,7 @@ export function SiteHeader({
       </header>
 
       {isMenuOpen && (
-        <div className="border-line bg-surface-raised relative z-40 flex flex-col border-b md:hidden">
+        <div className="border-line bg-surface-raised relative z-40 flex flex-col border-b lg:hidden">
           {hasSearch && (
             <div className="border-line border-b px-[22px] py-3.5">
               <HeaderSearch key={city} language={language} city={city} />
