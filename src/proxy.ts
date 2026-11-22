@@ -1,9 +1,9 @@
 import { DEFAULT_LANGUAGE, isLanguage } from 'kinomat-core/lib/language'
 import { findCinema } from 'kinomat-core/types/cinema'
-import { CITIES, type CityId, isCityId } from 'kinomat-core/types/city'
+import { CITIES } from 'kinomat-core/types/city'
 import { type NextRequest, NextResponse } from 'next/server'
 
-import { CITY_COOKIE, readRememberedCity } from '@/lib/rememberedCity'
+import { moveLegacyCity, readRememberedCity } from '@/lib/rememberedCity'
 
 /*
  * Every public page lives under app/[lang], but the default language is written bare: /kina is
@@ -11,7 +11,8 @@ import { CITY_COOKIE, readRememberedCity } from '@/lib/rememberedCity'
  * it, and the /sk spelling redirects to the bare one, so each page has exactly one URL.
  *
  * The listings live under a city too, /kosice/program, and a listing asked for without one goes to
- * the city the reader last looked at, which a cookie remembers.
+ * the city the reader last looked at, which a cookie remembers. The page writes it (RememberCity),
+ * not this proxy, which also answers the router's prefetches of links to other cities.
  */
 const CITY_SEGMENT = CITIES.map((city) => city.id).join('|')
 // The listings that take a day; the reel takes one too, but in its query, and is no page to link to.
@@ -21,9 +22,6 @@ const DAY_LISTING_PATTERN = new RegExp(
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 // A city's pages, spelled without the city: its front page, schedule, cinemas, films and a film.
 const CITYLESS_LISTING_PATTERN = /^\/(?:|program(?:\/.*)?|kina(?:\/.*)?|filmy(?:\/.*)?)$/
-
-// A year: the city a reader lives in changes rarely, and every visit to one renews it.
-const CITY_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
 /*
  * A day was once ?den= in the query, and links shared then still say so. It is the last segment of
@@ -67,21 +65,6 @@ function toCityPath(request: NextRequest, languagePrefix: string, path: string):
   return moved
 }
 
-// Remembered on every visit to a city's page, so a reader who arrived from a search is kept there.
-function rememberCity(request: NextRequest, response: NextResponse, city: CityId): NextResponse {
-  if (request.cookies.get(CITY_COOKIE)?.value !== city) {
-    response.cookies.set(CITY_COOKIE, city, {
-      path: '/',
-      maxAge: CITY_COOKIE_MAX_AGE,
-      sameSite: 'lax',
-      httpOnly: true,
-      secure: request.nextUrl.protocol === 'https:',
-    })
-  }
-
-  return response
-}
-
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl
   const [, first = ''] = pathname.split('/')
@@ -109,20 +92,13 @@ export function proxy(request: NextRequest): NextResponse {
     return NextResponse.redirect(cityPath, 307)
   }
 
-  const [, city = '', section, film] = path.split('/')
   // /en already names a page under app/[lang]; a bare URL needs a language filled in behind the scenes.
   const prefixed = request.nextUrl.clone()
   prefixed.pathname = `/${DEFAULT_LANGUAGE}${pathname}`
+
   const response = isLanguage(first) ? NextResponse.next() : NextResponse.rewrite(prefixed)
 
-  /*
-   * A film's page in another city is a look at where else it plays, or a link a friend sent, not a
-   * move: it keeps a city already remembered, and names one only for a reader who had none.
-   */
-  const isFilmPage = section === 'filmy' && film !== undefined && film !== ''
-  const isRemembering = !isFilmPage || request.cookies.get(CITY_COOKIE) === undefined
-
-  return isCityId(city) && isRemembering ? rememberCity(request, response, city) : response
+  return moveLegacyCity(request, response)
 }
 
 // The api, Next's own files and anything with an extension are not pages in a language.

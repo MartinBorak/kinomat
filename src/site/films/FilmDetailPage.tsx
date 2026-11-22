@@ -118,6 +118,7 @@ function FilmDetailView({
     <SitePage>
       <SiteHeader
         current="filmy"
+        isCityRememberedOnlyIfNone
         language={language}
         city={city}
         languageChange={{

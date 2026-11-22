@@ -10,6 +10,7 @@ import { HeaderSearch } from '@/site/search/HeaderSearch'
 import { BrandMark } from '@/site/ui/BrandMark'
 import { CitySwitcher } from '@/site/ui/CitySwitcher'
 import { type SiteSection, toSiteNavigation } from '@/site/ui/navigation'
+import { RememberCity } from '@/site/ui/RememberCity'
 
 /*
  * A page changes language by re-linking to itself. The links are handed over ready-made: a server
@@ -26,6 +27,8 @@ type SiteHeaderProps = {
   current?: SiteSection | null
   // The landing page carries no header search: its hero is the search.
   hasSearch?: boolean
+  // A film's page names its city only for a reader who has none yet, see RememberCity.
+  isCityRememberedOnlyIfNone?: boolean
 }
 
 const MENU_LABEL_BY_LANGUAGE: Record<Language, string> = {
@@ -61,6 +64,7 @@ export function SiteHeader({
   languageChange,
   current = null,
   hasSearch = false,
+  isCityRememberedOnlyIfNone = false,
 }: SiteHeaderProps) {
   const navigation = toSiteNavigation(language, city, current)
   const menuLabel = MENU_LABEL_BY_LANGUAGE[language]
@@ -68,6 +72,7 @@ export function SiteHeader({
 
   return (
     <>
+      {city !== null && <RememberCity city={city} isOnlyIfNone={isCityRememberedOnlyIfNone} />}
       <header className="border-line relative flex items-center justify-between gap-3 border-b px-[22px] py-4 md:gap-5 md:px-[6vw] md:py-[18px]">
         {/* The city stands under the wordmark until the bar has room for it beside the sections. */}
         <div className="flex flex-none flex-col items-start gap-1 xl:flex-row xl:items-center xl:gap-6">
