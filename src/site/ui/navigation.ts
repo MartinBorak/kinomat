@@ -44,12 +44,19 @@ export function toSiteNavigation(
       href: toScheduleHref(language, city),
       isCurrent: current === 'program',
     },
-    // Only while the festival runs, 18 to 24 November 2026; remove it, and its page, afterwards.
-    {
-      label: 'FFi',
-      href: toProgramHref(undefined, language, null, NO_FILTERS, 'ffi'),
-      isCurrent: current === 'ffi',
-    },
+    /*
+     * Only while the festival runs, 18 to 24 November 2026; remove it, and its page, afterwards.
+     * It plays in Bratislava alone, so only that city's pages, and the festival's own, offer it.
+     */
+    ...(city === 'bratislava' || current === 'ffi'
+      ? [
+          {
+            label: 'FFi',
+            href: toProgramHref(undefined, language, null, NO_FILTERS, 'ffi'),
+            isCurrent: current === 'ffi',
+          },
+        ]
+      : []),
     {
       label: aboutCopyByLanguage[language].title,
       href: toAboutHref(language),
