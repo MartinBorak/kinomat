@@ -76,7 +76,7 @@ function renderFilm(
     language = 'sk' as Language,
     search = '',
     days = DAYS,
-    otherCities = [] as CityId[],
+    cities = [] as CityId[],
   } = {},
 ) {
   url.searchParams = new URLSearchParams(search)
@@ -85,7 +85,7 @@ function renderFilm(
     <FilmDetailPage
       language={language}
       city="bratislava"
-      otherCities={otherCities}
+      cities={cities}
       publicId={PUBLIC_ID}
       date={date.toString()}
       isDayNamed={isDayNamed}
@@ -195,9 +195,13 @@ describe('one film’s page', () => {
   })
   // Each other city's page opens on that city's own first day, so the link names no day.
   it('names the other cities it plays in, each a link to its page there', () => {
-    renderFilm([WAVES], { date: DAYS[1], isDayNamed: true, otherCities: ['kosice', 'nitra'] })
+    renderFilm([WAVES], {
+      date: DAYS[1],
+      isDayNamed: true,
+      cities: ['bratislava', 'kosice', 'nitra'],
+    })
 
-    expect(screen.getByText('Hrá aj v:')).toBeInTheDocument()
+    expect(screen.getByText('Hrá v:')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Košice' })).toHaveAttribute(
       'href',
       `/kosice/filmy/${PUBLIC_ID}`,
@@ -208,8 +212,19 @@ describe('one film’s page', () => {
     )
   })
 
+  // Listed but unlinked, so the other cities hold their places when the reader moves between them.
+  it('keeps this city in the list, unlinked', () => {
+    renderFilm([WAVES], { cities: ['bratislava', 'kosice'] })
+
+    expect(screen.getByText('Bratislava', { selector: 'span' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.queryByRole('link', { name: 'Bratislava' })).not.toBeInTheDocument()
+  })
+
   it('says the film is not on in this city, and where it is instead', () => {
-    renderFilm([], { days: [], otherCities: ['kosice'] })
+    renderFilm([], { days: [], cities: ['kosice'] })
 
     expect(screen.getByText('Tento film v Bratislave nehrá')).toBeInTheDocument()
     expect(screen.getByText('Hrá v:')).toBeInTheDocument()

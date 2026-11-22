@@ -101,8 +101,8 @@ export default async function Film(props: FilmPageProps) {
   // The strip offers only the days this film is on here, so one of those is where it opens.
   const date = namedDay ?? days[0] ?? today
   const programmes = groupIntoProgrammes(await readFilmScreeningsOnDay(film.filmId, city, date))
-  // Where else it plays, so a reader whose city has none of it is told where to go instead.
-  const otherCities = (await readFilmCities(film.filmId)).filter((other) => other !== city)
+  // Every city it plays in, this one among them, so a reader whose city has none of it is told where to go instead.
+  const cities = await readFilmCities(film.filmId)
 
   return (
     <>
@@ -110,7 +110,7 @@ export default async function Film(props: FilmPageProps) {
       <FilmDetailPage
         language={language}
         city={city}
-        otherCities={otherCities}
+        cities={cities}
         publicId={film.publicId}
         date={date}
         isDayNamed={namedDay !== undefined}

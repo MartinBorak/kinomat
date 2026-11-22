@@ -23,7 +23,6 @@ export type FilmsCopy = {
   notInCityTitle: (city: SupportedCity) => string
   notInCityHint: string
   showingIn: string
-  alsoShowingIn: string
 }
 
 export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
@@ -53,7 +52,6 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
     notInCityTitle: (city) => `Tento film ${city.slovakLocative} nehrá`,
     notInCityHint: 'Pozri, kde hrá inde.',
     showingIn: 'Hrá v',
-    alsoShowingIn: 'Hrá aj v',
   },
   en: {
     pageTitle: 'Films',
@@ -81,6 +79,5 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
     notInCityTitle: (city) => `This film is not showing in ${city.name}`,
     notInCityHint: 'See where else it is on.',
     showingIn: 'Showing in',
-    alsoShowingIn: 'Also showing in',
   },
 }

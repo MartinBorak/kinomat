@@ -32,8 +32,8 @@ import { WithSearchParams } from '@/site/ui/WithSearchParams'
 type FilmDetailPageProps = {
   language: Language
   city: CityId
-  // The other cities the film plays in, named so a reader can go where it is on.
-  otherCities: readonly CityId[]
+  // Every city it plays in; this one stays listed unlinked, so the others keep their places.
+  cities: readonly CityId[]
   publicId: string
   date: string
   // Whether the path named the day, rather than the page opening on the first one the film plays.
@@ -59,7 +59,7 @@ export function FilmDetailPage(props: FilmDetailPageProps) {
 function FilmDetailView({
   language,
   city,
-  otherCities,
+  cities,
   publicId,
   date: isoDate,
   isDayNamed,
@@ -147,18 +147,29 @@ function FilmDetailView({
 
       <main className="relative flex flex-1 flex-col">
         {/* A link to its page there, opening on that city's own first day, which need not be this one. */}
-        {otherCities.length > 0 && (
+        {cities.some((other) => other !== city) && (
           <p className="border-line text-ink-faint m-0 flex flex-wrap gap-x-4 gap-y-1 border-b px-[22px] py-3.5 text-sm md:px-[6vw]">
-            <span>{isNotInCity ? filmsCopy.showingIn : filmsCopy.alsoShowingIn}:</span>
-            {otherCities.map((other) => (
-              <Link
-                key={other}
-                href={toFilmHref(publicId, language, other)}
-                className="text-ink-soft hover:text-accent"
-              >
-                {findCity(other)?.name}
-              </Link>
-            ))}
+            <span>{filmsCopy.showingIn}:</span>
+            {cities.map((other) =>
+              other === city ? (
+                <span
+                  key={other}
+                  aria-current="page"
+                  aria-disabled="true"
+                  className="text-ink-faint"
+                >
+                  {findCity(other)?.name}
+                </span>
+              ) : (
+                <Link
+                  key={other}
+                  href={toFilmHref(publicId, language, other)}
+                  className="text-ink-soft hover:text-accent"
+                >
+                  {findCity(other)?.name}
+                </Link>
+              ),
+            )}
           </p>
         )}
 
