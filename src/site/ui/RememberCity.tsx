@@ -1,7 +1,7 @@
 'use client'
 
-import { type CityId } from 'kinomat-core/types/city'
-import { useEffect } from 'react'
+import { type CityId, isCityId } from 'kinomat-core/types/city'
+import { useEffect, useSyncExternalStore } from 'react'
 
 import { CITY_COOKIE, CITY_COOKIE_MAX_AGE } from '@/lib/rememberedCity'
 
@@ -14,12 +14,39 @@ import { CITY_COOKIE, CITY_COOKIE_MAX_AGE } from '@/lib/rememberedCity'
  * A film's page in another city is a look at where else it plays, or a link a friend sent, not a
  * move: it keeps a city already remembered, and names one only for a reader who had none.
  */
+function readCookie(): string | undefined {
+  return document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith(`${CITY_COOKIE}=`))
+    ?.slice(CITY_COOKIE.length + 1)
+}
+
+// Nothing announces a cookie's change, and only this page writes it, so there is nothing to watch.
+function subscribe(): () => void {
+  return () => {}
+}
+
+/*
+ * The city the reader has remembered: undefined until the page is in the browser, since the server
+ * renders one page for every reader, and null for a reader who has none yet.
+ */
+export function useRememberedCity(): CityId | null | undefined {
+  const value = useSyncExternalStore(
+    subscribe,
+    () => readCookie() ?? '',
+    () => undefined,
+  )
+
+  if (value === undefined) {
+    return undefined
+  }
+
+  return isCityId(value) ? value : null
+}
+
 export function RememberCity({ city, isOnlyIfNone }: { city: CityId; isOnlyIfNone: boolean }) {
   useEffect(() => {
-    const remembered = document.cookie
-      .split('; ')
-      .find((entry) => entry.startsWith(`${CITY_COOKIE}=`))
-      ?.slice(CITY_COOKIE.length + 1)
+    const remembered = readCookie()
 
     if (remembered === city || (isOnlyIfNone && remembered !== undefined)) {
       return

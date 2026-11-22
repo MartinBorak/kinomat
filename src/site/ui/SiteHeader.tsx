@@ -10,7 +10,7 @@ import { HeaderSearch } from '@/site/search/HeaderSearch'
 import { BrandMark } from '@/site/ui/BrandMark'
 import { CitySwitcher } from '@/site/ui/CitySwitcher'
 import { type SiteSection, toSiteNavigation } from '@/site/ui/navigation'
-import { RememberCity } from '@/site/ui/RememberCity'
+import { RememberCity, useRememberedCity } from '@/site/ui/RememberCity'
 
 /*
  * A page changes language by re-linking to itself. The links are handed over ready-made: a server
@@ -27,8 +27,11 @@ type SiteHeaderProps = {
   current?: SiteSection | null
   // The landing page carries no header search: its hero is the search.
   hasSearch?: boolean
-  // A film's page names its city only for a reader who has none yet, see RememberCity.
-  isCityRememberedOnlyIfNone?: boolean
+  /*
+   * A film's page in another city is a visit, not a move: the bar stays on the reader's own city,
+   * and the page names its city only for a reader who has none yet, see RememberCity.
+   */
+  isVisit?: boolean
 }
 
 const MENU_LABEL_BY_LANGUAGE: Record<Language, string> = {
@@ -64,20 +67,28 @@ export function SiteHeader({
   languageChange,
   current = null,
   hasSearch = false,
-  isCityRememberedOnlyIfNone = false,
+  isVisit = false,
 }: SiteHeaderProps) {
-  const navigation = toSiteNavigation(language, city, current)
+  const remembered = useRememberedCity()
+  /*
+   * On a visit the bar is the reader's city, which only the browser knows. Until it does, the links
+   * go bare for the proxy to fill in, and the city's name keeps its place unseen, so nothing shifts.
+   */
+  const isCityPending = isVisit && remembered === undefined
+  const barCity = isVisit ? (isCityPending ? null : (remembered ?? city)) : city
+  const switcherCity = barCity ?? (isCityPending ? city : null)
+  const navigation = toSiteNavigation(language, barCity, current)
   const menuLabel = MENU_LABEL_BY_LANGUAGE[language]
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <>
-      {city !== null && <RememberCity city={city} isOnlyIfNone={isCityRememberedOnlyIfNone} />}
+      {city !== null && <RememberCity city={city} isOnlyIfNone={isVisit} />}
       <header className="border-line relative flex items-center justify-between gap-3 border-b px-[22px] py-4 md:gap-5 md:px-[6vw] md:py-[18px]">
         {/* The city stands under the wordmark until the bar has room for it beside the sections. */}
         <div className="flex flex-none flex-col items-start gap-1 xl:flex-row xl:items-center xl:gap-6">
           <Link
-            href={toHomeHref(language, city)}
+            href={toHomeHref(language, barCity)}
             className="flex flex-none items-center gap-3 md:gap-3.5"
           >
             <BrandMark />
@@ -85,12 +96,12 @@ export function SiteHeader({
           </Link>
 
           {/* A page in no city, a film's or About, has no city to switch from. */}
-          {city !== null && (
+          {switcherCity !== null && (
             <CitySwitcher
               language={language}
-              city={city}
+              city={switcherCity}
               current={current}
-              className="pl-[46px] md:pl-[54px] xl:pl-0"
+              className={`pl-[46px] md:pl-[54px] xl:pl-0 ${isCityPending ? 'invisible' : ''}`}
             />
           )}
         </div>
@@ -102,9 +113,9 @@ export function SiteHeader({
           {hasSearch && (
             // Keyed by city: the router keeps the header across cities, and its films are one city's.
             <HeaderSearch
-              key={city}
+              key={barCity}
               language={language}
-              city={city}
+              city={barCity}
               className="hidden min-w-[150px] flex-1 lg:block lg:max-w-[300px]"
               panelClassName="absolute top-full right-0 left-0 z-40 min-w-[320px]"
             />
@@ -162,7 +173,7 @@ export function SiteHeader({
         <div className="border-line bg-surface-raised relative z-40 flex flex-col border-b lg:hidden">
           {hasSearch && (
             <div className="border-line border-b px-[22px] py-3.5">
-              <HeaderSearch key={city} language={language} city={city} />
+              <HeaderSearch key={barCity} language={language} city={barCity} />
             </div>
           )}
 
