@@ -115,7 +115,7 @@ describe('the city proxy', () => {
     expect(proxy(request('/o-kinomate', 'kosice')).status).toBe(200)
   })
 
-  it('remembers the city of every city page visited', () => {
+  it('remembers the city of every city page visited, but a film’s', () => {
     const cookie = proxy(request('/en/kosice/program')).cookies.get('mesto')
 
     expect(cookie?.value).toBe('kosice')
@@ -126,5 +126,15 @@ describe('the city proxy', () => {
   it('sets nothing when the city is already the remembered one, or the page is in none', () => {
     expect(proxy(request('/kosice/program', 'kosice')).headers.get('set-cookie')).toBeNull()
     expect(proxy(request('/o-kinomate')).headers.get('set-cookie')).toBeNull()
+  })
+
+  // A look at where else a film plays, or a link from a friend elsewhere, does not move the reader.
+  it('keeps a remembered city on a film’s page elsewhere, names one for a reader with none', () => {
+    expect(proxy(request('/nitra/filmy/abc123', 'kosice')).headers.get('set-cookie')).toBeNull()
+    expect(
+      proxy(request('/en/nitra/filmy/abc123/2026-11-23', 'kosice')).headers.get('set-cookie'),
+    ).toBeNull()
+    expect(proxy(request('/nitra/filmy/abc123')).cookies.get('mesto')?.value).toBe('nitra')
+    expect(proxy(request('/nitra/filmy', 'kosice')).cookies.get('mesto')?.value).toBe('nitra')
   })
 })

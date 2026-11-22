@@ -109,13 +109,20 @@ export function proxy(request: NextRequest): NextResponse {
     return NextResponse.redirect(cityPath, 307)
   }
 
-  const [, city = ''] = path.split('/')
+  const [, city = '', section, film] = path.split('/')
   // /en already names a page under app/[lang]; a bare URL needs a language filled in behind the scenes.
   const prefixed = request.nextUrl.clone()
   prefixed.pathname = `/${DEFAULT_LANGUAGE}${pathname}`
   const response = isLanguage(first) ? NextResponse.next() : NextResponse.rewrite(prefixed)
 
-  return isCityId(city) ? rememberCity(request, response, city) : response
+  /*
+   * A film's page in another city is a look at where else it plays, or a link a friend sent, not a
+   * move: it keeps a city already remembered, and names one only for a reader who had none.
+   */
+  const isFilmPage = section === 'filmy' && film !== undefined && film !== ''
+  const isRemembering = !isFilmPage || request.cookies.get(CITY_COOKIE) === undefined
+
+  return isCityId(city) && isRemembering ? rememberCity(request, response, city) : response
 }
 
 // The api, Next's own files and anything with an extension are not pages in a language.
