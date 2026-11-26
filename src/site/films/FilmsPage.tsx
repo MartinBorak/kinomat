@@ -1,7 +1,7 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
-import { type CityId } from 'kinomat-core/types/city'
+import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 import { useSearchParams } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
@@ -25,6 +25,7 @@ import {
 } from '@/site/program/filters'
 import { SearchField } from '@/site/program/SearchField'
 import { EmptyState } from '@/site/ui/EmptyState'
+import { HiddenPageTitle } from '@/site/ui/PageTitle'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
@@ -87,6 +88,8 @@ export function FilmsPage({ language, city, today: isoToday, films }: FilmsPageP
         }}
         hasSearch
       />
+
+      <HiddenPageTitle title={copy.heading(CITY_BY_ID[city])} />
 
       {/* The schedule's own bar, wearing the one menu this view has a use for. */}
       <FilterBar

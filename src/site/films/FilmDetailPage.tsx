@@ -175,7 +175,7 @@ function FilmDetailView({
         )}
 
         <DayListing day={isoDate} name="film-listing">
-          {listed.map((programme) => (
+          {listed.map((programme, index) => (
             <ProgrammeCard
               key={programme.id}
               programme={programme}
@@ -183,6 +183,7 @@ function FilmDetailView({
               language={language}
               isAboveFold
               currentFilmPublicId={film.publicId}
+              headsPage={index === 0}
             />
           ))}
 

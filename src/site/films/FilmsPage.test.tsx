@@ -147,10 +147,9 @@ describe('the films view', () => {
       { search: 'zoradenie=nazov' },
     )
 
-    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual([
-      'Autá',
-      'Vlny',
-    ])
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(['Autá', 'Vlny'])
   })
 
   it('writes a chosen order into the URL, keeping the query', () => {

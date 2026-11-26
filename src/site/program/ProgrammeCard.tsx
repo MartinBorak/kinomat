@@ -30,6 +30,8 @@ type ProgrammeCardProps = {
   namesCinemas?: boolean
   // The film whose page this is, which its own title and poster would only lead back to.
   currentFilmPublicId?: string
+  // The card whose current film's title is the page's main heading: the first on a film's page.
+  headsPage?: boolean
 }
 
 /*
@@ -53,12 +55,15 @@ function FilmHeading({
   href,
   copy,
   language,
+  isPageHeading,
 }: {
   film: ListedFilm
   href: string | null
   copy: ProgramCopy
   language: Language
+  isPageHeading: boolean
 }) {
+  const Heading = isPageHeading ? 'h1' : 'h2'
   const facts = [
     { key: 'meta', text: formatFilmMeta(film, copy), tone: 'text-ink-faint' },
     { key: 'directors', text: formatDirectors(film, copy), tone: 'text-ink-muted' },
@@ -77,7 +82,7 @@ function FilmHeading({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <h2 className="m-0 text-[clamp(24px,3.2vw,34px)] leading-tight font-light tracking-[0.01em] text-white">
+      <Heading className="m-0 text-[clamp(24px,3.2vw,34px)] leading-tight font-light tracking-[0.01em] text-white">
         {originalTitle === '' ? (
           named
         ) : (
@@ -86,7 +91,7 @@ function FilmHeading({
             {named} <span className="text-ink-faint text-[0.55em]">({originalTitle})</span>
           </>
         )}
-      </h2>
+      </Heading>
 
       {facts.length > 0 && (
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
@@ -195,6 +200,7 @@ export function ProgrammeCard({
   isAboveFold,
   namesCinemas = true,
   currentFilmPublicId,
+  headsPage = false,
 }: ProgrammeCardProps) {
   return (
     /*
@@ -213,6 +219,7 @@ export function ProgrammeCard({
             href={toFilmLink(film, programme, language, currentFilmPublicId)}
             copy={copy}
             language={language}
+            isPageHeading={headsPage && film.publicId === currentFilmPublicId}
           />
         ))}
       </div>

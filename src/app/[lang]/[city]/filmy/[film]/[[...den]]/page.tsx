@@ -1,5 +1,5 @@
 import { toQueryString } from 'kinomat-core/lib/hrefs'
-import { DEFAULT_CITY } from 'kinomat-core/types/city'
+import { CITY_BY_ID, DEFAULT_CITY } from 'kinomat-core/types/city'
 import { isFilmAlias } from 'kinomat-core/types/film'
 import { notFound, redirect } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
@@ -8,6 +8,7 @@ import { readCity } from '@/lib/readCity'
 import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
+import { filmsCopyByLanguage } from '@/site/films/copy'
 import { FilmDetailPage } from '@/site/films/FilmDetailPage'
 import { toFilmHref, toFilmSegment } from '@/site/films/hrefs'
 import { formatFilmTitle } from '@/site/films/labels'
@@ -21,6 +22,7 @@ import {
 import { toListingGraph } from '@/site/seo/listingGraph'
 import { toAlternates, toCityTitle } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
+import { toPosterUrl } from '@/site/ui/posterUrl'
 
 type FilmPageProps = PageProps<'/[lang]/[city]/filmy/[film]/[[...den]]'>
 
@@ -79,12 +81,27 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(props: FilmPageProps) {
-  const { lang, city } = await props.params
+  const { lang, city: segment } = await props.params
+  const language = readLanguage(lang)
+  const city = readCity(segment)
   const film = await readFilm(props)
+  const name = formatFilmTitle(film, language)
+  const title = toCityTitle(name, city)
+  const description = filmsCopyByLanguage[language].filmDescription(name, CITY_BY_ID[city])
+  // A shared link previews as the film, not as the site: its poster, where it has one.
+  const images =
+    film.posterPath === null ? undefined : [{ url: toPosterUrl(film.posterPath), alt: name }]
 
   return {
-    title: toCityTitle(formatFilmTitle(film, readLanguage(lang)), readCity(city)),
-    alternates: toAlternates(`/${readCity(city)}/filmy/${toFilmSegment(film)}`, readLanguage(lang)),
+    title,
+    description,
+    alternates: toAlternates(`/${city}/filmy/${toFilmSegment(film)}`, language),
+    ...(images === undefined
+      ? {}
+      : {
+          openGraph: { title: `${title} | Kinomat`, description, images },
+          twitter: { card: 'summary', title: `${title} | Kinomat`, description, images },
+        }),
   }
 }
 

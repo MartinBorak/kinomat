@@ -24,6 +24,8 @@ export type FilterBarCopy = {
 
 export type ProgramCopy = FilterBarCopy & {
   pageTitle: string
+  // The page's main heading, in the words a search for a city's showtimes uses.
+  heading: (city: SupportedCity) => string
   pageDescription: (city: SupportedCity) => string
   today: string
   tomorrow: string
@@ -75,6 +77,7 @@ export const programCopyByLanguage: Record<Language, ProgramCopy> = {
   sk: {
     ...filterCopyByLanguage.sk,
     pageTitle: 'Program',
+    heading: (city) => `Program kín ${city.slovakLocative}`,
     pageDescription: (city) =>
       `Program všetkých ${city.slovakPluralAdjective} kín na dnes a najbližšie dni, podľa kina, zvuku, titulkov a žánru.`,
     today: 'Dnes',
@@ -102,6 +105,7 @@ export const programCopyByLanguage: Record<Language, ProgramCopy> = {
   en: {
     ...filterCopyByLanguage.en,
     pageTitle: 'Schedule',
+    heading: (city) => `Cinema showtimes in ${city.name}`,
     pageDescription: (city) =>
       `Showtimes across all ${city.name} cinemas for today and the days ahead, by cinema, audio, subtitles and genre.`,
     today: 'Today',

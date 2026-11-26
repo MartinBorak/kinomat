@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { type Language } from 'kinomat-core/lib/language'
 import { parseBratislavaTime } from 'kinomat-core/lib/time'
 import { type CityId } from 'kinomat-core/types/city'
@@ -106,6 +106,15 @@ describe('one film’s page', () => {
     expect(screen.getByText('20:15')).toBeInTheDocument()
   })
 
+  // The film's title on its first card is the page's main heading; later cards repeat it as a card's.
+  it('heads the page with the film’s title, once', () => {
+    renderFilm([WAVES, { ...WAVES, id: 2 }])
+
+    expect(
+      screen.getAllByRole('heading', { level: 1 }).map((heading) => heading.textContent),
+    ).toEqual(['Vlny'])
+  })
+
   // The header still searches the whole site; what the film's own listing has no use for is a filter.
   it('offers no search of its listing, since the film is the whole question', () => {
     renderFilm([WAVES])
@@ -194,6 +203,11 @@ describe('one film’s page', () => {
 
     expect(screen.getByText('Na tento deň nič nehrá')).toBeInTheDocument()
   })
+  // The line naming where else it plays, apart from the footer, which names every city.
+  function showingIn() {
+    return within(screen.getByText('Hrá v:').closest('p') as HTMLElement)
+  }
+
   // Each other city's page opens on that city's own first day, so the link names no day.
   it('names the other cities it plays in, each a link to its page there', () => {
     renderFilm([WAVES], {
@@ -203,11 +217,11 @@ describe('one film’s page', () => {
     })
 
     expect(screen.getByText('Hrá v:')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Košice' })).toHaveAttribute(
+    expect(showingIn().getByRole('link', { name: 'Košice' })).toHaveAttribute(
       'href',
       `/kosice/filmy/${PUBLIC_ID}`,
     )
-    expect(screen.getByRole('link', { name: 'Nitra' })).toHaveAttribute(
+    expect(showingIn().getByRole('link', { name: 'Nitra' })).toHaveAttribute(
       'href',
       `/nitra/filmy/${PUBLIC_ID}`,
     )
@@ -221,7 +235,7 @@ describe('one film’s page', () => {
       'aria-current',
       'page',
     )
-    expect(screen.queryByRole('link', { name: 'Bratislava' })).not.toBeInTheDocument()
+    expect(showingIn().queryByRole('link', { name: 'Bratislava' })).not.toBeInTheDocument()
   })
 
   it('says the film is not on in this city, and where it is instead', () => {
@@ -229,6 +243,6 @@ describe('one film’s page', () => {
 
     expect(screen.getByText('Tento film v Bratislave nehrá')).toBeInTheDocument()
     expect(screen.getByText('Hrá v:')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Košice' })).toBeInTheDocument()
+    expect(showingIn().getByRole('link', { name: 'Košice' })).toBeInTheDocument()
   })
 })

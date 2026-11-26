@@ -6,6 +6,7 @@ import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
 import { CinemaDetailPage } from '@/site/cinemas/CinemaDetailPage'
+import { cinemasCopyByLanguage } from '@/site/cinemas/copy'
 import { toCinemaHref } from '@/site/cinemas/hrefs'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import { readCinemaDays, readCinemaScreeningsOnDay } from '@/site/program/readScreenings'
@@ -51,10 +52,12 @@ export function generateStaticParams() {
 
 export async function generateMetadata(props: CinemaPageProps) {
   const { lang } = await props.params
+  const language = readLanguage(lang)
   const cinema = await readCinema(props)
 
   return {
     title: toCityTitle(cinema.name, cinema.cityId),
+    description: cinemasCopyByLanguage[language].cinemaDescription(cinema.name, cinema.address),
     alternates: toAlternates(`/${cinema.cityId}/kina/${cinema.id}`, readLanguage(lang)),
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
-import { type CityId } from 'kinomat-core/types/city'
+import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 import { Temporal } from 'temporal-polyfill'
 
 import { formatCount } from '@/site/films/labels'
@@ -22,6 +22,7 @@ import { ProgrammeCard } from '@/site/program/ProgrammeCard'
 import { SearchField } from '@/site/program/SearchField'
 import { useNow } from '@/site/program/useNow'
 import { EmptyState } from '@/site/ui/EmptyState'
+import { HiddenPageTitle } from '@/site/ui/PageTitle'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
@@ -116,6 +117,8 @@ function ProgramView({
         }}
         hasSearch
       />
+
+      <HiddenPageTitle title={copy.heading(CITY_BY_ID[city])} />
 
       <DateStrip
         days={days}

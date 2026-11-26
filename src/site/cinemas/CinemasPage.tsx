@@ -1,10 +1,12 @@
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
 import { CINEMAS, type Cinema } from 'kinomat-core/types/cinema'
-import { type CityId } from 'kinomat-core/types/city'
+import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
 
 import { CinemaLinks } from '@/site/cinemas/CinemaLinks'
+import { cinemasCopyByLanguage } from '@/site/cinemas/copy'
 import { toCinemaHref, toCinemasHref } from '@/site/cinemas/hrefs'
+import { HiddenPageTitle } from '@/site/ui/PageTitle'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
@@ -29,6 +31,8 @@ export function CinemasPage({ language, city }: { language: Language; city: City
         languageChange={{ hrefByLanguage: toHrefByLanguage((next) => toCinemasHref(next, city)) }}
         hasSearch
       />
+
+      <HiddenPageTitle title={cinemasCopyByLanguage[language].heading(CITY_BY_ID[city])} />
 
       <main className="relative flex flex-1 flex-col px-[22px] py-8 md:px-[6vw]">
         {/* 340px holds the cinemas at four columns through 1920, where a smaller one strands the last. */}

@@ -25,6 +25,7 @@ import { ProgrammeCard } from '@/site/program/ProgrammeCard'
 import { SearchField } from '@/site/program/SearchField'
 import { useNow } from '@/site/program/useNow'
 import { EmptyState } from '@/site/ui/EmptyState'
+import { PageTitle } from '@/site/ui/PageTitle'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
@@ -120,15 +121,12 @@ function CinemaDetailView({
         hasSearch
       />
 
-      <div className="border-line relative flex flex-wrap items-baseline gap-x-5 gap-y-2.5 border-b px-[22px] py-6 md:px-[6vw]">
-        <h1 className="m-0 text-[clamp(24px,3.2vw,34px)] leading-tight font-light tracking-[0.01em] text-white">
-          {cinema.name}
-        </h1>
+      <PageTitle title={cinema.name}>
         <span className="text-accent/85 text-[11.5px] font-light tracking-[0.15em] uppercase">
           {cinema.address}
         </span>
         <CinemaLinks cinema={cinema} language={language} />
-      </div>
+      </PageTitle>
 
       <DateStrip
         days={days}
