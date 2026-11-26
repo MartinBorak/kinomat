@@ -6,7 +6,7 @@ import { parseBratislavaTime } from 'kinomat-core/lib/time'
 import { toFilmPublicId } from 'kinomat-core/types/film'
 import { describe, expect } from 'vitest'
 
-import { findPlayingFilm, findPlayingFilms } from '@/site/films/findFilms'
+import { findFilmPage, findPlayingFilms } from '@/site/films/findFilms'
 
 const NOW = parseBratislavaTime('2026-09-10T09:00:00')
 
@@ -114,8 +114,24 @@ describe.skipIf(!databaseUrl)('reading what is playing', () => {
     await database.update(films).set({ alias: 'vlny' })
     const publicId = toFilmPublicId(toFilmValues({ titleSk: 'Vlny' }))
 
-    expect((await findPlayingFilm(database, 'vlny', NOW))?.publicId).toBe(publicId)
-    expect((await findPlayingFilm(database, publicId, NOW))?.alias).toBe('vlny')
-    expect(await findPlayingFilm(database, 'duna', NOW)).toBeNull()
+    expect((await findFilmPage(database, 'vlny', NOW))?.publicId).toBe(publicId)
+    expect((await findFilmPage(database, publicId, NOW))?.alias).toBe('vlny')
+    expect(await findFilmPage(database, 'duna', NOW)).toBeNull()
+  })
+
+  // Its page outlasts its last showing by thirty days, saying it has stopped, and then is gone.
+  it('finds a film that stopped for thirty days after its last showing', async ({ database }) => {
+    await billFilms(database, [{ titles: ['Vlny'], times: ['2026-09-10T20:00:00'] }])
+    await database
+      .update(films)
+      .set({ alias: 'vlny', lastScreeningAt: parseBratislavaTime('2026-09-10T20:00:00') })
+
+    expect(await findFilmPage(database, 'vlny', NOW)).toMatchObject({ isPlaying: true })
+    expect(
+      await findFilmPage(database, 'vlny', parseBratislavaTime('2026-10-10T23:00:00')),
+    ).toMatchObject({ isPlaying: false })
+    expect(
+      await findFilmPage(database, 'vlny', parseBratislavaTime('2026-10-11T09:00:00')),
+    ).toBeNull()
   })
 })

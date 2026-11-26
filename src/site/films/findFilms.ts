@@ -1,8 +1,10 @@
-import { and, asc, eq, gte, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gte, or, type SQL, sql } from 'drizzle-orm'
 import { type Database } from 'kinomat-core/db/client'
 import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
 import { films, programmeFilms, screenings } from 'kinomat-core/db/schema'
+import { toBratislavaDate, toBratislavaDayStart } from 'kinomat-core/lib/time'
 import { type CityId } from 'kinomat-core/types/city'
+import { FINISHED_FILM_DAYS } from 'kinomat-core/types/film'
 
 import { isInCity } from '@/site/program/findScreenings'
 
@@ -96,21 +98,52 @@ export async function findFilmAlias(database: Database, publicId: string): Promi
   return film?.alias ?? null
 }
 
+// What a film's page needs of the film itself; its showings are read per city and day.
+export type FilmPageRow = Pick<
+  FilmRow,
+  'filmId' | 'publicId' | 'alias' | 'titleSk' | 'titleEn' | 'originalTitle' | 'posterPath'
+> & {
+  // False for a film that has stopped, whose page says so for FINISHED_FILM_DAYS.
+  isPlaying: boolean
+}
+
 /*
- * One film by either name its page answers to, as long as it is still playing: a film nothing is
- * billing has no page to stand on. Both columns are unique, so this is two rows at most - one
- * film's alias spelled like another's public id - and the alias wins, since it is the name links use.
+ * One film by either name its page answers to, while it plays and for FINISHED_FILM_DAYS after its
+ * last showing; the pipeline keeps the row exactly that long. Both columns are unique, so this is
+ * two rows at most - one film's alias spelled like another's public id - and the alias wins, since
+ * it is the name links use.
  */
-export async function findPlayingFilm(
+export async function findFilmPage(
   database: Database,
   segment: string,
   now: Date = new Date(),
-): Promise<FilmRow | null> {
-  const rows = await selectPlaying(
-    database,
-    now,
-    or(eq(films.alias, segment), eq(films.publicId, segment)),
+): Promise<FilmPageRow | null> {
+  const cutoff = toBratislavaDayStart(toBratislavaDate(now).subtract({ days: FINISHED_FILM_DAYS }))
+  const hasShowingToCome = exists(
+    database
+      .select({ one: sql`1` })
+      .from(programmeFilms)
+      .innerJoin(screenings, eq(screenings.programmeId, programmeFilms.programmeId))
+      .where(and(eq(programmeFilms.filmId, films.id), gte(screenings.startsAt, now))),
   )
+  const rows = await database
+    .select({
+      filmId: films.id,
+      publicId: films.publicId,
+      alias: films.alias,
+      titleSk: films.titleSk,
+      titleEn: films.titleEn,
+      originalTitle: films.originalTitle,
+      posterPath: films.posterPath,
+      isPlaying: sql<boolean>`${hasShowingToCome}`,
+    })
+    .from(films)
+    .where(
+      and(
+        or(eq(films.alias, segment), eq(films.publicId, segment)),
+        or(hasShowingToCome, gte(films.lastScreeningAt, cutoff)),
+      ),
+    )
 
   return rows.find((row) => row.alias === segment) ?? rows[0] ?? null
 }

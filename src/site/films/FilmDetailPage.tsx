@@ -38,6 +38,8 @@ type FilmDetailPageProps = {
   date: string
   // Whether the path named the day, rather than the page opening on the first one the film plays.
   isDayNamed: boolean
+  // A film that has stopped playing everywhere, whose page stays a while to say so.
+  isFinished?: boolean
   today: string
   days: readonly string[]
   programmes: readonly ProgrammeListing[]
@@ -63,6 +65,7 @@ function FilmDetailView({
   film,
   date: isoDate,
   isDayNamed,
+  isFinished = false,
   today: isoToday,
   days: isoDays,
   programmes: rendered,
@@ -106,9 +109,10 @@ function FilmDetailView({
   const isNotInCity = days.length === 0
   const cityRecord = findCity(city)
 
-  // What is missing: the film in this city at all, the day itself, or only what the filters cut away.
-  const empty =
-    isNotInCity && cityRecord !== null
+  // What is missing: the film anywhere, the film in this city, the day itself, or what the filters cut.
+  const empty = isFinished
+    ? { title: filmsCopy.finishedTitle, hint: filmsCopy.finishedHint }
+    : isNotInCity && cityRecord !== null
       ? { title: filmsCopy.notInCityTitle(cityRecord), hint: filmsCopy.notInCityHint }
       : programmes.length === 0
         ? { title: copy.emptyTitle, hint: copy.emptyHint }

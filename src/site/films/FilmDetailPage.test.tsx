@@ -78,6 +78,7 @@ function renderFilm(
     search = '',
     days = DAYS,
     cities = [] as CityId[],
+    isFinished = false,
   } = {},
 ) {
   url.searchParams = new URLSearchParams(search)
@@ -90,6 +91,7 @@ function renderFilm(
       film={{ publicId: PUBLIC_ID, alias: null }}
       date={date.toString()}
       isDayNamed={isDayNamed}
+      isFinished={isFinished}
       today={TODAY.toString()}
       days={days.map((day) => day.toString())}
       programmes={programmes}
@@ -236,6 +238,14 @@ describe('one film’s page', () => {
       'page',
     )
     expect(showingIn().queryByRole('link', { name: 'Bratislava' })).not.toBeInTheDocument()
+  })
+
+  // Its page stays a while after the last showing, so a link to it says why there is nothing on.
+  it('says the film is no longer in cinemas once it has stopped everywhere', () => {
+    renderFilm([], { days: [], isFinished: true })
+
+    expect(screen.getByText('Tento film už v kinách nehrá')).toBeInTheDocument()
+    expect(screen.queryByText('Tento film v Bratislave nehrá')).not.toBeInTheDocument()
   })
 
   it('says the film is not on in this city, and where it is instead', () => {

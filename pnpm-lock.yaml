@@ -30,7 +30,7 @@ importers:
         version: 0.45.4(@opentelemetry/api@1.10.0)(postgres@3.4.9)
       kinomat-core:
         specifier: github:MartinBorak/kinomat-core#main
-        version: https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/49d0530172b81f506905553c95e027ce5509ff5d(drizzle-orm@0.45.4(@opentelemetry/api@1.10.0)(postgres@3.4.9))(postgres@3.4.9)(temporal-polyfill@1.0.6)(vitest@5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(jsdom@30.1.3)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))
+        version: https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/5ac51f264798db70d7087265dd65a8b877c18d99(drizzle-orm@0.45.4(@opentelemetry/api@1.10.0)(postgres@3.4.9))(postgres@3.4.9)(temporal-polyfill@1.0.6)(vitest@5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(jsdom@30.1.3)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))
       next:
         specifier: 16.4.6
         version: 16.4.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2627,8 +2627,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  kinomat-core@https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/49d0530172b81f506905553c95e027ce5509ff5d:
-    resolution: {gitHosted: true, integrity: sha512-kSwsaiTYWFQVPgtKLC+p9hdsAcX9c9Y2y02rWQmFUNmSIznz66gGaoWdtJC5cdauKPRuYkYtQf7cuLmAvyTirA==, tarball: https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/49d0530172b81f506905553c95e027ce5509ff5d}
+  kinomat-core@https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/5ac51f264798db70d7087265dd65a8b877c18d99:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/5ac51f264798db70d7087265dd65a8b877c18d99}
     version: 0.0.0
     peerDependencies:
       drizzle-orm: ^0.45.3
@@ -5876,7 +5876,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  kinomat-core@https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/49d0530172b81f506905553c95e027ce5509ff5d(drizzle-orm@0.45.4(@opentelemetry/api@1.10.0)(postgres@3.4.9))(postgres@3.4.9)(temporal-polyfill@1.0.6)(vitest@5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(jsdom@30.1.3)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))):
+  kinomat-core@https://codeload.github.com/MartinBorak/kinomat-core/tar.gz/5ac51f264798db70d7087265dd65a8b877c18d99(drizzle-orm@0.45.4(@opentelemetry/api@1.10.0)(postgres@3.4.9))(postgres@3.4.9)(temporal-polyfill@1.0.6)(vitest@5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(jsdom@30.1.3)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))):
     dependencies:
       drizzle-orm: 0.45.4(@opentelemetry/api@1.10.0)(postgres@3.4.9)
       postgres: 3.4.9

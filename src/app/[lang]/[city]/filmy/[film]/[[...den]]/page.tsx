@@ -12,7 +12,7 @@ import { filmsCopyByLanguage } from '@/site/films/copy'
 import { FilmDetailPage } from '@/site/films/FilmDetailPage'
 import { toFilmHref, toFilmSegment } from '@/site/films/hrefs'
 import { formatFilmTitle } from '@/site/films/labels'
-import { readPlayingFilm, readPlayingFilms } from '@/site/films/readFilms'
+import { readFilmPage, readPlayingFilms } from '@/site/films/readFilms'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import {
   readFilmCities,
@@ -46,7 +46,7 @@ function toQuery(searchParams: Awaited<FilmPageProps['searchParams']>): string {
 async function readFilm(props: FilmPageProps) {
   const { lang, city, film: segment, den } = await props.params
   // A public id is shaped like an alias too, so one check admits both.
-  const film = isFilmAlias(segment) ? await readPlayingFilm(segment) : null
+  const film = isFilmAlias(segment) ? await readFilmPage(segment) : null
 
   if (film === null) {
     notFound()
@@ -88,7 +88,9 @@ export async function generateMetadata(props: FilmPageProps) {
   const name = formatFilmTitle(film, language)
   const copy = filmsCopyByLanguage[language]
   const title = copy.filmTitle(name, CITY_BY_ID[city])
-  const description = copy.filmDescription(name, CITY_BY_ID[city])
+  const description = film.isPlaying
+    ? copy.filmDescription(name, CITY_BY_ID[city])
+    : copy.finishedDescription(name, CITY_BY_ID[city])
   // A shared link previews as the film, not as the site: its poster, where it has one.
   const images =
     film.posterPath === null ? undefined : [{ url: toPosterUrl(film.posterPath), alt: name }]
@@ -129,6 +131,7 @@ export default async function Film(props: FilmPageProps) {
         city={city}
         cities={cities}
         film={{ publicId: film.publicId, alias: film.alias }}
+        isFinished={!film.isPlaying}
         date={date}
         isDayNamed={namedDay !== undefined}
         today={today}

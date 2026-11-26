@@ -6,8 +6,9 @@ import { cacheUntilMidnight } from '@/lib/cacheUntilMidnight'
 import { tagSchedule } from '@/lib/tagSchedule'
 import {
   findCityFilms,
-  findPlayingFilm,
+  findFilmPage,
   findPlayingFilms,
+  type FilmPageRow,
   type FilmRow,
 } from '@/site/films/findFilms'
 import { type SuggestedFilm, toSuggestedFilms } from '@/site/search/suggestions'
@@ -49,11 +50,11 @@ export async function readSuggestedFilms(city: CityId): Promise<SuggestedFilm[]>
   return toSuggestedFilms(await readCityFilms(city))
 }
 
-// By its alias or its public id, whichever the URL named.
-export async function readPlayingFilm(segment: string): Promise<FilmRow | null> {
+// By its alias or its public id, whichever the URL named; playing, or stopped not long ago.
+export async function readFilmPage(segment: string): Promise<FilmPageRow | null> {
   'use cache'
   cacheUntilMidnight()
   tagSchedule()
 
-  return findPlayingFilm(getDatabase(), segment)
+  return findFilmPage(getDatabase(), segment)
 }
