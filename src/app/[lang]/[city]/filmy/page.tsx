@@ -1,6 +1,5 @@
 import { CITY_BY_ID, DEFAULT_CITY } from 'kinomat-core/types/city'
 import type { Metadata } from 'next'
-import { connection } from 'next/server'
 
 import { readCity } from '@/lib/readCity'
 import { readLanguage } from '@/lib/readLanguage'
@@ -40,12 +39,6 @@ export default async function Films(props: PageProps<'/[lang]/[city]/filmy'>) {
   const { lang, city: segment } = await props.params
   const language = readLanguage(lang)
   const city = readCity(segment)
-
-  /*
-   * The query, order and genres live in the URL and are read in the browser, so no two readers see
-   * one page. Stopping the prerender here is what the other views get from reading their day.
-   */
-  await connection()
 
   const films = await readCityFilms(city)
 

@@ -2,7 +2,6 @@
 
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
 import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
-import { useSearchParams } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
 import { filmsCopyByLanguage } from '@/site/films/copy'
@@ -29,6 +28,7 @@ import { HiddenPageTitle } from '@/site/ui/PageTitle'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 import { SitePage } from '@/site/ui/SitePage'
+import { WithSearchParams } from '@/site/ui/WithSearchParams'
 
 type FilmsPageProps = {
   language: Language
@@ -41,8 +41,21 @@ type FilmsPageProps = {
  * Every film currently playing, narrowed by what is typed. The whole list is here rather than
  * queried per keystroke: it is one poster grid of what is on, and the search only hides rows of it.
  */
-export function FilmsPage({ language, city, today: isoToday, films }: FilmsPageProps) {
-  const searchParams = useSearchParams()
+export function FilmsPage(props: FilmsPageProps) {
+  return (
+    <WithSearchParams
+      render={(searchParams) => <FilmsView {...props} searchParams={searchParams} />}
+    />
+  )
+}
+
+function FilmsView({
+  language,
+  city,
+  today: isoToday,
+  films,
+  searchParams,
+}: FilmsPageProps & { searchParams: URLSearchParams }) {
   const query = searchParams.get('q') ?? ''
   const ordering = parseOrdering(searchParams.get('zoradenie'))
   const genres = nameGenres(parseFilters(searchParams).genres, films)
