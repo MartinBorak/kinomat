@@ -3,7 +3,10 @@ import { toCsfdHref, toImdbHref } from 'kinomat-core/lib/catalogueHrefs'
 import { type Language } from 'kinomat-core/lib/language'
 import { formatBratislavaDateTime } from 'kinomat-core/lib/time'
 import { findCinema } from 'kinomat-core/types/cinema'
+import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 
+import { toCinemaHref } from '@/site/cinemas/hrefs'
+import { type FilmLink, toFilmHref } from '@/site/films/hrefs'
 import { formatFilmTitle, formatOriginalTitle } from '@/site/films/labels'
 import {
   type CinemaListing,
@@ -11,6 +14,8 @@ import {
   type ProgrammeListing,
   type Showing,
 } from '@/site/program/groupScreenings'
+import { SITE_ORIGIN } from '@/site/seo/site'
+import { toInstagramHref } from '@/site/ui/contacts'
 import { toPosterUrl } from '@/site/ui/posterUrl'
 
 /*
@@ -28,7 +33,12 @@ function toCinemaNodeId(cinema: CinemaListing): string {
   return `#cinema-${cinema.id}`
 }
 
-function toMovieNode(film: ListedFilm, language: Language): JsonLdNode {
+// A film's own page in the listing's city, which is what its node is about and where a result leads.
+function toFilmUrl(film: FilmLink, language: Language, city: CityId): string {
+  return `${SITE_ORIGIN}${toFilmHref(film, language, city)}`
+}
+
+function toMovieNode(film: ListedFilm, language: Language, city: CityId): JsonLdNode {
   const originalTitle = formatOriginalTitle(film, language)
   const sameAs = [
     film.imdbId === null ? '' : toImdbHref(film.imdbId),
@@ -38,6 +48,7 @@ function toMovieNode(film: ListedFilm, language: Language): JsonLdNode {
   return {
     '@type': 'Movie',
     '@id': toFilmNodeId(film),
+    url: toFilmUrl(film, language, city),
     name: formatFilmTitle(film, language),
     alternateName: originalTitle === '' ? undefined : originalTitle,
     datePublished: film.releaseYear === null ? undefined : String(film.releaseYear),
@@ -59,13 +70,25 @@ function toMovieNode(film: ListedFilm, language: Language): JsonLdNode {
   }
 }
 
-function toMovieTheaterNode(cinema: CinemaListing): JsonLdNode {
+/*
+ * Our page for the cinema is its url, and its own site what it is the same as. The address is
+ * written street first and city last, so the street is what comes before the first comma.
+ */
+function toMovieTheaterNode(cinema: CinemaListing, language: Language): JsonLdNode {
+  const website = findCinema(cinema.id)?.website
+
   return {
     '@type': 'MovieTheater',
     '@id': toCinemaNodeId(cinema),
     name: cinema.name,
-    address: cinema.address,
-    url: findCinema(cinema.id)?.website,
+    url: `${SITE_ORIGIN}${toCinemaHref(cinema, language)}`,
+    sameAs: website,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: cinema.address.split(',')[0],
+      addressLocality: CITY_BY_ID[cinema.cityId].name,
+      addressCountry: 'SK',
+    },
   }
 }
 
@@ -124,6 +147,7 @@ function uniqueBy<T>(items: readonly T[], toKey: (item: T) => string): T[] {
 export function toListingGraph(
   programmes: readonly ProgrammeListing[],
   language: Language,
+  city: CityId,
 ): JsonLd {
   const films = uniqueBy(
     programmes.flatMap((programme) => programme.films),
@@ -142,9 +166,58 @@ export function toListingGraph(
   return {
     '@context': 'https://schema.org',
     '@graph': [
-      ...films.map((film) => toMovieNode(film, language)),
-      ...cinemas.map(toMovieTheaterNode),
+      ...films.map((film) => toMovieNode(film, language, city)),
+      ...cinemas.map((cinema) => toMovieTheaterNode(cinema, language)),
       ...events,
+    ],
+  }
+}
+
+/*
+ * A city's films as a list of their pages, in the order the page shows them: the summary page
+ * Google's movie carousel reads, each item's own page carrying the film's Movie node.
+ */
+export function toFilmListGraph(
+  films: readonly FilmLink[],
+  language: Language,
+  city: CityId,
+): JsonLd {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'ItemList',
+        itemListElement: films.map((film, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          url: toFilmUrl(film, language, city),
+        })),
+      },
+    ],
+  }
+}
+
+// The site itself, on its front page: the name a result shows for it, and who stands behind it.
+export function toSiteGraph(language: Language): JsonLd {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_ORIGIN}/#website`,
+        name: 'Kinomat',
+        url: `${SITE_ORIGIN}/`,
+        inLanguage: language,
+        publisher: { '@id': `${SITE_ORIGIN}/#organization` },
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_ORIGIN}/#organization`,
+        name: 'Kinomat',
+        url: `${SITE_ORIGIN}/`,
+        logo: `${SITE_ORIGIN}/apple-icon.png`,
+        sameAs: [toInstagramHref()],
+      },
     ],
   }
 }

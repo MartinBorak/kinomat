@@ -1,5 +1,6 @@
 import { getDatabase } from 'kinomat-core/db/appDatabase'
 import { DEFAULT_LANGUAGE, isLanguage } from 'kinomat-core/lib/language'
+import { getBratislavaToday } from 'kinomat-core/lib/time'
 import { findCinema } from 'kinomat-core/types/cinema'
 import { CITIES, type CityId, isCityId } from 'kinomat-core/types/city'
 import { isFilmPublicId } from 'kinomat-core/types/film'
@@ -27,6 +28,10 @@ const DAY_LISTING_PATTERN = new RegExp(
   `^(?:/en)?(?:/(?:${CITY_SEGMENT}))?/(?:program|kina/[^/]+|filmy/[^/]+)/?$`,
 )
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+// A listing with its day in the path, split into the listing and the day.
+const DAY_PAGE_PATTERN = new RegExp(
+  `^((?:/en)?/(?:${CITY_SEGMENT})/(?:program|kina/[^/]+|filmy/[^/]+))/(\\d{4}-\\d{2}-\\d{2})/?$`,
+)
 // A city's pages, spelled without the city: its schedule, cinemas, films and a film.
 const CITYLESS_LISTING_PATTERN = /^\/(?:program|kina|filmy)(?:\/.*)?$/
 // A film's page in a city, split around the name it was asked for by.
@@ -111,6 +116,24 @@ function readHomeCity(path: string): CityId | null {
   return isCityId(segment) ? segment : null
 }
 
+/*
+ * A day already over, sent to its listing, which opens on the first day still to come. Such a day
+ * lists nothing and never will again, which is what makes the move permanent. Bratislava's today,
+ * since that is the calendar every listing keeps.
+ */
+function toPastDayPath(request: NextRequest): URL | null {
+  const [, listing, day] = DAY_PAGE_PATTERN.exec(request.nextUrl.pathname) ?? []
+
+  if (listing === undefined || day >= getBratislavaToday().toString()) {
+    return null
+  }
+
+  const moved = request.nextUrl.clone()
+  moved.pathname = listing
+
+  return moved
+}
+
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
   const [, first = ''] = pathname.split('/')
@@ -127,6 +150,12 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   if (dayPath !== null) {
     return NextResponse.redirect(dayPath, 308)
+  }
+
+  const pastDayPath = toPastDayPath(request)
+
+  if (pastDayPath !== null) {
+    return NextResponse.redirect(pastDayPath, 308)
   }
 
   const languagePrefix = isLanguage(first) ? `/${first}` : ''

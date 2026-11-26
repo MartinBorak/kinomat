@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { proxy } from '@/proxy'
 
@@ -9,6 +9,15 @@ vi.mock('@/site/films/findFilms', () => ({
   findFilmAlias: async (_database: unknown, publicId: string) =>
     publicId === 'a1b2c3d4e5f6' ? 'vlny' : null,
 }))
+
+// The days these links name are still to come, since a day already over is sent to its listing.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-09-01T10:00:00Z'))
+})
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 function request(path: string, city?: string): NextRequest {
   return new NextRequest(`https://kinomat.test${path}`, {
@@ -180,5 +189,24 @@ describe('the city proxy', () => {
   it('serves a film without an alias, or named by its alias, where it was asked for', async () => {
     expect((await proxy(request('/kosice/filmy/b1b2c3d4e5f6'))).headers.get('location')).toBeNull()
     expect((await proxy(request('/kosice/filmy/vlny'))).headers.get('location')).toBeNull()
+  })
+
+  // A past day lists nothing and never will again, so its link moves to the listing for good.
+  it('sends a day already over to its listing, keeping the query', async () => {
+    const response = await proxy(request('/en/kosice/program/2026-08-31?kino=x'))
+
+    expect(response.status).toBe(308)
+    expect(response.headers.get('location')).toBe('https://kinomat.test/en/kosice/program?kino=x')
+    expect((await proxy(request('/nitra/filmy/vlny/2026-08-01'))).headers.get('location')).toBe(
+      'https://kinomat.test/nitra/filmy/vlny',
+    )
+    expect(
+      (await proxy(request('/bratislava/kina/kino-lumiere/2026-01-01'))).headers.get('location'),
+    ).toBe('https://kinomat.test/bratislava/kina/kino-lumiere')
+  })
+
+  it('leaves today and the days ahead where they are', async () => {
+    expect((await proxy(request('/kosice/program/2026-09-01'))).headers.get('location')).toBeNull()
+    expect((await proxy(request('/kosice/program/2026-09-02'))).headers.get('location')).toBeNull()
   })
 })

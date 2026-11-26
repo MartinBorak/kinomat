@@ -20,7 +20,7 @@ import {
   readFilmScreeningsOnDay,
 } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
-import { toAlternates, toCityTitle } from '@/site/seo/site'
+import { toAlternates } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 import { toPosterUrl } from '@/site/ui/posterUrl'
 
@@ -86,8 +86,9 @@ export async function generateMetadata(props: FilmPageProps) {
   const city = readCity(segment)
   const film = await readFilm(props)
   const name = formatFilmTitle(film, language)
-  const title = toCityTitle(name, city)
-  const description = filmsCopyByLanguage[language].filmDescription(name, CITY_BY_ID[city])
+  const copy = filmsCopyByLanguage[language]
+  const title = copy.filmTitle(name, CITY_BY_ID[city])
+  const description = copy.filmDescription(name, CITY_BY_ID[city])
   // A shared link previews as the film, not as the site: its poster, where it has one.
   const images =
     film.posterPath === null ? undefined : [{ url: toPosterUrl(film.posterPath), alt: name }]
@@ -122,7 +123,7 @@ export default async function Film(props: FilmPageProps) {
 
   return (
     <>
-      <StructuredData data={toListingGraph(programmes, language)} />
+      <StructuredData data={toListingGraph(programmes, language, city)} />
       <FilmDetailPage
         language={language}
         city={city}

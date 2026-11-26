@@ -1,4 +1,5 @@
 import { CINEMAS, findCinema } from 'kinomat-core/types/cinema'
+import { CITY_BY_ID } from 'kinomat-core/types/city'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
@@ -11,7 +12,7 @@ import { toCinemaHref } from '@/site/cinemas/hrefs'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import { readCinemaDays, readCinemaScreeningsOnDay } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
-import { toAlternates, toCityTitle } from '@/site/seo/site'
+import { toAlternates } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
 type CinemaPageProps = PageProps<'/[lang]/[city]/kina/[kino]/[[...den]]'>
@@ -56,7 +57,7 @@ export async function generateMetadata(props: CinemaPageProps) {
   const cinema = await readCinema(props)
 
   return {
-    title: toCityTitle(cinema.name, cinema.cityId),
+    title: cinemasCopyByLanguage[language].cinemaTitle(cinema.name, CITY_BY_ID[cinema.cityId]),
     description: cinemasCopyByLanguage[language].cinemaDescription(cinema.name, cinema.address),
     alternates: toAlternates(`/${cinema.cityId}/kina/${cinema.id}`, readLanguage(lang)),
   }
@@ -76,7 +77,7 @@ export default async function CinemaDetail(props: CinemaPageProps) {
 
   return (
     <>
-      <StructuredData data={toListingGraph(programmes, language)} />
+      <StructuredData data={toListingGraph(programmes, language, cinema.cityId)} />
       <CinemaDetailPage
         language={language}
         cinema={cinema}

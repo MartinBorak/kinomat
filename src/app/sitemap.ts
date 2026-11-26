@@ -7,11 +7,14 @@ import { toFilmSegment } from '@/site/films/hrefs'
 import { readCityFilms } from '@/site/films/readFilms'
 import { SITE_ORIGIN, toLanguagePath } from '@/site/seo/site'
 
-// One entry per page in the default language, its variants named as alternates rather than repeated.
+/*
+ * One entry per page in the default language, its variants named as alternates rather than repeated.
+ * No lastModified: every listing changes daily, and a date that is always now teaches a crawler to
+ * ignore it.
+ */
 function toEntry(path: string): MetadataRoute.Sitemap[number] {
   return {
     url: `${SITE_ORIGIN}${toLanguagePath(path, 'sk')}`,
-    lastModified: new Date(),
     alternates: {
       languages: Object.fromEntries(
         LANGUAGES.map((language) => [language, `${SITE_ORIGIN}${toLanguagePath(path, language)}`]),

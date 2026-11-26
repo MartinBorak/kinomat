@@ -7,6 +7,7 @@ export type CinemasCopy = {
   pageDescription: (city: SupportedCity) => string
   // A cinema's own page; its name often says Kino already, so the sentence does not.
   cinemaDescription: (name: string, address: string) => string
+  cinemaTitle: (name: string, city: SupportedCity) => string
   website: string
   map: string
   emptyTitle: string
@@ -18,6 +19,7 @@ export const cinemasCopyByLanguage: Record<Language, CinemasCopy> = {
     pageTitle: 'Kiná',
     heading: (city) => `Kiná ${city.slovakLocative}`,
     pageDescription: (city) => `Všetky kiná ${city.slovakLocative} a čo v nich práve hrajú.`,
+    cinemaTitle: (name, city) => `${name}: program · ${city.name}`,
     cinemaDescription: (name, address) =>
       `${name}, ${address}: program na dnes a najbližšie dni, časy premietaní, jazyk a titulky.`,
     website: 'stránka kina',
@@ -29,6 +31,7 @@ export const cinemasCopyByLanguage: Record<Language, CinemasCopy> = {
     pageTitle: 'Cinemas',
     heading: (city) => `Cinemas in ${city.name}`,
     pageDescription: (city) => `Every cinema in ${city.name} and what is playing in each.`,
+    cinemaTitle: (name, city) => `${name}: showtimes · ${city.name}`,
     cinemaDescription: (name, address) =>
       `${name}, ${address}: showtimes for today and the days ahead, with language and subtitles.`,
     website: 'cinema site',

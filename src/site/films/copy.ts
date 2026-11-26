@@ -10,6 +10,7 @@ export type FilmsCopy = {
   pageDescription: (city: SupportedCity) => string
   // A film's own page, which has its title and its city to go on and nothing that ages.
   filmDescription: (title: string, city: SupportedCity) => string
+  filmTitle: (title: string, city: SupportedCity) => string
   today: string
   tomorrow: string
   minutes: string
@@ -34,6 +35,7 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
     heading: (city) => `Filmy v ${city.slovakPluralAdjective} kinách`,
     pageDescription: (city) =>
       `Všetky filmy, ktoré práve hrajú v ${city.slovakPluralAdjective} kinách, s dátumami a kinami.`,
+    filmTitle: (title, city) => `${title} v kinách ${city.slovakLocative}`,
     filmDescription: (title, city) =>
       `Kedy a kde hrá ${title} ${city.slovakLocative}: časy premietaní, kiná, jazyk a titulky na jednom mieste.`,
     today: 'Dnes',
@@ -64,6 +66,7 @@ export const filmsCopyByLanguage: Record<Language, FilmsCopy> = {
     heading: (city) => `Films showing in ${city.name}`,
     pageDescription: (city) =>
       `Every film now playing in ${city.name}’s cinemas, with dates and venues.`,
+    filmTitle: (title, city) => `${title}: showtimes in ${city.name}`,
     filmDescription: (title, city) =>
       `When and where ${title} is showing in ${city.name}: times, cinemas, language and subtitles in one place.`,
     today: 'Today',

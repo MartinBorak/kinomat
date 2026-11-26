@@ -10,7 +10,7 @@ import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import { ProgramPage } from '@/site/program/ProgramPage'
 import { readScheduledDays, readScreeningsOnDay } from '@/site/program/readScreenings'
 import { toListingGraph } from '@/site/seo/listingGraph'
-import { toAlternates, toCityTitle } from '@/site/seo/site'
+import { toAlternates } from '@/site/seo/site'
 import { StructuredData } from '@/site/seo/StructuredData'
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
@@ -33,7 +33,8 @@ export async function generateMetadata(
   const copy = programCopyByLanguage[language]
 
   return {
-    title: toCityTitle(copy.pageTitle, city),
+    // The heading the page carries, which is also what a search for the page types.
+    title: copy.heading(CITY_BY_ID[city]),
     description: copy.pageDescription(CITY_BY_ID[city]),
     alternates: toAlternates(`/${city}/program`, language),
   }
@@ -55,7 +56,7 @@ export default async function Program(props: PageProps<'/[lang]/[city]/program/[
 
   return (
     <>
-      <StructuredData data={toListingGraph(programmes, language)} />
+      <StructuredData data={toListingGraph(programmes, language, city)} />
       <ProgramPage
         language={language}
         city={city}

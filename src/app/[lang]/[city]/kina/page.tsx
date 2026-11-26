@@ -5,7 +5,7 @@ import { readCity } from '@/lib/readCity'
 import { readLanguage } from '@/lib/readLanguage'
 import { CinemasPage } from '@/site/cinemas/CinemasPage'
 import { cinemasCopyByLanguage } from '@/site/cinemas/copy'
-import { toAlternates, toCityTitle } from '@/site/seo/site'
+import { toAlternates } from '@/site/seo/site'
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
 export const instant = false
@@ -22,7 +22,8 @@ export async function generateMetadata(props: PageProps<'/[lang]/[city]/kina'>):
   const copy = cinemasCopyByLanguage[language]
 
   return {
-    title: toCityTitle(copy.pageTitle, city),
+    // The heading the page carries, which is also what a search for the page types.
+    title: copy.heading(CITY_BY_ID[city]),
     description: copy.pageDescription(CITY_BY_ID[city]),
     alternates: toAlternates(`/${city}/kina`, language),
   }

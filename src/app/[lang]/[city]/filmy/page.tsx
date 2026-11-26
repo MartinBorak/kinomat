@@ -8,7 +8,9 @@ import { readToday } from '@/lib/readToday'
 import { filmsCopyByLanguage } from '@/site/films/copy'
 import { FilmsPage } from '@/site/films/FilmsPage'
 import { readCityFilms } from '@/site/films/readFilms'
-import { toAlternates, toCityTitle } from '@/site/seo/site'
+import { toFilmListGraph } from '@/site/seo/listingGraph'
+import { toAlternates } from '@/site/seo/site'
+import { StructuredData } from '@/site/seo/StructuredData'
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
 export const instant = false
@@ -27,7 +29,8 @@ export async function generateMetadata(
   const copy = filmsCopyByLanguage[language]
 
   return {
-    title: toCityTitle(copy.pageTitle, city),
+    // The heading the page carries, which is also what a search for the page types.
+    title: copy.heading(CITY_BY_ID[city]),
     description: copy.pageDescription(CITY_BY_ID[city]),
     alternates: toAlternates(`/${city}/filmy`, language),
   }
@@ -35,6 +38,7 @@ export async function generateMetadata(
 
 export default async function Films(props: PageProps<'/[lang]/[city]/filmy'>) {
   const { lang, city: segment } = await props.params
+  const language = readLanguage(lang)
   const city = readCity(segment)
 
   /*
@@ -43,12 +47,12 @@ export default async function Films(props: PageProps<'/[lang]/[city]/filmy'>) {
    */
   await connection()
 
+  const films = await readCityFilms(city)
+
   return (
-    <FilmsPage
-      language={readLanguage(lang)}
-      city={city}
-      today={await readToday()}
-      films={await readCityFilms(city)}
-    />
+    <>
+      <StructuredData data={toFilmListGraph(films, language, city)} />
+      <FilmsPage language={language} city={city} today={await readToday()} films={films} />
+    </>
   )
 }

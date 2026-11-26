@@ -25,8 +25,3 @@ export function toAlternates(path: string, language: Language): Metadata['altern
     },
   }
 }
-
-// A city page's title names its city, which is what a search for a city's programme looks for.
-export function toCityTitle(title: string, city: CityId): string {
-  return `${title} · ${CITY_BY_ID[city].name}`
-}

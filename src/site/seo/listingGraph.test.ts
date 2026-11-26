@@ -6,7 +6,12 @@ import {
   type ProgrammeListing,
   type Showing,
 } from '@/site/program/groupScreenings'
-import { serializeJsonLd, toListingGraph } from '@/site/seo/listingGraph'
+import {
+  serializeJsonLd,
+  toFilmListGraph,
+  toListingGraph,
+  toSiteGraph,
+} from '@/site/seo/listingGraph'
 
 const WAVES: ListedFilm = {
   id: 47,
@@ -50,12 +55,13 @@ const PROGRAMME: ProgrammeListing = {
 
 describe('toListingGraph', () => {
   it('describes each film and cinema once and one event per showing pointing at them', () => {
-    const graph = toListingGraph([PROGRAMME], 'en')['@graph']
+    const graph = toListingGraph([PROGRAMME], 'en', 'bratislava')['@graph']
 
     expect(graph).toHaveLength(3)
     expect(graph[0]).toEqual({
       '@type': 'Movie',
       '@id': '#film-k7f3q2abcd',
+      url: 'https://kinomat.sk/en/bratislava/filmy/k7f3q2abcd',
       name: 'Waves',
       alternateName: 'Vlny',
       datePublished: '2024',
@@ -69,8 +75,15 @@ describe('toListingGraph', () => {
       '@type': 'MovieTheater',
       '@id': '#cinema-kino-lumiere',
       name: 'Kino Lumière',
-      address: 'Špitálska 4, Bratislava',
-      url: 'https://www.kino-lumiere.sk/',
+      // Our page is its url; the cinema's own site is what it is the same as.
+      url: 'https://kinomat.sk/en/bratislava/kina/kino-lumiere',
+      sameAs: 'https://www.kino-lumiere.sk/',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Špitálska 4',
+        addressLocality: 'Bratislava',
+        addressCountry: 'SK',
+      },
     })
     expect(graph[2]).toEqual({
       '@type': 'ScreeningEvent',
@@ -100,9 +113,14 @@ describe('toListingGraph', () => {
       directors: [],
       genres: [],
     }
-    const [movie] = toListingGraph([{ ...PROGRAMME, films: [bare] }], 'sk')['@graph']
+    const [movie] = toListingGraph([{ ...PROGRAMME, films: [bare] }], 'sk', 'bratislava')['@graph']
 
-    expect(movie).toEqual({ '@type': 'Movie', '@id': '#film-k7f3q2abcd', name: 'Vlny' })
+    expect(movie).toEqual({
+      '@type': 'Movie',
+      '@id': '#film-k7f3q2abcd',
+      url: 'https://kinomat.sk/bratislava/filmy/k7f3q2abcd',
+      name: 'Vlny',
+    })
   })
 
   it('offers the ticket at its price, and as a range where the cinema sells two tiers', () => {
@@ -112,7 +130,7 @@ describe('toListingGraph', () => {
         cinemas: [{ ...LUMIERE, showings: [{ ...SHOWING, price }] }],
       }
 
-      return toListingGraph([listing], 'sk')['@graph'].find(
+      return toListingGraph([listing], 'sk', 'bratislava')['@graph'].find(
         (node) => node['@type'] === 'ScreeningEvent',
       )?.offers
     }
@@ -141,7 +159,9 @@ describe('toListingGraph', () => {
       titleSk: 'Sestry',
       titleEn: 'Sisters',
     }
-    const graph = toListingGraph([{ ...PROGRAMME, films: [WAVES, second] }], 'sk')['@graph']
+    const graph = toListingGraph([{ ...PROGRAMME, films: [WAVES, second] }], 'sk', 'bratislava')[
+      '@graph'
+    ]
     const event = graph.find((node) => node['@type'] === 'ScreeningEvent')
 
     expect(graph.filter((node) => node['@type'] === 'Movie')).toHaveLength(2)
@@ -156,11 +176,42 @@ describe('toListingGraph', () => {
       ...PROGRAMME,
       cinemas: [{ ...LUMIERE, showings: [SHOWING, { ...SHOWING, id: 2 }] }],
     }
-    const graph = toListingGraph([twice, { ...twice, id: 2 }], 'sk')['@graph']
+    const graph = toListingGraph([twice, { ...twice, id: 2 }], 'sk', 'bratislava')['@graph']
 
     expect(graph.filter((node) => node['@type'] === 'Movie')).toHaveLength(1)
     expect(graph.filter((node) => node['@type'] === 'MovieTheater')).toHaveLength(1)
     expect(graph.filter((node) => node['@type'] === 'ScreeningEvent')).toHaveLength(4)
+  })
+})
+
+describe('toFilmListGraph', () => {
+  // The summary page a movie carousel reads: each film's page, in the order the listing shows them.
+  it('lists each film’s page in order, by its alias where it has one', () => {
+    const [list] = toFilmListGraph(
+      [
+        { publicId: 'k7f3q2abcd', alias: 'vlny' },
+        { publicId: 'abcdk7f3q2', alias: null },
+      ],
+      'en',
+      'kosice',
+    )['@graph']
+
+    expect(list).toEqual({
+      '@type': 'ItemList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, url: 'https://kinomat.sk/en/kosice/filmy/vlny' },
+        { '@type': 'ListItem', position: 2, url: 'https://kinomat.sk/en/kosice/filmy/abcdk7f3q2' },
+      ],
+    })
+  })
+})
+
+describe('toSiteGraph', () => {
+  it('names the site and who publishes it', () => {
+    const graph = toSiteGraph('sk')['@graph']
+
+    expect(graph.map((node) => node['@type'])).toEqual(['WebSite', 'Organization'])
+    expect(graph[0]).toMatchObject({ name: 'Kinomat', url: 'https://kinomat.sk/' })
   })
 })
 
@@ -169,6 +220,7 @@ describe('serializeJsonLd', () => {
     const graph = toListingGraph(
       [{ ...PROGRAMME, films: [{ ...WAVES, titleSk: '</script><b>' }] }],
       'sk',
+      'bratislava',
     )
 
     expect(serializeJsonLd(graph)).not.toContain('</script>')
