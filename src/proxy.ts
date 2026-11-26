@@ -1,9 +1,12 @@
+import { getDatabase } from 'kinomat-core/db/appDatabase'
 import { DEFAULT_LANGUAGE, isLanguage } from 'kinomat-core/lib/language'
 import { findCinema } from 'kinomat-core/types/cinema'
 import { CITIES } from 'kinomat-core/types/city'
+import { isFilmPublicId } from 'kinomat-core/types/film'
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { moveLegacyCity, readRememberedCity } from '@/lib/rememberedCity'
+import { findFilmAlias } from '@/site/films/findFilms'
 
 /*
  * Every public page lives under app/[lang], but the default language is written bare: /kina is
@@ -22,6 +25,8 @@ const DAY_LISTING_PATTERN = new RegExp(
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 // A city's pages, spelled without the city: its front page, schedule, cinemas, films and a film.
 const CITYLESS_LISTING_PATTERN = /^\/(?:|program(?:\/.*)?|kina(?:\/.*)?|filmy(?:\/.*)?)$/
+// A film's page in a city, split around the name it was asked for by.
+const FILM_PAGE_PATTERN = new RegExp(`^(/(?:${CITY_SEGMENT})/filmy/)([^/]+)(/.*)?$`)
 
 /*
  * A day was once ?den= in the query, and links shared then still say so. It is the last segment of
@@ -65,7 +70,37 @@ function toCityPath(request: NextRequest, languagePrefix: string, path: string):
   return moved
 }
 
-export function proxy(request: NextRequest): NextResponse {
+/*
+ * A film's page asked for by its public id, sent on to its alias, which is the address its links
+ * use. Here rather than in the page, since a page that has begun streaming can no longer answer
+ * with a redirect's status, and a crawler or a link preview reads the status. Temporary, since an
+ * alias can be renamed and the id is the name that stays. Null for any other path, and for a film
+ * without an alias, whose page the id itself is.
+ */
+async function toFilmAliasPath(
+  request: NextRequest,
+  languagePrefix: string,
+  path: string,
+): Promise<URL | null> {
+  const [, start, segment = '', rest = ''] = FILM_PAGE_PATTERN.exec(path) ?? []
+
+  if (!isFilmPublicId(segment)) {
+    return null
+  }
+
+  const alias = await findFilmAlias(getDatabase(), segment)
+
+  if (alias === null) {
+    return null
+  }
+
+  const moved = request.nextUrl.clone()
+  moved.pathname = `${languagePrefix}${start}${alias}${rest}`
+
+  return moved
+}
+
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
   const [, first = ''] = pathname.split('/')
 
@@ -90,6 +125,12 @@ export function proxy(request: NextRequest): NextResponse {
   // Temporary, since where it leads depends on the reader's cookie, not on the URL.
   if (cityPath !== null) {
     return NextResponse.redirect(cityPath, 307)
+  }
+
+  const aliasPath = await toFilmAliasPath(request, languagePrefix, path)
+
+  if (aliasPath !== null) {
+    return NextResponse.redirect(aliasPath, 307)
   }
 
   // /en already names a page under app/[lang]; a bare URL needs a language filled in behind the scenes.

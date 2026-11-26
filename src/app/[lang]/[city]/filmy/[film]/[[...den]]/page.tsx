@@ -36,7 +36,8 @@ function toQuery(searchParams: Awaited<FilmPageProps['searchParams']>): string {
 /*
  * The film the segment names, or the redirect to its page. The alias is the page itself, being the
  * name a reader can read; the public id is the one that cannot change, so it always finds the film
- * and is sent on to the alias, with the day and query it came with. A film without an alias is its
+ * and is sent on to the alias, with the day and query it came with. The proxy
+ * does that first, with a real status; this is the same rule for whatever reaches the page. A film without an alias is its
  * public id's page. A segment that is neither names no film, which is the same answer as a film
  * nothing is playing: both are a page that is not there. The lookup is cached, so asking twice is free.
  */

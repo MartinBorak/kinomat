@@ -83,6 +83,20 @@ export async function findCityFilms(
 }
 
 /*
+ * The alias a public id is sent on to, playing or not: the page it lands on is the one to say
+ * that. Null for an id no film has, or a film without an alias, whose page the id itself is.
+ */
+export async function findFilmAlias(database: Database, publicId: string): Promise<string | null> {
+  const [film] = await database
+    .select({ alias: films.alias })
+    .from(films)
+    .where(eq(films.publicId, publicId))
+    .limit(1)
+
+  return film?.alias ?? null
+}
+
+/*
  * One film by either name its page answers to, as long as it is still playing: a film nothing is
  * billing has no page to stand on. Both columns are unique, so this is two rows at most - one
  * film's alias spelled like another's public id - and the alias wins, since it is the name links use.
