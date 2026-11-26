@@ -42,71 +42,77 @@ const FILM_PAGE_PATTERN = new RegExp(`^(/(?:${CITY_SEGMENT})/filmy/)([^/]+)(/.*)
  * the path now, which is what lets a day be cached as a page, so such a link moves there for good.
  * A day that is not one is dropped, which opens the listing where a day-less link would.
  */
-function toDayPath(request: NextRequest): URL | null {
-  const day = request.nextUrl.searchParams.get('den')
+function moveDayIntoPath(url: URL): void {
+  const day = url.searchParams.get('den')
 
-  if (day === null || !DAY_LISTING_PATTERN.test(request.nextUrl.pathname)) {
-    return null
+  if (day === null || !DAY_LISTING_PATTERN.test(url.pathname)) {
+    return
   }
 
-  const moved = request.nextUrl.clone()
-  moved.searchParams.delete('den')
+  url.searchParams.delete('den')
 
   if (ISO_DAY_PATTERN.test(day)) {
-    moved.pathname = `${moved.pathname.replace(/\/$/, '')}/${day}`
+    url.pathname = `${url.pathname.replace(/\/$/, '')}/${day}`
   }
-
-  return moved
 }
 
 /*
- * A city's page asked for without its city, sent to one: a cinema to its own, anything else to the
- * city the reader last looked at. Null for a page that is in a city already, or in none.
+ * The city a page asked for without one belongs in: a cinema's own, which the URL settles for good,
+ * or else the one the reader last looked at, which only holds for now. Null for a page that is in a
+ * city already, or in none.
  */
-function toCityPath(request: NextRequest, languagePrefix: string, path: string): URL | null {
+function findListingCity(
+  request: NextRequest,
+  path: string,
+): { city: CityId; isPermanent: boolean } | null {
   if (!CITYLESS_LISTING_PATTERN.test(path)) {
     return null
   }
 
   const [, section, cinemaId = ''] = path.split('/')
-  const city =
-    section === 'kina'
-      ? (findCinema(cinemaId)?.cityId ?? readRememberedCity(request))
-      : readRememberedCity(request)
-  const moved = request.nextUrl.clone()
-  moved.pathname = `${languagePrefix}/${city}${path}`
+  const cinemaCity = section === 'kina' ? findCinema(cinemaId)?.cityId : undefined
 
-  return moved
+  return cinemaCity === undefined
+    ? { city: readRememberedCity(request), isPermanent: false }
+    : { city: cinemaCity, isPermanent: true }
 }
 
 /*
- * A film's page asked for by its public id, sent on to its alias, which is the address its links
+ * A film's page asked for by its public id, moved on to its alias, which is the address its links
  * use. Here rather than in the page, since a page that has begun streaming can no longer answer
- * with a redirect's status, and a crawler or a link preview reads the status. Temporary, since an
- * alias can be renamed and the id is the name that stays. Null for any other path, and for a film
- * without an alias, whose page the id itself is.
+ * with a redirect's status, and a crawler or a link preview reads the status. Whether it moved:
+ * not for any other path, nor for a film without an alias, whose page the id itself is.
  */
-async function toFilmAliasPath(
-  request: NextRequest,
-  languagePrefix: string,
-  path: string,
-): Promise<URL | null> {
+async function moveFilmToAlias(url: URL, languagePrefix: string): Promise<boolean> {
+  const path = url.pathname.slice(languagePrefix.length)
   const [, start, segment = '', rest = ''] = FILM_PAGE_PATTERN.exec(path) ?? []
 
   if (!isFilmPublicId(segment)) {
-    return null
+    return false
   }
 
   const alias = await findFilmAlias(getDatabase(), segment)
 
   if (alias === null) {
-    return null
+    return false
   }
 
-  const moved = request.nextUrl.clone()
-  moved.pathname = `${languagePrefix}${start}${alias}${rest}`
+  url.pathname = `${languagePrefix}${start}${alias}${rest}`
 
-  return moved
+  return true
+}
+
+/*
+ * A day already over, moved to its listing, which opens on the first day still to come. Such a day
+ * lists nothing and never will again, which is what makes the move permanent. Bratislava's today,
+ * since that is the calendar every listing keeps.
+ */
+function dropPastDay(url: URL): void {
+  const [, listing, day] = DAY_PAGE_PATTERN.exec(url.pathname) ?? []
+
+  if (listing !== undefined && day < getBratislavaToday().toString()) {
+    url.pathname = listing
+  }
 }
 
 // The city a front page's path names, /kosice or /kosice/, or null for any other path.
@@ -117,57 +123,50 @@ function readHomeCity(path: string): CityId | null {
 }
 
 /*
- * A day already over, sent to its listing, which opens on the first day still to come. Such a day
- * lists nothing and never will again, which is what makes the move permanent. Bratislava's today,
- * since that is the calendar every listing keeps.
+ * The URL a request settles at, every correction made at once: a link from before the cities can
+ * need a language prefix dropped, a day moved into the path, a city added, an id swapped for an
+ * alias and a past day dropped, and taking them one redirect at a time would make a crawler follow
+ * a chain. The move is permanent only when every step is: a city read from the reader's cookie, or
+ * an alias that can be renamed, makes the whole of it temporary.
  */
-function toPastDayPath(request: NextRequest): URL | null {
-  const [, listing, day] = DAY_PAGE_PATTERN.exec(request.nextUrl.pathname) ?? []
-
-  if (listing === undefined || day >= getBratislavaToday().toString()) {
-    return null
-  }
-
-  const moved = request.nextUrl.clone()
-  moved.pathname = listing
-
-  return moved
-}
-
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  const { pathname } = request.nextUrl
-  const [, first = ''] = pathname.split('/')
+  const url = request.nextUrl.clone()
+  let isPermanent = true
 
-  // The reader should never see /sk: send them to the bare URL, which the last branch then serves.
-  if (first === DEFAULT_LANGUAGE) {
-    const bare = request.nextUrl.clone()
-    bare.pathname = pathname.slice(first.length + 1) || '/'
-
-    return NextResponse.redirect(bare, 308)
+  // The reader should never see /sk: the bare URL is the Slovak one.
+  if (url.pathname === `/${DEFAULT_LANGUAGE}` || url.pathname.startsWith(`/${DEFAULT_LANGUAGE}/`)) {
+    url.pathname = url.pathname.slice(DEFAULT_LANGUAGE.length + 1) || '/'
   }
 
-  const dayPath = toDayPath(request)
+  moveDayIntoPath(url)
 
-  if (dayPath !== null) {
-    return NextResponse.redirect(dayPath, 308)
-  }
-
-  const pastDayPath = toPastDayPath(request)
-
-  if (pastDayPath !== null) {
-    return NextResponse.redirect(pastDayPath, 308)
-  }
-
+  const [, first = ''] = url.pathname.split('/')
   const languagePrefix = isLanguage(first) ? `/${first}` : ''
-  const path = pathname.slice(languagePrefix.length) || '/'
+  const path = url.pathname.slice(languagePrefix.length) || '/'
   const homeCity = readHomeCity(path)
 
   // Temporary, since the city is the reader's to change; remembered, so the bare page is in it.
   if (homeCity !== null) {
-    const home = request.nextUrl.clone()
-    home.pathname = languagePrefix || '/'
+    url.pathname = languagePrefix || '/'
 
-    return writeCity(request, NextResponse.redirect(home, 307), homeCity)
+    return writeCity(request, NextResponse.redirect(url, 307), homeCity)
+  }
+
+  const listingCity = findListingCity(request, path)
+
+  if (listingCity !== null) {
+    url.pathname = `${languagePrefix}/${listingCity.city}${path}`
+    isPermanent &&= listingCity.isPermanent
+  }
+
+  if (await moveFilmToAlias(url, languagePrefix)) {
+    isPermanent = false
+  }
+
+  dropPastDay(url)
+
+  if (url.href !== request.nextUrl.href) {
+    return NextResponse.redirect(url, isPermanent ? 308 : 307)
   }
 
   // The front page in the reader's city, which the URL keeps to itself.
@@ -177,24 +176,12 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
     return moveLegacyCity(request, NextResponse.rewrite(home))
   }
-  const cityPath = toCityPath(request, languagePrefix, path)
-
-  // Temporary, since where it leads depends on the reader's cookie, not on the URL.
-  if (cityPath !== null) {
-    return NextResponse.redirect(cityPath, 307)
-  }
-
-  const aliasPath = await toFilmAliasPath(request, languagePrefix, path)
-
-  if (aliasPath !== null) {
-    return NextResponse.redirect(aliasPath, 307)
-  }
 
   // /en already names a page under app/[lang]; a bare URL needs a language filled in behind the scenes.
   const prefixed = request.nextUrl.clone()
-  prefixed.pathname = `/${DEFAULT_LANGUAGE}${pathname}`
+  prefixed.pathname = `/${DEFAULT_LANGUAGE}${request.nextUrl.pathname}`
 
-  const response = isLanguage(first) ? NextResponse.next() : NextResponse.rewrite(prefixed)
+  const response = languagePrefix === '' ? NextResponse.rewrite(prefixed) : NextResponse.next()
 
   return moveLegacyCity(request, response)
 }

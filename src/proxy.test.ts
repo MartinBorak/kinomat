@@ -58,14 +58,16 @@ describe('the language proxy', () => {
 
   // Links shared while the day was a query still say ?den=; each moves to the path that is cached.
   it('moves a day out of the query and into the path, keeping the rest of the query', async () => {
-    const response = await proxy(request('/en/filmy/k7f3q2abcd?den=2026-09-05&kino=kino-lumiere'))
+    const response = await proxy(
+      request('/en/nitra/filmy/k7f3q2abcd?den=2026-09-05&kino=kino-lumiere'),
+    )
 
     expect(response.status).toBe(308)
     expect(response.headers.get('location')).toBe(
-      'https://kinomat.test/en/filmy/k7f3q2abcd/2026-09-05?kino=kino-lumiere',
+      'https://kinomat.test/en/nitra/filmy/k7f3q2abcd/2026-09-05?kino=kino-lumiere',
     )
-    expect((await proxy(request('/program?den=zajtra'))).headers.get('location')).toBe(
-      'https://kinomat.test/program',
+    expect((await proxy(request('/kosice/program?den=zajtra'))).headers.get('location')).toBe(
+      'https://kinomat.test/kosice/program',
     )
     expect((await proxy(request('/nitra/program?den=2026-09-05'))).headers.get('location')).toBe(
       'https://kinomat.test/nitra/program/2026-09-05',
@@ -208,5 +210,23 @@ describe('the city proxy', () => {
   it('leaves today and the days ahead where they are', async () => {
     expect((await proxy(request('/kosice/program/2026-09-01'))).headers.get('location')).toBeNull()
     expect((await proxy(request('/kosice/program/2026-09-02'))).headers.get('location')).toBeNull()
+  })
+
+  /*
+   * Links from before the cities are what search results still point at, so each reaches its page in
+   * one redirect, not a chain, and for good wherever the URL alone settles where it goes.
+   */
+  it('sends an old link to its page in one redirect, permanent where the URL settles it', async () => {
+    const cinema = await proxy(request('/sk/kina/kino-lumiere/2026-08-01', 'kosice'))
+
+    expect(cinema.status).toBe(308)
+    expect(cinema.headers.get('location')).toBe('https://kinomat.test/bratislava/kina/kino-lumiere')
+
+    const film = await proxy(request('/en/filmy/a1b2c3d4e5f6?den=2026-09-05', 'kosice'))
+
+    expect(film.status).toBe(307)
+    expect(film.headers.get('location')).toBe(
+      'https://kinomat.test/en/kosice/filmy/vlny/2026-09-05',
+    )
   })
 })
