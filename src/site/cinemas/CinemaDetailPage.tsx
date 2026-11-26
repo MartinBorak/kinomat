@@ -138,6 +138,7 @@ function CinemaDetailView({
       />
 
       <FilterBar
+        language={language}
         filters={filters}
         options={options}
         countLabel={formatCount(filmCount, copy.films, language)}

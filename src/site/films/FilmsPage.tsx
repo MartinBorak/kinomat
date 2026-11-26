@@ -106,6 +106,7 @@ function FilmsView({
 
       {/* The schedule's own bar, wearing the one menu this view has a use for. */}
       <FilterBar
+        language={language}
         filters={{ ...NO_FILTERS, query, genres }}
         options={{ ...NO_OPTIONS, genres: genreOptions }}
         countLabel={formatCount(listed.length, copy.films, language)}

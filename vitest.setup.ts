@@ -10,14 +10,21 @@ import { afterEach, vi } from 'vitest'
 afterEach(cleanup)
 
 /*
- * jsdom has no ResizeObserver and lays nothing out, so a component that measures itself gets a
- * constructor that never fires rather than a crash. What it would have measured is always 0 here.
+ * jsdom has no ResizeObserver or IntersectionObserver and lays nothing out, so a component that
+ * measures itself gets a constructor that never fires rather than a crash. What it would have
+ * measured is always 0 here, and a bar that sticks never sticks.
  */
-globalThis.ResizeObserver = class {
+class SilentObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
+  takeRecords() {
+    return []
+  }
 }
+
+globalThis.ResizeObserver = SilentObserver
+globalThis.IntersectionObserver = SilentObserver as unknown as typeof IntersectionObserver
 
 /*
  * The city is remembered by a server action, which needs a request to set its cookie on. Here the

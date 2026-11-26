@@ -130,6 +130,7 @@ function ProgramView({
       />
 
       <FilterBar
+        language={language}
         filters={filters}
         options={options}
         countLabel={formatCount(filmCount, copy.films, language)}

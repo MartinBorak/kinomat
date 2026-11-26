@@ -1,6 +1,9 @@
+import { type Language } from 'kinomat-core/lib/language'
+import Link from 'next/link'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { type ReactNode } from 'react'
+import { type ReactNode, type RefObject } from 'react'
 
+import { toHomeHref } from '@/site/landing/hrefs'
 import { type FilterBarCopy, type FilterCopy } from '@/site/program/copy'
 import {
   DIMENSIONS,
@@ -13,9 +16,11 @@ import {
   NO_FILTERS,
   toggleValue,
 } from '@/site/program/filters'
+import { BrandMark } from '@/site/ui/BrandMark'
 import { scrollToPosition, toPositionUnderBar } from '@/site/ui/scrolling'
 
 type FilterBarProps = {
+  language: Language
   filters: ProgramFilters
   options: FilterOptions
   // What the bar says it is showing, already counted: a day counts its films, a film its showings.
@@ -155,10 +160,38 @@ function FilterMenu({
 }
 
 /*
+ * Whether a bar stuck to the top is stuck there: the viewport trimmed by a pixel cuts into it only
+ * once it sits at the very top, and a bar further down the page is never cut at its top edge.
+ */
+function useIsStuck(bar: RefObject<HTMLElement | null>): boolean {
+  const [isStuck, setIsStuck] = useState(false)
+
+  useEffect(() => {
+    const element = bar.current
+
+    if (element === null) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(entry.intersectionRatio < 1 && entry.boundingClientRect.top < 1),
+      { rootMargin: '-1px 0px 0px 0px', threshold: 1 },
+    )
+
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [bar])
+
+  return isStuck
+}
+
+/*
  * The search field and the four menus, over the day as it arrived rather than as they leave it -
  * so narrowing to one cinema does not take the other cinemas out of the menu that chose it.
  */
 export function FilterBar({
+  language,
   filters,
   options,
   countLabel,
@@ -173,6 +206,7 @@ export function FilterBar({
   // Only a body no longer animating may show overflow, or the slide would spill the pills early.
   const [isSettled, setIsSettled] = useState(false)
   const row = useRef<HTMLDivElement>(null)
+  const isStuck = useIsStuck(row)
 
   const activeCount =
     (filters.query === '' ? 0 : 1) +
@@ -228,6 +262,21 @@ export function FilterBar({
       data-sticky-bar
       className="border-line bg-surface/85 sticky top-0 z-30 flex flex-wrap items-center gap-2.5 border-b px-[22px] py-4 backdrop-blur-md md:px-[6vw]"
     >
+      {/*
+       * Once the bar is stuck the header has scrolled away, and with it the way home: the mark slides
+       * in on the left. Out of the way it takes no width, its gap cancelled, and no tab stop.
+       */}
+      <Link
+        href={toHomeHref(language)}
+        aria-label="Kinomat"
+        inert={!isStuck}
+        className={`flex flex-none items-center overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-out motion-reduce:transition-none ${
+          isStuck ? 'mr-1.5 max-w-12 opacity-100' : '-mr-2.5 max-w-0 opacity-0'
+        }`}
+      >
+        <BrandMark className="h-[22px] w-auto flex-none" />
+      </Link>
+
       {/*
        * A pill of its own with a sliders mark: as plain small caps it read as a caption beside the
        * count, and readers scrolled past it never knowing the list could be narrowed.
