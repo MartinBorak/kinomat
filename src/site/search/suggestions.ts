@@ -31,7 +31,7 @@ export function toCinemaSuggestions(language: Language, city: CityId | null): Su
 // The fields the panel needs of a film, so a page whose language is chosen client-side can build its rows there.
 export type SuggestedFilm = Pick<
   FilmRow,
-  'publicId' | 'titleSk' | 'titleEn' | 'originalTitle' | 'releaseYear'
+  'publicId' | 'alias' | 'titleSk' | 'titleEn' | 'originalTitle' | 'releaseYear'
 >
 
 // What the search route answers: a city's films, and which city that is.
@@ -48,8 +48,9 @@ export function toSuggestedFilmsRoute(city: CityId | null): string {
 }
 
 export function toSuggestedFilms(films: readonly FilmRow[]): SuggestedFilm[] {
-  return films.map(({ publicId, titleSk, titleEn, originalTitle, releaseYear }) => ({
+  return films.map(({ publicId, alias, titleSk, titleEn, originalTitle, releaseYear }) => ({
     publicId,
+    alias,
     titleSk,
     titleEn,
     originalTitle,
@@ -72,7 +73,7 @@ export function toFilmSuggestions(
         (title) => title !== '' && title !== name,
       ),
       meta: film.releaseYear === null ? '' : String(film.releaseYear),
-      href: toFilmHref(film.publicId, language, city),
+      href: toFilmHref(film, language, city),
     }
   })
 }

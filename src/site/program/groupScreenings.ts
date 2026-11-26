@@ -8,6 +8,7 @@ import { type ScreeningRow } from '@/site/program/findScreenings'
 export type ListedFilm = {
   id: number
   publicId: string
+  alias: string | null
   titleSk: string
   titleEn: string
   originalTitle: string
@@ -50,6 +51,7 @@ function toListedFilm(row: ScreeningRow): ListedFilm {
   return {
     id: row.filmId,
     publicId: row.publicId,
+    alias: row.alias,
     titleSk: row.titleSk,
     titleEn: row.titleEn,
     originalTitle: row.originalTitle,

@@ -11,6 +11,7 @@ import { serializeJsonLd, toListingGraph } from '@/site/seo/listingGraph'
 const WAVES: ListedFilm = {
   id: 47,
   publicId: 'k7f3q2abcd',
+  alias: null,
   titleSk: 'Vlny',
   titleEn: 'Waves',
   originalTitle: 'Vlny',
@@ -136,6 +137,7 @@ describe('toListingGraph', () => {
       ...WAVES,
       id: 48,
       publicId: 'abcdk7f3q2',
+      alias: null,
       titleSk: 'Sestry',
       titleEn: 'Sisters',
     }

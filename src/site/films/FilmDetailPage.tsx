@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Temporal } from 'temporal-polyfill'
 
 import { filmsCopyByLanguage } from '@/site/films/copy'
-import { toFilmHref } from '@/site/films/hrefs'
+import { type FilmLink, toFilmHref } from '@/site/films/hrefs'
 import { formatCount } from '@/site/films/labels'
 import { programCopyByLanguage } from '@/site/program/copy'
 import { DateStrip } from '@/site/program/DateStrip'
@@ -34,7 +34,7 @@ type FilmDetailPageProps = {
   city: CityId
   // Every city it plays in; this one stays listed unlinked, so the others keep their places.
   cities: readonly CityId[]
-  publicId: string
+  film: FilmLink
   date: string
   // Whether the path named the day, rather than the page opening on the first one the film plays.
   isDayNamed: boolean
@@ -60,7 +60,7 @@ function FilmDetailView({
   language,
   city,
   cities,
-  publicId,
+  film,
   date: isoDate,
   isDayNamed,
   today: isoToday,
@@ -99,7 +99,7 @@ function FilmDetailView({
 
   // Nothing here is stored, so a filter rewrites the URL it was read from rather than asking again.
   function changeFilters(next: ProgramFilters) {
-    window.history.replaceState(null, '', toFilmHref(publicId, language, city, requestedDate, next))
+    window.history.replaceState(null, '', toFilmHref(film, language, city, requestedDate, next))
   }
 
   const filmsCopy = filmsCopyByLanguage[language]
@@ -123,7 +123,7 @@ function FilmDetailView({
         city={city}
         languageChange={{
           hrefByLanguage: toHrefByLanguage((next) =>
-            toFilmHref(publicId, next, city, requestedDate, filters),
+            toFilmHref(film, next, city, requestedDate, filters),
           ),
         }}
         hasSearch
@@ -135,7 +135,7 @@ function FilmDetailView({
         today={today}
         copy={copy}
         language={language}
-        toHref={(day) => toFilmHref(publicId, language, city, day, filters)}
+        toHref={(day) => toFilmHref(film, language, city, day, filters)}
       />
 
       <FilterBar
@@ -164,7 +164,7 @@ function FilmDetailView({
               ) : (
                 <Link
                   key={other}
-                  href={toFilmHref(publicId, language, other)}
+                  href={toFilmHref(film, language, other)}
                   className="text-ink-soft hover:text-accent"
                 >
                   {findCity(other)?.name}
@@ -182,7 +182,7 @@ function FilmDetailView({
               copy={copy}
               language={language}
               isAboveFold
-              currentFilmPublicId={publicId}
+              currentFilmPublicId={film.publicId}
             />
           ))}
 

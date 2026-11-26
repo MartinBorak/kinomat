@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, or, type SQL, sql } from 'drizzle-orm'
 import { type Database } from 'kinomat-core/db/client'
 import { type FilmGenre, selectFilmGenres } from 'kinomat-core/db/findGenres'
 import { films, programmeFilms, screenings } from 'kinomat-core/db/schema'
@@ -15,6 +15,8 @@ export type FilmRow = {
   filmId: number
   // The name a link uses, since the row's own id is a serial one and a rebuild hands those out afresh.
   publicId: string
+  // The readable name its link uses instead, where it has one.
+  alias: string | null
   titleSk: string
   titleEn: string
   originalTitle: string
@@ -34,6 +36,7 @@ function selectPlaying(database: Database, now: Date, scope: SQL | undefined) {
     .select({
       filmId: films.id,
       publicId: films.publicId,
+      alias: films.alias,
       titleSk: films.titleSk,
       titleEn: films.titleEn,
       originalTitle: films.originalTitle,
@@ -80,29 +83,20 @@ export async function findCityFilms(
 }
 
 /*
- * The film an alias names, playing or not: the page it redirects to is the one to say that. The
- * alias column is unique, so this is one row or none.
+ * One film by either name its page answers to, as long as it is still playing: a film nothing is
+ * billing has no page to stand on. Both columns are unique, so this is two rows at most - one
+ * film's alias spelled like another's public id - and the alias wins, since it is the name links use.
  */
-export async function findFilmPublicIdByAlias(
-  database: Database,
-  alias: string,
-): Promise<string | null> {
-  const [film] = await database
-    .select({ publicId: films.publicId })
-    .from(films)
-    .where(eq(films.alias, alias))
-    .limit(1)
-
-  return film?.publicId ?? null
-}
-
-// One film, as long as it is still playing: a film nothing is billing has no page to stand on.
 export async function findPlayingFilm(
   database: Database,
-  publicId: string,
+  segment: string,
   now: Date = new Date(),
 ): Promise<FilmRow | null> {
-  const [film] = await selectPlaying(database, now, eq(films.publicId, publicId))
+  const rows = await selectPlaying(
+    database,
+    now,
+    or(eq(films.alias, segment), eq(films.publicId, segment)),
+  )
 
-  return film ?? null
+  return rows.find((row) => row.alias === segment) ?? rows[0] ?? null
 }

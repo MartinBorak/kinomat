@@ -1,6 +1,6 @@
 import { toQueryString } from 'kinomat-core/lib/hrefs'
 import { DEFAULT_CITY } from 'kinomat-core/types/city'
-import { isFilmAlias, isFilmPublicId } from 'kinomat-core/types/film'
+import { isFilmAlias } from 'kinomat-core/types/film'
 import { notFound, redirect } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 
@@ -9,9 +9,9 @@ import { readDaySegment } from '@/lib/readDaySegment'
 import { readLanguage } from '@/lib/readLanguage'
 import { readToday } from '@/lib/readToday'
 import { FilmDetailPage } from '@/site/films/FilmDetailPage'
-import { toFilmHref } from '@/site/films/hrefs'
+import { toFilmHref, toFilmSegment } from '@/site/films/hrefs'
 import { formatFilmTitle } from '@/site/films/labels'
-import { readFilmPublicIdByAlias, readPlayingFilm, readPlayingFilms } from '@/site/films/readFilms'
+import { readPlayingFilm, readPlayingFilms } from '@/site/films/readFilms'
 import { groupIntoProgrammes } from '@/site/program/groupScreenings'
 import {
   readFilmCities,
@@ -24,7 +24,7 @@ import { StructuredData } from '@/site/seo/StructuredData'
 
 type FilmPageProps = PageProps<'/[lang]/[city]/filmy/[film]/[[...den]]'>
 
-// The query as it came, so an alias link to a day or a filter lands on that day with that filter.
+// The query as it came, so a public id link to a day or a filter lands on that day with that filter.
 function toQuery(searchParams: Awaited<FilmPageProps['searchParams']>): string {
   return toQueryString(
     Object.entries(searchParams).flatMap(([key, value]) =>
@@ -34,35 +34,31 @@ function toQuery(searchParams: Awaited<FilmPageProps['searchParams']>): string {
 }
 
 /*
- * The film the segment names, or the redirect to it. A public id is the page itself; an alias is
- * a readable spelling of one, sent on to the page with the day and query it came with, since an alias may
- * be renamed and a saved link should keep working through the one name that cannot be. A segment
- * shaped like neither names no film, which is the same answer as a film nothing is playing: both
- * are a page that is not there. The lookups are cached, so asking twice is free.
+ * The film the segment names, or the redirect to its page. The alias is the page itself, being the
+ * name a reader can read; the public id is the one that cannot change, so it always finds the film
+ * and is sent on to the alias, with the day and query it came with. A film without an alias is its
+ * public id's page. A segment that is neither names no film, which is the same answer as a film
+ * nothing is playing: both are a page that is not there. The lookup is cached, so asking twice is free.
  */
 async function readFilm(props: FilmPageProps) {
   const { lang, city, film: segment, den } = await props.params
+  // A public id is shaped like an alias too, so one check admits both.
+  const film = isFilmAlias(segment) ? await readPlayingFilm(segment) : null
 
-  if (isFilmPublicId(segment)) {
-    const film = await readPlayingFilm(segment)
-
-    if (film !== null) {
-      return film
-    }
-  } else if (isFilmAlias(segment)) {
-    const publicId = await readFilmPublicIdByAlias(segment)
-
-    if (publicId !== null) {
-      const day = readDaySegment(den)
-      const date = day === undefined ? undefined : Temporal.PlainDate.from(day)
-
-      redirect(
-        `${toFilmHref(publicId, readLanguage(lang), readCity(city), date)}${toQuery(await props.searchParams)}`,
-      )
-    }
+  if (film === null) {
+    notFound()
   }
 
-  notFound()
+  if (film.alias !== null && film.alias !== segment) {
+    const day = readDaySegment(den)
+    const date = day === undefined ? undefined : Temporal.PlainDate.from(day)
+
+    redirect(
+      `${toFilmHref(film, readLanguage(lang), readCity(city), date)}${toQuery(await props.searchParams)}`,
+    )
+  }
+
+  return film
 }
 
 // The language is in the URL, so there is no shell worth prerendering ahead of a reader's request.
@@ -76,7 +72,9 @@ export const instant = false
 export async function generateStaticParams() {
   const [film] = await readPlayingFilms()
 
-  return [{ city: DEFAULT_CITY, film: film?.publicId ?? 'zatial-nic', den: [] }]
+  return [
+    { city: DEFAULT_CITY, film: film === undefined ? 'zatial-nic' : toFilmSegment(film), den: [] },
+  ]
 }
 
 export async function generateMetadata(props: FilmPageProps) {
@@ -85,7 +83,7 @@ export async function generateMetadata(props: FilmPageProps) {
 
   return {
     title: toCityTitle(formatFilmTitle(film, readLanguage(lang)), readCity(city)),
-    alternates: toAlternates(`/${readCity(city)}/filmy/${film.publicId}`, readLanguage(lang)),
+    alternates: toAlternates(`/${readCity(city)}/filmy/${toFilmSegment(film)}`, readLanguage(lang)),
   }
 }
 
@@ -111,7 +109,7 @@ export default async function Film(props: FilmPageProps) {
         language={language}
         city={city}
         cities={cities}
-        publicId={film.publicId}
+        film={{ publicId: film.publicId, alias: film.alias }}
         date={date}
         isDayNamed={namedDay !== undefined}
         today={today}

@@ -15,6 +15,7 @@ beforeEach(() => {
 const FILMS = [
   {
     publicId: 'k7f3q2abcd',
+    alias: null,
     titleSk: 'Vlny',
     titleEn: 'Waves',
     originalTitle: 'Vlny',

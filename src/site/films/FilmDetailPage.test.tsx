@@ -34,6 +34,7 @@ const WAVES: ProgrammeListing = {
     {
       id: 47,
       publicId: PUBLIC_ID,
+      alias: null,
       titleSk: 'Vlny',
       titleEn: 'Waves',
       originalTitle: 'Vlny',
@@ -86,7 +87,7 @@ function renderFilm(
       language={language}
       city="bratislava"
       cities={cities}
-      publicId={PUBLIC_ID}
+      film={{ publicId: PUBLIC_ID, alias: null }}
       date={date.toString()}
       isDayNamed={isDayNamed}
       today={TODAY.toString()}

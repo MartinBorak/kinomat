@@ -9,6 +9,7 @@ import { type SuggestedFilm } from '@/site/search/suggestions'
 const FILMS: SuggestedFilm[] = [
   {
     publicId: 'k7f3q2abcd',
+    alias: null,
     titleSk: 'Vlny',
     titleEn: 'Waves',
     originalTitle: 'Vlny',

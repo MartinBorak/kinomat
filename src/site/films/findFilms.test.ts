@@ -6,7 +6,7 @@ import { parseBratislavaTime } from 'kinomat-core/lib/time'
 import { toFilmPublicId } from 'kinomat-core/types/film'
 import { describe, expect } from 'vitest'
 
-import { findFilmPublicIdByAlias, findPlayingFilms } from '@/site/films/findFilms'
+import { findPlayingFilm, findPlayingFilms } from '@/site/films/findFilms'
 
 const NOW = parseBratislavaTime('2026-09-10T09:00:00')
 
@@ -106,16 +106,16 @@ describe.skipIf(!databaseUrl)('reading what is playing', () => {
     expect(rows.map((row) => row.titleSk)).toEqual(['Dune', 'Vlny'])
   })
 
-  // The redirect's one question: which page an alias stands for, playing or not.
-  it('finds the public id an alias names, and nothing for a name no film has', async ({
+  // The page answers to both names, so the alias is its address and an old id link still finds it.
+  it('finds a playing film by its alias or its public id, and nothing for a name no film has', async ({
     database,
   }) => {
     await billFilms(database, [{ titles: ['Vlny'], times: ['2026-09-10T20:00:00'] }])
     await database.update(films).set({ alias: 'vlny' })
+    const publicId = toFilmPublicId(toFilmValues({ titleSk: 'Vlny' }))
 
-    expect(await findFilmPublicIdByAlias(database, 'vlny')).toBe(
-      toFilmPublicId(toFilmValues({ titleSk: 'Vlny' })),
-    )
-    expect(await findFilmPublicIdByAlias(database, 'duna')).toBeNull()
+    expect((await findPlayingFilm(database, 'vlny', NOW))?.publicId).toBe(publicId)
+    expect((await findPlayingFilm(database, publicId, NOW))?.alias).toBe('vlny')
+    expect(await findPlayingFilm(database, 'duna', NOW)).toBeNull()
   })
 })

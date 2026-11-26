@@ -14,6 +14,7 @@ function createFilm(
   return {
     filmId: 1,
     publicId: 'k7f3q2abcd',
+    alias: null,
     titleSk,
     titleEn,
     originalTitle: titleSk,

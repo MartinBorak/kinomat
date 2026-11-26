@@ -44,7 +44,7 @@ function toFilmLink(
 ) {
   const city = programme.cinemas[0]?.cityId ?? null
 
-  return film.publicId === currentFilmPublicId ? null : toFilmHref(film.publicId, language, city)
+  return film.publicId === currentFilmPublicId ? null : toFilmHref(film, language, city)
 }
 
 // One film of the bill: what it is called, when it was made, and where it can be read about.

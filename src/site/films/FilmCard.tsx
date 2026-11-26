@@ -45,7 +45,7 @@ export function FilmCard({ film, city, today, copy, language, isAboveFold }: Fil
 
   return (
     <Link
-      href={toFilmHref(film.publicId, language, city)}
+      href={toFilmHref(film, language, city)}
       data-film-stop
       className="group flex w-full flex-none flex-col gap-2.5 md:w-[180px]"
     >

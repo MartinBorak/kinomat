@@ -46,6 +46,7 @@ function createFilm(titleSk: string, genres: FilmGenre[] = [DRAMA]): ListedFilm 
   return {
     id: 1,
     publicId: 'k7f3q2abcd',
+    alias: null,
     titleSk,
     titleEn: 'Waves',
     originalTitle: titleSk,

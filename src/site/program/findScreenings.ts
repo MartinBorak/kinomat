@@ -30,6 +30,7 @@ export type ScreeningRow = {
   cinemaCityId: CityId
   filmId: number
   publicId: string
+  alias: string | null
   filmPosition: number
   titleSk: string
   titleEn: string
@@ -98,6 +99,7 @@ async function selectScreenings(
       cinemaCityId: cinemas.cityId,
       filmId: films.id,
       publicId: films.publicId,
+      alias: films.alias,
       filmPosition: programmeFilms.position,
       titleSk: films.titleSk,
       titleEn: films.titleEn,

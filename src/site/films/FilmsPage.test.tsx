@@ -20,6 +20,7 @@ function createFilm(film: Partial<FilmRow> = {}): FilmRow {
   return {
     filmId: 1,
     publicId: PUBLIC_ID,
+    alias: null,
     titleSk: 'Vlny',
     titleEn: 'Waves',
     originalTitle: 'Vlny',

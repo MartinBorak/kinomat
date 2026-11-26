@@ -3,6 +3,7 @@ import { CINEMAS } from 'kinomat-core/types/cinema'
 import { CITIES } from 'kinomat-core/types/city'
 import { type MetadataRoute } from 'next'
 
+import { toFilmSegment } from '@/site/films/hrefs'
 import { readCityFilms } from '@/site/films/readFilms'
 import { SITE_ORIGIN, toLanguagePath } from '@/site/seo/site'
 
@@ -39,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     toEntry('/o-kinomate'),
     ...CINEMAS.map((cinema) => toEntry(`/${cinema.cityId}/kina/${cinema.id}`)),
     ...filmsByCity.flatMap(({ city, films }) =>
-      films.map((film) => toEntry(`/${city}/filmy/${film.publicId}`)),
+      films.map((film) => toEntry(`/${city}/filmy/${toFilmSegment(film)}`)),
     ),
   ]
 }
