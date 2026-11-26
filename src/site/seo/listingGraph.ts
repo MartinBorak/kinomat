@@ -92,6 +92,30 @@ function toMovieTheaterNode(cinema: CinemaListing, language: Language): JsonLdNo
   }
 }
 
+/*
+ * When a showing ends: its start plus the running time of every film on the bill, so a double
+ * feature ends after both. Unknown where any film's length is, rather than an end that is too soon;
+ * TMDB's 0 for a concert film is a gap, not a length.
+ */
+function toEndDate(programme: ProgrammeListing, startsAt: Date): string | undefined {
+  const minutes = programme.films.map((film) => film.runtimeMinutes ?? 0)
+
+  if (minutes.some((length) => length === 0)) {
+    return undefined
+  }
+
+  const total = minutes.reduce((sum, length) => sum + length, 0)
+
+  return formatBratislavaDateTime(new Date(startsAt.getTime() + total * 60_000))
+}
+
+// The poster of the bill's first film, which is the picture a showing is known by.
+function toEventImage(programme: ProgrammeListing): string | undefined {
+  const posterPath = programme.films.find((film) => film.posterPath !== null)?.posterPath
+
+  return posterPath === undefined || posterPath === null ? undefined : toPosterUrl(posterPath)
+}
+
 function toScreeningEventNode(
   programme: ProgrammeListing,
   cinema: CinemaListing,
@@ -104,6 +128,8 @@ function toScreeningEventNode(
     '@type': 'ScreeningEvent',
     name: programme.films.map((film) => formatFilmTitle(film, language)).join(' + '),
     startDate: formatBratislavaDateTime(showing.startsAt),
+    endDate: toEndDate(programme, showing.startsAt),
+    image: toEventImage(programme),
     location: { '@id': toCinemaNodeId(cinema) },
     workPresented: films.length === 1 ? films[0] : films,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',

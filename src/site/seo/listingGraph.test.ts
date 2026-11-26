@@ -90,6 +90,9 @@ describe('toListingGraph', () => {
       name: 'Waves',
       // Summer time, so the offset is what tells a machine 20:15 was Bratislava's and not UTC's.
       startDate: '2026-09-05T20:15:00+02:00',
+      // The start plus the film's 131 minutes.
+      endDate: '2026-09-05T22:26:00+02:00',
+      image: 'https://image.tmdb.org/t/p/w500/vlny.jpg',
       location: { '@id': '#cinema-kino-lumiere' },
       workPresented: { '@id': '#film-k7f3q2abcd' },
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -169,6 +172,21 @@ describe('toListingGraph', () => {
       name: 'Vlny + Sestry',
       workPresented: [{ '@id': '#film-k7f3q2abcd' }, { '@id': '#film-abcdk7f3q2' }],
     })
+  })
+
+  // A double feature ends after both films; a film of unknown length leaves the end unsaid.
+  it('ends a showing after every film on the bill, and only where each one’s length is known', () => {
+    function endOf(films: ListedFilm[]): unknown {
+      return toListingGraph([{ ...PROGRAMME, films }], 'sk', 'bratislava')['@graph'].find(
+        (node) => node['@type'] === 'ScreeningEvent',
+      )?.endDate
+    }
+
+    expect(endOf([WAVES, { ...WAVES, id: 48, publicId: 'abcdk7f3q2', runtimeMinutes: 90 }])).toBe(
+      '2026-09-05T23:56:00+02:00',
+    )
+    expect(endOf([{ ...WAVES, runtimeMinutes: null }])).toBeUndefined()
+    expect(endOf([{ ...WAVES, runtimeMinutes: 0 }])).toBeUndefined()
   })
 
   it('states a film and a cinema once however many showings they share', () => {
