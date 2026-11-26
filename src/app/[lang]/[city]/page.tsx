@@ -23,7 +23,8 @@ export async function generateMetadata(props: PageProps<'/[lang]/[city]'>) {
   return {
     title: CITY_BY_ID[city].name,
     description: copyByLanguage[language].pageDescription(CITY_BY_ID[city]),
-    alternates: toAlternates(`/${city}`, language),
+    // Served at the bare URL in every city; the proxy picks the reader's.
+    alternates: toAlternates('/', language),
   }
 }
 

@@ -1,7 +1,7 @@
 // Adds jest-dom's DOM-specific matchers (e.g. toBeInTheDocument) to Vitest's expect.
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, vi } from 'vitest'
 
 /*
  * Testing Library unmounts after each test only when Vitest runs with globals, which this project
@@ -18,3 +18,15 @@ globalThis.ResizeObserver = class {
   unobserve() {}
   disconnect() {}
 }
+
+/*
+ * The city is remembered by a server action, which needs a request to set its cookie on. Here the
+ * browser's cookie stands in for the one the response would have set.
+ */
+vi.mock('@/site/ui/rememberCityAction', () => ({
+  rememberCity: (city: string) => {
+    document.cookie = `vybrane-mesto=${city}; Path=/`
+
+    return Promise.resolve()
+  },
+}))

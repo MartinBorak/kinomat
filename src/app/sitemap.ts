@@ -29,10 +29,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     CITIES.map(async ({ id }) => ({ city: id, films: await readCityFilms(id) })),
   )
 
-  // The bare listings only redirect to a city, so each city names its own and none is listed bare.
+  /*
+   * The bare listings only redirect to a city, so each city names its own and none is listed bare.
+   * The front page is the other way round: one bare URL, in whichever city the reader is.
+   */
   return [
+    toEntry('/'),
     ...CITIES.flatMap(({ id }) => [
-      toEntry(`/${id}`),
       toEntry(`/${id}/program`),
       toEntry(`/${id}/filmy`),
       toEntry(`/${id}/kina`),

@@ -29,7 +29,8 @@ type SiteHeaderProps = {
   hasSearch?: boolean
   /*
    * A film's page in another city is a visit, not a move: the bar stays on the reader's own city,
-   * and the page names its city only for a reader who has none yet, see RememberCity.
+   * and the page names its city only for a reader who has none yet, see RememberCity. The front
+   * page is one too, since its city was read from the reader's and is not theirs to overwrite.
    */
   isVisit?: boolean
 }
@@ -88,7 +89,7 @@ export function SiteHeader({
         {/* The city stands under the wordmark until the bar has room for it beside the sections. */}
         <div className="flex flex-none flex-col items-start gap-1 xl:flex-row xl:items-center xl:gap-6">
           <Link
-            href={toHomeHref(language, barCity)}
+            href={toHomeHref(language)}
             className="flex flex-none items-center gap-3 md:gap-3.5"
           >
             <BrandMark />

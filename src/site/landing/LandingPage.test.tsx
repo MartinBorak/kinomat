@@ -5,11 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LandingPage } from '@/site/landing/LandingPage'
 
 // The type-to-focus listener follows the URL, not the mounted page, so a test says where the URL is.
-const url = vi.hoisted(() => ({ pathname: '/bratislava' }))
-vi.mock('next/navigation', () => ({ usePathname: () => url.pathname }))
+const url = vi.hoisted(() => ({ pathname: '/' }))
+const router = vi.hoisted(() => ({ refresh: vi.fn() }))
+vi.mock('next/navigation', () => ({ usePathname: () => url.pathname, useRouter: () => router }))
 
 beforeEach(() => {
-  url.pathname = '/bratislava'
+  url.pathname = '/'
+  router.refresh.mockClear()
+  document.cookie = 'vybrane-mesto=; Max-Age=0; Path=/'
 })
 
 const FILMS = [
@@ -99,7 +102,7 @@ describe('the landing page', () => {
   it('switches language by linking to itself', () => {
     renderPage()
 
-    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en/bratislava')
+    expect(screen.getByRole('link', { name: 'EN' })).toHaveAttribute('href', '/en')
   })
 
   it('keeps English on every way off the page', () => {
@@ -113,7 +116,7 @@ describe('the landing page', () => {
       'href',
       '/en/bratislava/kina',
     )
-    expect(screen.getByRole('link', { name: 'Kinomat' })).toHaveAttribute('href', '/en/bratislava')
+    expect(screen.getByRole('link', { name: 'Kinomat' })).toHaveAttribute('href', '/en')
     // The Slovak query still finds the film, and the row shows the reader's own title for it.
     expect(screen.getByRole('link', { name: /Waves/ })).toHaveAttribute(
       'href',
@@ -169,11 +172,31 @@ describe('the landing page', () => {
 
     url.pathname = '/bratislava/program'
     rerender(<LandingPage films={FILMS} language="sk" city="bratislava" />)
-    url.pathname = '/bratislava'
+    url.pathname = '/'
     rerender(<LandingPage films={FILMS} language="sk" city="bratislava" />)
 
     expect(screen.getByRole('textbox')).toHaveValue('')
   })
+
+  // The URL names no city, so a page the router kept from the reader's last city is asked for again.
+  it('asks for itself again when it is not in the city the reader remembers', () => {
+    document.cookie = 'vybrane-mesto=kosice; Path=/'
+    renderPage()
+
+    expect(router.refresh).toHaveBeenCalledOnce()
+  })
+
+  it('stays as it is in the reader’s city, or for a reader with none, or once they have left', () => {
+    renderPage()
+    document.cookie = 'vybrane-mesto=bratislava; Path=/'
+    renderPage()
+    document.cookie = 'vybrane-mesto=kosice; Path=/'
+    url.pathname = '/kosice/program'
+    renderPage()
+
+    expect(router.refresh).not.toHaveBeenCalled()
+  })
+
   // Slovak declines the city, so each one carries its own form rather than a pattern of endings.
   it('names the city it lists, declined in Slovak', () => {
     render(<LandingPage films={FILMS} language="sk" city="kosice" />)

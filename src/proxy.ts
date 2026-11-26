@@ -1,11 +1,11 @@
 import { getDatabase } from 'kinomat-core/db/appDatabase'
 import { DEFAULT_LANGUAGE, isLanguage } from 'kinomat-core/lib/language'
 import { findCinema } from 'kinomat-core/types/cinema'
-import { CITIES } from 'kinomat-core/types/city'
+import { CITIES, type CityId, isCityId } from 'kinomat-core/types/city'
 import { isFilmPublicId } from 'kinomat-core/types/film'
 import { type NextRequest, NextResponse } from 'next/server'
 
-import { moveLegacyCity, readRememberedCity } from '@/lib/rememberedCity'
+import { moveLegacyCity, readRememberedCity, writeCity } from '@/lib/rememberedCity'
 import { findFilmAlias } from '@/site/films/findFilms'
 
 /*
@@ -16,6 +16,10 @@ import { findFilmAlias } from '@/site/films/findFilms'
  * The listings live under a city too, /kosice/program, and a listing asked for without one goes to
  * the city the reader last looked at, which a cookie remembers. The page writes it (RememberCity),
  * not this proxy, which also answers the router's prefetches of links to other cities.
+ *
+ * The front page is the exception both ways: its URL names no city, and it is served in the
+ * reader's without a redirect. A city's own spelling of it, /kosice, is where the proxy does write
+ * the cookie, since nothing on the site links there for the router to prefetch.
  */
 const CITY_SEGMENT = CITIES.map((city) => city.id).join('|')
 // The listings that take a day; the reel takes one too, but in its query, and is no page to link to.
@@ -23,8 +27,8 @@ const DAY_LISTING_PATTERN = new RegExp(
   `^(?:/en)?(?:/(?:${CITY_SEGMENT}))?/(?:program|kina/[^/]+|filmy/[^/]+)/?$`,
 )
 const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-// A city's pages, spelled without the city: its front page, schedule, cinemas, films and a film.
-const CITYLESS_LISTING_PATTERN = /^\/(?:|program(?:\/.*)?|kina(?:\/.*)?|filmy(?:\/.*)?)$/
+// A city's pages, spelled without the city: its schedule, cinemas, films and a film.
+const CITYLESS_LISTING_PATTERN = /^\/(?:program|kina|filmy)(?:\/.*)?$/
 // A film's page in a city, split around the name it was asked for by.
 const FILM_PAGE_PATTERN = new RegExp(`^(/(?:${CITY_SEGMENT})/filmy/)([^/]+)(/.*)?$`)
 
@@ -65,7 +69,7 @@ function toCityPath(request: NextRequest, languagePrefix: string, path: string):
       ? (findCinema(cinemaId)?.cityId ?? readRememberedCity(request))
       : readRememberedCity(request)
   const moved = request.nextUrl.clone()
-  moved.pathname = `${languagePrefix}/${city}${path === '/' ? '' : path}`
+  moved.pathname = `${languagePrefix}/${city}${path}`
 
   return moved
 }
@@ -100,6 +104,13 @@ async function toFilmAliasPath(
   return moved
 }
 
+// The city a front page's path names, /kosice or /kosice/, or null for any other path.
+function readHomeCity(path: string): CityId | null {
+  const segment = path.replace(/^\/|\/$/g, '')
+
+  return isCityId(segment) ? segment : null
+}
+
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
   const [, first = ''] = pathname.split('/')
@@ -120,6 +131,23 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const languagePrefix = isLanguage(first) ? `/${first}` : ''
   const path = pathname.slice(languagePrefix.length) || '/'
+  const homeCity = readHomeCity(path)
+
+  // Temporary, since the city is the reader's to change; remembered, so the bare page is in it.
+  if (homeCity !== null) {
+    const home = request.nextUrl.clone()
+    home.pathname = languagePrefix || '/'
+
+    return writeCity(request, NextResponse.redirect(home, 307), homeCity)
+  }
+
+  // The front page in the reader's city, which the URL keeps to itself.
+  if (path === '/') {
+    const home = request.nextUrl.clone()
+    home.pathname = `${languagePrefix || `/${DEFAULT_LANGUAGE}`}/${readRememberedCity(request)}`
+
+    return moveLegacyCity(request, NextResponse.rewrite(home))
+  }
   const cityPath = toCityPath(request, languagePrefix, path)
 
   // Temporary, since where it leads depends on the reader's cookie, not on the URL.

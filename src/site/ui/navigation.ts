@@ -5,7 +5,7 @@ import { aboutCopyByLanguage } from '@/site/about/copy'
 import { toAboutHref } from '@/site/about/hrefs'
 import { toCinemasHref } from '@/site/cinemas/hrefs'
 import { toFilmsHref } from '@/site/films/hrefs'
-import { toHomeHref } from '@/site/landing/hrefs'
+import { toCityHomeHref } from '@/site/landing/hrefs'
 import { toScheduleHref } from '@/site/program/filters'
 
 const LABELS_BY_LANGUAGE: Record<Language, { cinemas: string; films: string; schedule: string }> = {
@@ -62,7 +62,7 @@ function toSectionHref(language: Language, city: CityId, current: SiteSection | 
     case 'program':
       return toScheduleHref(language, city)
     default:
-      return toHomeHref(language, city)
+      return toCityHomeHref(language, city)
   }
 }
 
@@ -74,8 +74,9 @@ export function toCityNavigation(
   language: Language,
   city: CityId,
   current: SiteSection | null,
-): NavItem[] {
+): (NavItem & { city: CityId })[] {
   return CITIES.map((other) => ({
+    city: other.id,
     label: other.name,
     href: toSectionHref(language, other.id, current),
     isCurrent: other.id === city,

@@ -3,7 +3,8 @@
 import { type CityId, isCityId } from 'kinomat-core/types/city'
 import { useEffect, useSyncExternalStore } from 'react'
 
-import { CITY_COOKIE, CITY_COOKIE_MAX_AGE } from '@/lib/rememberedCity'
+import { CITY_COOKIE } from '@/lib/rememberedCity'
+import { rememberCity } from '@/site/ui/rememberCityAction'
 
 /*
  * Remembers the city of the page the reader is on, so a link without one, or the front page, brings
@@ -21,7 +22,7 @@ function readCookie(): string | undefined {
     ?.slice(CITY_COOKIE.length + 1)
 }
 
-// Nothing announces a cookie's change, and only this page writes it, so there is nothing to watch.
+// Nothing announces a cookie's change, and the router renders again after a write, so there is nothing to watch.
 function subscribe(): () => void {
   return () => {}
 }
@@ -52,8 +53,7 @@ export function RememberCity({ city, isOnlyIfNone }: { city: CityId; isOnlyIfNon
       return
     }
 
-    const secure = window.location.protocol === 'https:' ? '; Secure' : ''
-    document.cookie = `${CITY_COOKIE}=${city}; Path=/; Max-Age=${CITY_COOKIE_MAX_AGE}; SameSite=Lax${secure}`
+    void rememberCity(city)
   }, [city, isOnlyIfNone])
 
   return null

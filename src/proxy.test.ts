@@ -84,11 +84,31 @@ describe('the city proxy', () => {
     expect((await proxy(request('/en/filmy', 'nitra'))).headers.get('location')).toBe(
       'https://kinomat.test/en/nitra/filmy',
     )
-    expect((await proxy(request('/', 'zilina'))).headers.get('location')).toBe(
-      'https://kinomat.test/zilina',
-    )
-    expect((await proxy(request('/en', 'zilina'))).headers.get('location')).toBe(
+  })
+
+  // The front page names no city: it is served in the reader's, under the bare URL.
+  it('serves the front page in the reader’s city without naming it', async () => {
+    const response = await proxy(request('/?q=x', 'zilina'))
+
+    expect(response.headers.get('location')).toBeNull()
+    expect(response.headers.get('x-middleware-rewrite')).toBe('https://kinomat.test/sk/zilina?q=x')
+    expect((await proxy(request('/en', 'zilina'))).headers.get('x-middleware-rewrite')).toBe(
       'https://kinomat.test/en/zilina',
+    )
+    expect((await proxy(request('/en'))).headers.get('x-middleware-rewrite')).toBe(
+      'https://kinomat.test/en/bratislava',
+    )
+  })
+
+  // Nothing on the site links to /kosice, so no prefetch can ask for it and the city can be kept.
+  it('sends a city’s front page to the bare one, remembering the city', async () => {
+    const response = await proxy(request('/kosice?q=x', 'zilina'))
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe('https://kinomat.test/?q=x')
+    expect(response.cookies.get('vybrane-mesto')?.value).toBe('kosice')
+    expect((await proxy(request('/en/nitra'))).headers.get('location')).toBe(
+      'https://kinomat.test/en',
     )
   })
 

@@ -3,9 +3,48 @@
 import { type Language } from 'kinomat-core/lib/language'
 import { type CityId, findCity } from 'kinomat-core/types/city'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useId, useRef, useState } from 'react'
 
 import { CITY_LABEL_BY_LANGUAGE, type SiteSection, toCityNavigation } from '@/site/ui/navigation'
+import { rememberCity } from '@/site/ui/rememberCityAction'
+
+function itemClassName(isCurrent: boolean): string {
+  return `px-[22px] py-3 text-sm md:px-4 md:py-2.5 ${
+    isCurrent ? 'text-accent' : 'text-ink-soft hover:bg-surface-hover'
+  }`
+}
+
+// On the front page a city is picked rather than visited: remembered, and the page asked for again.
+function HomeCityButton({
+  city,
+  label,
+  isCurrent,
+  onPick,
+}: {
+  city: CityId
+  label: string
+  isCurrent: boolean
+  onPick: () => void
+}) {
+  const router = useRouter()
+
+  return (
+    <button
+      type="button"
+      aria-current={isCurrent ? 'page' : undefined}
+      onClick={async () => {
+        onPick()
+        await rememberCity(city)
+        // The action's own answer is the page in the city it was asked from, which the proxy chose.
+        router.refresh()
+      }}
+      className={`block w-full cursor-pointer text-left ${itemClassName(isCurrent)}`}
+    >
+      {label}
+    </button>
+  )
+}
 
 type CitySwitcherProps = {
   language: Language
@@ -16,7 +55,10 @@ type CitySwitcherProps = {
 
 /*
  * The city the page is in, and a menu of the others. Links rather than a select, so each city is a
- * page a crawler follows and the router can prefetch; the proxy remembers the one picked.
+ * page a crawler follows and the router can prefetch; the page remembers the one picked.
+ *
+ * The front page is the exception: its URL names no city, so picking one is remembering it and
+ * asking for the same page again, which the proxy then serves in that city.
  */
 export function CitySwitcher({ language, city, current, className = '' }: CitySwitcherProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -24,6 +66,7 @@ export function CitySwitcher({ language, city, current, className = '' }: CitySw
   const listId = useId()
   const label = CITY_LABEL_BY_LANGUAGE[language]
   const name = findCity(city)?.name ?? city
+  const isHome = current === null
 
   // A click anywhere else or Escape closes it, as a menu is expected to.
   useEffect(() => {
@@ -80,16 +123,23 @@ export function CitySwitcher({ language, city, current, className = '' }: CitySw
         >
           {toCityNavigation(language, city, current).map((item) => (
             <li key={item.href} className="border-line border-t first:border-t-0">
-              <Link
-                href={item.href}
-                aria-current={item.isCurrent ? 'page' : undefined}
-                onClick={() => setIsOpen(false)}
-                className={`block px-[22px] py-3 text-sm md:px-4 md:py-2.5 ${
-                  item.isCurrent ? 'text-accent' : 'text-ink-soft hover:bg-surface-hover'
-                }`}
-              >
-                {item.label}
-              </Link>
+              {isHome ? (
+                <HomeCityButton
+                  city={item.city}
+                  label={item.label}
+                  isCurrent={item.isCurrent}
+                  onPick={() => setIsOpen(false)}
+                />
+              ) : (
+                <Link
+                  href={item.href}
+                  aria-current={item.isCurrent ? 'page' : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={`block ${itemClassName(item.isCurrent)}`}
+                >
+                  {item.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

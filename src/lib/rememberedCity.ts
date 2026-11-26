@@ -28,6 +28,22 @@ export function readRememberedCity(request: NextRequest): CityId {
   )
 }
 
+// Remembers a city in the response, for the one address the proxy may do that from; see the proxy.
+export function writeCity(
+  request: NextRequest,
+  response: NextResponse,
+  city: CityId,
+): NextResponse {
+  response.cookies.set(CITY_COOKIE, city, {
+    path: '/',
+    maxAge: CITY_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+    secure: request.nextUrl.protocol === 'https:',
+  })
+
+  return response
+}
+
 // Carries a city from the legacy cookie to the new one, and drops the legacy one.
 export function moveLegacyCity(request: NextRequest, response: NextResponse): NextResponse {
   if (!request.cookies.has(LEGACY_CITY_COOKIE)) {
@@ -37,12 +53,7 @@ export function moveLegacyCity(request: NextRequest, response: NextResponse): Ne
   const legacy = readCookieCity(request, LEGACY_CITY_COOKIE)
 
   if (legacy !== null && !request.cookies.has(CITY_COOKIE)) {
-    response.cookies.set(CITY_COOKIE, legacy, {
-      path: '/',
-      maxAge: CITY_COOKIE_MAX_AGE,
-      sameSite: 'lax',
-      secure: request.nextUrl.protocol === 'https:',
-    })
+    writeCity(request, response, legacy)
   }
 
   response.cookies.delete(LEGACY_CITY_COOKIE)

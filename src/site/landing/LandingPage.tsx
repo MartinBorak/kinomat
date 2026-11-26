@@ -3,7 +3,7 @@
 import { type Language, toHrefByLanguage } from 'kinomat-core/lib/language'
 import { CITY_BY_ID, type CityId } from 'kinomat-core/types/city'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { toFilmsHref } from '@/site/films/hrefs'
@@ -17,6 +17,7 @@ import {
   type SuggestedFilm,
   toLabelledSuggestions,
 } from '@/site/search/suggestions'
+import { useRememberedCity } from '@/site/ui/RememberCity'
 import { SiteFooter } from '@/site/ui/SiteFooter'
 import { SiteHeader } from '@/site/ui/SiteHeader'
 
@@ -46,6 +47,19 @@ export function LandingPage({ films, language, city }: LandingPageProps) {
   const [query, setQuery] = useState('')
   const searchInput = useRef<HTMLInputElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
+  const remembered = useRememberedCity()
+
+  /*
+   * The front page's URL names no city, so the router may hold it as it was for the reader's last
+   * one: prefetched before they moved, or kept from a visit. A page in another city than theirs is
+   * that, and is asked for again.
+   */
+  useEffect(() => {
+    if (pathname === toHomeHref(language) && remembered != null && remembered !== city) {
+      router.refresh()
+    }
+  }, [pathname, language, remembered, city, router])
 
   /*
    * A letter typed onto the page lands in the search, the page's one question - but the field does
@@ -54,7 +68,7 @@ export function LandingPage({ films, language, city }: LandingPageProps) {
    * listener leaves with the URL rather than with the page.
    */
   useEffect(() => {
-    if (pathname !== toHomeHref(language, city)) {
+    if (pathname !== toHomeHref(language)) {
       return
     }
 
@@ -81,7 +95,7 @@ export function LandingPage({ films, language, city }: LandingPageProps) {
 
   // The kept-mounted page would greet a returning reader with their last search; it leaves with the URL.
   useEffect(() => {
-    if (pathname !== toHomeHref(language, city)) {
+    if (pathname !== toHomeHref(language)) {
       return
     }
 
@@ -104,7 +118,8 @@ export function LandingPage({ films, language, city }: LandingPageProps) {
       <SiteHeader
         language={language}
         city={city}
-        languageChange={{ hrefByLanguage: toHrefByLanguage((next) => toHomeHref(next, city)) }}
+        isVisit
+        languageChange={{ hrefByLanguage: toHrefByLanguage((next) => toHomeHref(next)) }}
       />
 
       <main
