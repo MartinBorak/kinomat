@@ -96,7 +96,6 @@ describe('reading the filters out of a URL', () => {
     expect(toProgramHref(DATE, 'sk', 'bratislava')).toBe('/bratislava/program/2026-09-05')
     expect(toProgramHref(DATE, 'en', 'kosice')).toBe('/en/kosice/program/2026-09-05')
     expect(toProgramHref(undefined, 'sk', 'bratislava')).toBe('/bratislava/program')
-    expect(toProgramHref(undefined, 'sk', null, NO_FILTERS, 'ffi')).toBe('/ffi')
     expect(
       toProgramHref(
         DATE,

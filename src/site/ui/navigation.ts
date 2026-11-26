@@ -6,7 +6,7 @@ import { toAboutHref } from '@/site/about/hrefs'
 import { toCinemasHref } from '@/site/cinemas/hrefs'
 import { toFilmsHref } from '@/site/films/hrefs'
 import { toHomeHref } from '@/site/landing/hrefs'
-import { NO_FILTERS, toProgramHref, toScheduleHref } from '@/site/program/filters'
+import { toScheduleHref } from '@/site/program/filters'
 
 const LABELS_BY_LANGUAGE: Record<Language, { cinemas: string; films: string; schedule: string }> = {
   sk: { cinemas: 'Kiná', films: 'Filmy', schedule: 'Program' },
@@ -17,7 +17,7 @@ export const CITY_LABEL_BY_LANGUAGE: Record<Language, string> = { sk: 'Mesto', e
 
 type NavItem = { label: string; href: string; isCurrent: boolean }
 
-export type SiteSection = 'kina' | 'filmy' | 'program' | 'ffi' | 'o-kinomate'
+export type SiteSection = 'kina' | 'filmy' | 'program' | 'o-kinomate'
 
 /*
  * The header's links, built in one place so that every page carries the reader's language across:
@@ -44,19 +44,6 @@ export function toSiteNavigation(
       href: toScheduleHref(language, city),
       isCurrent: current === 'program',
     },
-    /*
-     * Only while the festival runs, 18 to 24 November 2026; remove it, and its page, afterwards.
-     * It plays in Bratislava alone, so only that city's pages, and the festival's own, offer it.
-     */
-    ...(city === 'bratislava' || current === 'ffi'
-      ? [
-          {
-            label: 'FFi',
-            href: toProgramHref(undefined, language, null, NO_FILTERS, 'ffi'),
-            isCurrent: current === 'ffi',
-          },
-        ]
-      : []),
     {
       label: aboutCopyByLanguage[language].title,
       href: toAboutHref(language),

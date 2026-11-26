@@ -8,8 +8,6 @@ import { tagSchedule } from '@/lib/tagSchedule'
 import {
   findCinemaDays,
   findCinemaScreeningsOnDay,
-  findFestivalDays,
-  findFestivalScreeningsOnDay,
   findFilmCities,
   findFilmDays,
   findFilmScreeningsOnDay,
@@ -69,25 +67,6 @@ export async function readFilmScreeningsOnDay(
   tagSchedule()
 
   return findFilmScreeningsOnDay(getDatabase(), filmId, city, Temporal.PlainDate.from(day))
-}
-
-export async function readFestivalDays(festival: string, from: string): Promise<string[]> {
-  'use cache'
-  cacheUntilMidnight()
-  tagSchedule()
-
-  return toDayStrings(findFestivalDays(getDatabase(), festival, Temporal.PlainDate.from(from)))
-}
-
-export async function readFestivalScreeningsOnDay(
-  festival: string,
-  day: string,
-): Promise<ScreeningRow[]> {
-  'use cache'
-  cacheUntilMidnight()
-  tagSchedule()
-
-  return findFestivalScreeningsOnDay(getDatabase(), festival, Temporal.PlainDate.from(day))
 }
 
 export async function readCinemaDays(cinemaId: CinemaId, from: string): Promise<string[]> {

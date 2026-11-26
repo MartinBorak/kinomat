@@ -15,7 +15,6 @@ import {
   nameGenres,
   parseFilters,
   type ProgramFilters,
-  type ScheduleSection,
   toProgramHref,
 } from '@/site/program/filters'
 import { dropStarted, type ProgrammeListing } from '@/site/program/groupScreenings'
@@ -35,15 +34,13 @@ import { WithSearchParams } from '@/site/ui/WithSearchParams'
  */
 type ProgramPageProps = {
   language: Language
-  // Null for a festival's part, which belongs to no city.
-  city: CityId | null
+  city: CityId
   date: string
   // Whether the path named the day, rather than the page opening on the first one with something on.
   isDayNamed: boolean
   today: string
   days: readonly string[]
   programmes: readonly ProgrammeListing[]
-  section?: ScheduleSection
 }
 
 export function ProgramPage(props: ProgramPageProps) {
@@ -55,7 +52,6 @@ export function ProgramPage(props: ProgramPageProps) {
 }
 
 function ProgramView({
-  section = 'program',
   language,
   city,
   date: isoDate,
@@ -95,11 +91,7 @@ function ProgramView({
 
   // Nothing here is stored, so a filter rewrites the URL it was read from rather than asking again.
   function changeFilters(next: ProgramFilters) {
-    window.history.replaceState(
-      null,
-      '',
-      toProgramHref(requestedDate, language, city, next, section),
-    )
+    window.history.replaceState(null, '', toProgramHref(requestedDate, language, city, next))
   }
 
   // What is missing: the day itself, the horizon it lies past, or only what the filters cut away.
@@ -114,12 +106,12 @@ function ProgramView({
     <SitePage>
       {/* The language is in the URL rather than in state, so the page a tab points at is read in it. */}
       <SiteHeader
-        current={section}
+        current="program"
         language={language}
         city={city}
         languageChange={{
           hrefByLanguage: toHrefByLanguage((next) =>
-            toProgramHref(requestedDate, next, city, filters, section),
+            toProgramHref(requestedDate, next, city, filters),
           ),
         }}
         hasSearch
@@ -131,7 +123,7 @@ function ProgramView({
         today={today}
         copy={copy}
         language={language}
-        toHref={(day) => toProgramHref(day, language, city, filters, section)}
+        toHref={(day) => toProgramHref(day, language, city, filters)}
       />
 
       <FilterBar

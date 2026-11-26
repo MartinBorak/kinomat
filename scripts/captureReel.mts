@@ -8,9 +8,8 @@ import { Temporal } from 'temporal-polyfill'
  * Films the /reel view frame by frame in headless Chrome and encodes out/reel.mp4. Frames are
  * placed, not recorded: each one sets the list's offset for its instant and is then captured, so
  * the motion is exact however long a capture takes.
- * Usage: capture.mts [--view=reel|ffi] [--day=YYYY-MM-DD] [--base=http://[::1]:3000] [--cover-only]
- * [--overwrite]. Both views default to tomorrow; the ffi Story is read slower since every card lists
- * cinemas and times. Both have a cover. A day already rendered is refused unless --overwrite, since
+ * Usage: capture.mts [--view=reel] [--day=YYYY-MM-DD] [--base=http://[::1]:3000] [--cover-only]
+ * [--overwrite]. The day defaults to tomorrow. A day already rendered is refused unless --overwrite, since
  * the old video may be the one already posted. [::1] reaches next dev, which listens on every
  * address, rather than another app that may hold 127.0.0.1:3000.
  */
@@ -22,14 +21,6 @@ function readArg(name: string) {
 const VIEWS = {
   // Two cards (about 175 px each) a second; a viewer pauses to read.
   reel: { path: '/reel', dir: '', daysAhead: 1, hasCover: true, speed: 350, output: 'reel.mp4' },
-  ffi: {
-    path: '/reel/ffi',
-    dir: 'ffi/',
-    daysAhead: 1,
-    hasCover: true,
-    speed: 160,
-    output: 'story.mp4',
-  },
 }
 const VIEW_NAME = readArg('view') ?? 'reel'
 if (!(VIEW_NAME in VIEWS)) {
