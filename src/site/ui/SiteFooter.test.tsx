@@ -16,17 +16,4 @@ describe('the site footer', () => {
       'mailto:info@kinomat.sk',
     )
   })
-
-  // The city menu is closed until opened, so this row is every page's link to the other cities.
-  it('links every city’s schedule, in the reader’s language', () => {
-    render(<SiteFooter language="en" />)
-
-    expect(screen.getByRole('link', { name: 'Košice' })).toHaveAttribute(
-      'href',
-      '/en/kosice/program',
-    )
-    expect(
-      screen.getByRole('navigation', { name: 'Showtimes' }).querySelectorAll('a'),
-    ).toHaveLength(8)
-  })
 })

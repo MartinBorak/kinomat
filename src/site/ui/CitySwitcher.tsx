@@ -116,34 +116,34 @@ export function CitySwitcher({ language, city, current, className = '' }: CitySw
         </svg>
       </button>
 
-      {isOpen && (
-        <ul
-          id={listId}
-          className="border-line bg-surface-raised md:border-accent/28 md:rounded-brand absolute inset-x-0 top-full z-50 m-0 list-none overflow-hidden border-b p-0 md:right-auto md:mt-3 md:min-w-[200px] md:border md:shadow-[0_26px_60px_oklch(0.15_0.02_255/0.6)]"
-        >
-          {toCityNavigation(language, city, current).map((item) => (
-            <li key={item.href} className="border-line border-t first:border-t-0">
-              {isHome ? (
-                <HomeCityButton
-                  city={item.city}
-                  label={item.label}
-                  isCurrent={item.isCurrent}
-                  onPick={() => setIsOpen(false)}
-                />
-              ) : (
-                <Link
-                  href={item.href}
-                  aria-current={item.isCurrent ? 'page' : undefined}
-                  onClick={() => setIsOpen(false)}
-                  className={`block ${itemClassName(item.isCurrent)}`}
-                >
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Closed, the list stays in the page, hidden, so every page links to every other city. */}
+      <ul
+        id={listId}
+        hidden={!isOpen}
+        className="border-line bg-surface-raised md:border-accent/28 md:rounded-brand absolute inset-x-0 top-full z-50 m-0 list-none overflow-hidden border-b p-0 md:right-auto md:mt-3 md:min-w-[200px] md:border md:shadow-[0_26px_60px_oklch(0.15_0.02_255/0.6)]"
+      >
+        {toCityNavigation(language, city, current).map((item) => (
+          <li key={item.href} className="border-line border-t first:border-t-0">
+            {isHome ? (
+              <HomeCityButton
+                city={item.city}
+                label={item.label}
+                isCurrent={item.isCurrent}
+                onPick={() => setIsOpen(false)}
+              />
+            ) : (
+              <Link
+                href={item.href}
+                aria-current={item.isCurrent ? 'page' : undefined}
+                onClick={() => setIsOpen(false)}
+                className={`block ${itemClassName(item.isCurrent)}`}
+              >
+                {item.label}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
